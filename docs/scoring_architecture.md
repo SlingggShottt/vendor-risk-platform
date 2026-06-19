@@ -194,6 +194,18 @@ GET /api/reports
 
 GET /api/reports/csv
   Returns: CSV file download (full scored vendor list)
+
+POST /api/extract
+  Body: { "contract_text": "..." }
+  Returns: { mode, extracted, vendor, scored }
+  Live mode: calls extraction/extract_contract.py via Claude API (ANTHROPIC_API_KEY required)
+  Demo mode: parses vendor ref ID from contract text, returns fixture/registry data
+
+GET /api/sample-contracts
+  Returns: list of 5 sample contract filenames with display names
+
+GET /api/sample-contracts/{name}
+  Returns: { filename, text } — raw text of the named sample contract
 ```
 
 ### 4.3 Database (`api/db.py`)
@@ -215,6 +227,7 @@ The API itself reads from CSV in-memory (CSV-first design), so SQLite is optiona
 | `/` | `vendors.html` | Vendor list with risk-level filter, search, sortable table, Chart.js bar chart |
 | `/vendor/{id}` | `vendor_detail.html` | Per-vendor: risk score, risk factors, compliance checklist, active alerts, recommendation |
 | `/reports` | `reports.html` | Portfolio overview: risk breakdown, compliance stats, red-flag vendor table, CSV export |
+| `/extract` | `extract.html` | Contract extraction: paste/select a contract, AI extracts fields and computes risk score |
 
 ### 5.2 Design principles
 

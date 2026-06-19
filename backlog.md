@@ -54,4 +54,4 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 - [ ] Postgres swap (only if SQLite is somehow insufficient — unlikely)
 
 ### Docs contribution
-- [ ] Write the "scoring algorithm rationale" and "API/UI architecture" sections for the documentation deliverable
+- [x] Write the "scoring algorithm rationale" and "API/UI architecture" sections for the documentation deliverable → `docs/scoring_architecture.md`
