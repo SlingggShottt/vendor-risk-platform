@@ -24,15 +24,15 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 - [x] `vendor_registry.csv` committed (430 rows: 420 bulk + 10 edge cases)
 - [x] `vendor_labels.csv` committed — ground truth derived using the SAME rubric in `PRD.md` §5
 - [x] `data/normalize.py`: takes raw/inconsistent-shape input, reconciles into canonical `Vendor` schema
-- [ ] `data/seed_db.py`: loads CSVs into SQLite via `api/db.py` models (only once DB shape is agreed — deferred, CSV-first per memory.md)
+- [x] `data/seed_db.py`: loads CSVs into SQLite via `api/db.py` models — updated to match real api/db.py API, inserts 440 rows clean
 
 ### Stretch
-- [ ] `extraction/sample_contracts/`: 3-5 synthetic contract texts/PDFs with embedded SLA/breach-notification/access-scope clauses
-- [ ] `extraction/extract_contract.py`: LLM-assisted extraction into `Vendor`-compatible fields
-- [ ] Wire extracted fields back into registry as an optional override source
+- [x] `extraction/sample_contracts/`: 5 synthetic contract texts covering LOW/MEDIUM/HIGH, expired contract, under-investigation, missing GDPR DPA
+- [x] `extraction/extract_contract.py`: LLM-assisted extraction via claude-opus-4-8 + structured output, returns dict for normalize_raw_vendor()
+- [x] Wire extracted fields back into registry as an optional override source (`extraction/merge_extracted.py`)
 
 ### Docs contribution
-- [ ] Write the "data generation methodology + edge cases" section for the documentation deliverable
+- [x] Write the "data generation methodology + edge cases" section (`docs/data_methodology.md`)
 
 ## Jatin — Scoring, Monitoring, API, Dashboard
 
