@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Vendors — Vendor Risk Platform{% endblock %}
+{% block nav_vendors %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Vendor Risk Dashboard</h1>
+  <span class="subtext">As of {{ today }} &nbsp;·&nbsp; {{ total_vendors }} vendors tracked</span>
+</div>
+
+<!-- Portfolio stats bar -->
+<div class="stats-row">
+  <div class="stat-card critical">
+    <div class="stat-num">{{ level_counts.CRITICAL }}</div>
+    <div class="stat-label">CRITICAL</div>
+  </div>
+  <div class="stat-card high">
+    <div class="stat-num">{{ level_counts.HIGH }}</div>
+    <div class="stat-label">HIGH</div>
+  </div>
+  <div class="stat-card medium">
+    <div class="stat-num">{{ level_counts.MEDIUM }}</div>
+    <div class="stat-label">MEDIUM</div>
+  </div>
+  <div class="stat-card low">
+    <div class="stat-num">{{ level_counts.LOW }}</div>
+    <div class="stat-label">LOW</div>
+  </div>
+  <div class="stat-card alerts">
+    <div class="stat-num">{{ alert_counts.CRITICAL + alert_counts.HIGH }}</div>
+    <div class="stat-label">Active Alerts</div>
+  </div>
+</div>
+
+<!-- Risk level bar chart -->
+<div class="chart-row">
+  <div class="chart-card">
+    <h3>Risk Level Distribution</h3>
+    <canvas id="riskChart" height="80"></canvas>
+  </div>
+</div>
+
+<!-- Search + filter controls -->
+<div class="controls-row">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="🔍  Search vendor name or ID…"
+    class="search-box"
+    autofocus
+  />
+  <select id="riskFilter" class="filter-select">
+    <option value="">All risk levels</option>
+    <option value="CRITICAL">CRITICAL</option>
+    <option value="HIGH">HIGH</option>
+    <option value="MEDIUM">MEDIUM</option>
+    <option value="LOW">LOW</option>
+  </select>
+  <select id="sortBy" class="filter-select">
+    <option value="risk_score_desc">Risk Score ↓</option>
+    <option value="risk_score_asc">Risk Score ↑</option>
+    <option value="name_asc">Name A→Z</option>
+  </select>
+</div>
+
+<!-- Results count -->
+<div id="resultsCount" class="results-count"></div>
+
+<!-- Vendor table -->
+<div class="table-wrap">
+  <table class="vendor-table" id="vendorTable">
+    <thead>
+      <tr>
+        <th>Vendor</th>
+        <th>Risk Level</th>
+        <th>Score</th>
+        <th>Anomaly</th>
+        <th>Alerts</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="vendorTableBody">
+      <tr><td colspan="6" class="loading">Loading vendors…</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── Chart ────────────────────────────────────────────────────────────────
+  const ctx = document.getElementById('riskChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
+      datasets: [{
+        data: [
+          {{ level_counts.CRITICAL }},
+          {{ level_counts.HIGH }},
+          {{ level_counts.MEDIUM }},
+          {{ level_counts.LOW }},
+        ],
+        backgroundColor: ['#e53e3e', '#dd6b20', '#d69e2e', '#38a169'],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ── Vendor data + rendering ───────────────────────────────────────────────
+  const RISK_COLORS = {
+    CRITICAL: 'badge-critical',
+    HIGH: 'badge-high',
+    MEDIUM: 'badge-medium',
+    LOW: 'badge-low',
+  };
+
+  let allVendors = [];
+
+  async function fetchVendors(riskLevel = '', search = '', sortKey = 'risk_score', sortDir = 'desc') {
+    const params = new URLSearchParams({ limit: 1000, sort_by: sortKey, sort_dir: sortDir });
+    if (riskLevel) params.append('risk_level', riskLevel);
+    if (search)    params.append('search', search);
+    const resp = await fetch(`/api/vendors?${params}`);
+    const data = await resp.json();
+    return data;
+  }
+
+  function renderTable(vendors) {
+    const tbody = document.getElementById('vendorTableBody');
+    document.getElementById('resultsCount').textContent =
+      `Showing ${vendors.length} vendor${vendors.length !== 1 ? 's' : ''}`;
+
+    if (!vendors.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">No vendors match your filters.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = vendors.map(v => {
+      const alertBadge = v.has_critical_alert
+        ? `<span class="alert-dot critical-dot" title="Critical alert">●</span>`
+        : v.alert_count > 0
+          ? `<span class="alert-dot high-dot" title="${v.alert_count} alert(s)">●</span>`
+          : '';
+      const alertText = v.alert_count > 0
+        ? `<span class="alert-count">${v.alert_count} alert${v.alert_count !== 1 ? 's' : ''}</span>`
+        : '<span class="no-alert">—</span>';
+
+      return `
+        <tr class="vendor-row" onclick="location.href='/vendor/${v.vendor_id}'">
+          <td>
+            <div class="vendor-name">${alertBadge}${escHtml(v.name)}</div>
+            <div class="vendor-id">${escHtml(v.vendor_id)}</div>
+          </td>
+          <td><span class="badge ${RISK_COLORS[v.risk_level]}">${v.risk_level}</span></td>
+          <td><span class="score-cell">${v.risk_score.toFixed(1)}</span></td>
+          <td class="anomaly-cell">${formatAnomaly(v.anomaly_type)}</td>
+          <td>${alertText}</td>
+          <td><a href="/vendor/${v.vendor_id}" class="detail-link">View →</a></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function formatAnomaly(type) {
+    const map = {
+      BREACHED_VENDOR_HIGH_ACCESS: 'Breach + High Access',
+      VENDOR_UNDER_INVESTIGATION: 'Under Investigation',
+      HIGH_RISK_SCORE: 'High Risk Score',
+      EXPIRED_CERTIFICATION: 'Expired Cert',
+      RECENTLY_BREACHED_VENDOR: 'Recent Breach',
+      CONTRACT_EXPIRED_ACTIVE_ACCESS: 'Orphaned Access',
+      ELEVATED_RISK_VENDOR: 'Elevated Risk',
+      NONE: '—',
+    };
+    return map[type] || type;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Live filtering ────────────────────────────────────────────────────────
+  let debounceTimer;
+  async function refresh() {
+    const search   = document.getElementById('searchInput').value.trim();
+    const level    = document.getElementById('riskFilter').value;
+    const sortVal  = document.getElementById('sortBy').value;
+    const [sortKey, sortDir] = sortVal.includes('name')
+      ? ['name', 'asc']
+      : sortVal.endsWith('asc') ? ['risk_score', 'asc'] : ['risk_score', 'desc'];
+
+    const data = await fetchVendors(level, search, sortKey, sortDir);
+    renderTable(data.vendors);
+  }
+
+  function debounceRefresh() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(refresh, 250);
+  }
+
+  document.getElementById('searchInput').addEventListener('input', debounceRefresh);
+  document.getElementById('riskFilter').addEventListener('change', refresh);
+  document.getElementById('sortBy').addEventListener('change', refresh);
+
+  // Initial load
+  refresh();
+</script>
+{% endblock %}

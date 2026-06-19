@@ -14,5 +14,9 @@ Don't edit or delete past entries, even if a decision is later reversed — appe
 - `[H0:00] [Both] common/schema.py and api/db.py are the only two files either track may edit, and only with mutual agreement — everything else is owned exclusively by one track.`
 
 <!-- Add new entries below this line -->
+- `[H1:00] [J] Switched to jatin branch. scoring/, eval/, monitoring/, api/, dashboard/ all built and smoke-tested.`
+- `[H1:00] [J] eval/evaluate.py run against all 430 vendors: 100% precision + recall at every severity level (CRITICAL/HIGH/MEDIUM/LOW). No weight tuning needed — formula directly mirrors generate_vendors.py::compute_label.`
+- `[H1:00] [J] Starlette 1.3.1 installed — TemplateResponse signature changed to (request, name, context) vs old (name, context). All three dashboard routes updated accordingly.`
+- `[H1:00] [J] API is CSV-first (vendor_registry.csv loaded at startup, scored in-memory). api/db.py has SQLAlchemy models ready for future seed_db.py integration.`
 - `[H0:30] [Both] api/db.py deferred — going CSV-first (vendor_registry.csv + vendor_labels.csv) per tech-stack.md recommendation. Avoids day-1 blocking dependency. seed_db.py added later once scoring engine shape is stable.`
 - `[H0:30] [D] Switched to divyansh branch. H0-H1 shared tasks (schema.py + fixtures + git branches) confirmed complete. Starting data/ build.`

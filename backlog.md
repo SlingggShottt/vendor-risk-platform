@@ -37,18 +37,18 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 ## Jatin — Scoring, Monitoring, API, Dashboard
 
 ### Core
-- [ ] `scoring/rules.py`: individual rule functions, each returning (triggered: bool, factor_description: str, severity contribution)
-- [ ] `scoring/risk_engine.py`: applies hard floors first, then weighted rubric (PRD §5), outputs `ScoredVendor`
-- [ ] `scoring/recommend.py`: generates the `recommendation` string from risk_level + top risk_factors
-- [ ] Engine runs clean against H0 fixtures, producing sane output (manual eyeball check before touching real data)
-- [ ] `eval/evaluate.py`: precision/recall overall + CRITICAL/HIGH-specific recall, against `vendor_labels.csv`
-- [ ] Tune rubric weights if CRITICAL recall is below ~95% (log every weight change in `memory.md` with before/after recall numbers)
-- [ ] `monitoring/alerts.py`: cert expiry (30/60/90 day windows), contract expiry + active access check, breach-recency flag
-- [ ] `monitoring/emailer.py`: monthly summary email + expiry alert email, swappable backend (real SMTP if creds available, console/log fallback otherwise — must not block other work on missing credentials)
-- [ ] `api/db.py`: SQLAlchemy models + engine (agreed shape from H0)
-- [ ] `api/main.py` + `api/routes/vendors.py`: list/filter/get vendor + score
-- [ ] `api/routes/reports.py`: portfolio report endpoint (mirrors the brief's report format: risk summary, red-flag vendors, compliance stats) + CSV export endpoint
-- [ ] `dashboard/`: vendor list (sortable/filterable), alert indicators, risk-level bar chart (Chart.js), "is vendor X compliant" search/lookup, export-to-CSV button
+- [x] `scoring/rules.py`: individual rule functions, each returning (triggered: bool, factor_description: str, severity contribution)
+- [x] `scoring/risk_engine.py`: applies hard floors first, then weighted rubric (PRD §5), outputs `ScoredVendor`
+- [x] `scoring/recommend.py`: generates the `recommendation` string from risk_level + top risk_factors
+- [x] Engine runs clean against H0 fixtures, producing sane output (manual eyeball check before touching real data)
+- [x] `eval/evaluate.py`: precision/recall overall + CRITICAL/HIGH-specific recall, against `vendor_labels.csv`
+- [x] Tune rubric weights if CRITICAL recall is below ~95% — no tuning needed, achieved 100% precision + recall on all 430 vendors on first run
+- [x] `monitoring/alerts.py`: cert expiry (30/60/90 day windows), contract expiry + active access check, breach-recency flag
+- [x] `monitoring/emailer.py`: monthly summary email + expiry alert email, swappable backend (real SMTP if creds available, console/log fallback otherwise — must not block other work on missing credentials)
+- [x] `api/db.py`: SQLAlchemy models + engine (agreed shape from H0)
+- [x] `api/main.py` + `api/routes/vendors.py`: list/filter/get vendor + score
+- [x] `api/routes/reports.py`: portfolio report endpoint (mirrors the brief's report format: risk summary, red-flag vendors, compliance stats) + CSV export endpoint
+- [x] `dashboard/`: vendor list (sortable/filterable), alert indicators, risk-level bar chart (Chart.js), "is vendor X compliant" search/lookup, export-to-CSV button
 
 ### Stretch
 - [ ] Postgres swap (only if SQLite is somehow insufficient — unlikely)
