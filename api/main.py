@@ -7,11 +7,15 @@ in app.state.store so all routes read from the same in-memory dict.
 Routes:
   /                  → vendor list dashboard (HTML)
   /vendor/{id}       → vendor detail page (HTML)
-  /reports           → portfolio report page (HTML)
-  /api/vendors       → JSON vendor list + filter
-  /api/vendors/{id}  → JSON vendor detail
-  /api/reports       → JSON portfolio report
-  /api/reports/csv   → CSV download
+  /reports                   → portfolio report page (HTML)
+  /extract                   → contract extraction page (HTML)
+  /api/vendors               → JSON vendor list + filter
+  /api/vendors/{id}          → JSON vendor detail
+  /api/reports               → JSON portfolio report
+  /api/reports/csv           → CSV download
+  /api/extract               → POST contract text → extracted fields + risk score
+  /api/sample-contracts      → list sample contracts
+  /api/sample-contracts/{n}  → get sample contract text
 
 Run with:
   uvicorn api.main:app --reload --port 8000
@@ -36,6 +40,7 @@ from scoring.risk_engine import score_vendor
 from monitoring.alerts import check_alerts
 from api.routes.vendors import router as vendors_router
 from api.routes.reports import router as reports_router
+from api.routes.extract import router as extract_router
 
 _REGISTRY_CSV = Path(__file__).parent.parent / "data" / "vendor_registry.csv"
 _TEMPLATES_DIR = Path(__file__).parent.parent / "dashboard" / "templates"
@@ -48,6 +53,7 @@ app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
 app.include_router(vendors_router)
 app.include_router(reports_router)
+app.include_router(extract_router)
 
 
 # ── Startup: load + score all vendors ────────────────────────────────────────
@@ -122,5 +128,12 @@ def vendor_detail_page(request: Request, vendor_id: str):
 @app.get("/reports", response_class=HTMLResponse)
 def reports_page(request: Request):
     return templates.TemplateResponse(request, "reports.html", {
+        "today": app.state.today.isoformat(),
+    })
+
+
+@app.get("/extract", response_class=HTMLResponse)
+def extract_page(request: Request):
+    return templates.TemplateResponse(request, "extract.html", {
         "today": app.state.today.isoformat(),
     })
