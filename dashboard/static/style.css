@@ -209,3 +209,8 @@ a:hover { text-decoration: underline; }
 .recs-list { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
 .recs-list li { font-size: 0.9rem; color: #2d3748; }
 .rec-cell { font-size: 0.8rem; color: #4a5568; max-width: 280px; }
+
+/* ── Extract page ─────────────────────────────────────────────────────────── */
+.extract-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.extract-panel  { display: flex; flex-direction: column; }
+@media (max-width: 900px) { .extract-layout { grid-template-columns: 1fr; } }
