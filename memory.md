@@ -20,3 +20,6 @@ Don't edit or delete past entries, even if a decision is later reversed — appe
 - `[H1:00] [J] API is CSV-first (vendor_registry.csv loaded at startup, scored in-memory). api/db.py has SQLAlchemy models ready for future seed_db.py integration.`
 - `[H0:30] [Both] api/db.py deferred — going CSV-first (vendor_registry.csv + vendor_labels.csv) per tech-stack.md recommendation. Avoids day-1 blocking dependency. seed_db.py added later once scoring engine shape is stable.`
 - `[H0:30] [D] Switched to divyansh branch. H0-H1 shared tasks (schema.py + fixtures + git branches) confirmed complete. Starting data/ build.`
+- `[Stretch] [J] Built contract extraction endpoint (POST /api/extract) + dashboard Extract page (/extract). Live mode calls extraction/extract_contract.py when ANTHROPIC_API_KEY is set; demo mode parses vendor ref ID from contract text and returns fixture/store data. anthropic SDK installed.`
+- `[Stretch] [J] Sample contract vendor IDs (VND-0001/0099/0200/0285/0420) are NOT in vendor_registry.csv — they exist only as fixtures in common/schema.py::FIXTURE_VENDORS. Demo fallback checks store first, then FIXTURE_VENDORS.`
+- `[Stretch] [J] docs/scoring_architecture.md created — covers scoring rationale (hard floors, weights, eval results), all API endpoints + data shapes, UI page map, and monitoring/alerting. Required graded deliverable per PRD §2.`
