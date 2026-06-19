@@ -1,0 +1,431 @@
+vendor_id,name,category,contract_start,contract_end,data_sensitivity,access_type,systems,soc2_type2,soc2_expiry,iso27001,gdpr_dpa,breach_count,latest_breach_date,latest_breach_severity,latest_breach_description,financial_rating,annual_spend,under_investigation,handles_eu_data
+VND-1291,Prime Cloud,Data Warehousing,2023-09-12,2027-06-19,MEDIUM,read_only,Identity_Provider|Database_Primary,True,2028-02-07,False,False,0,,,,A-,35371.31,False,True
+VND-1065,Vertex Analytics,Consulting,2024-02-05,2027-06-19,HIGH,read_write,S3_Buckets|Identity_Provider|Analytics_DB,True,2025-09-16,False,False,0,,,,C,1740507.35,False,True
+VND-1190,Stratum Systems,Marketing Technology,2023-01-07,2027-06-19,MEDIUM,read_only,HR_System|FileServer_Corporate|S3_Buckets,True,2027-11-19,False,True,1,2024-01-05,LOW,Insider threat — unauthorized data export,C,503979.63,False,False
+VND-1283,Cascade Technologies,Consulting,2022-01-05,2027-06-19,MEDIUM,read_only,Audit_Logs,True,2028-04-22,False,True,0,,,,A,671932.6,False,False
+VND-1102,Titan Technologies,Marketing Technology,2024-07-10,2025-12-22,MEDIUM,read_write,Data_Warehouse|S3_Buckets,False,,False,False,0,,,,B,1131833.61,False,False
+VND-1187,Stellar Services,Consulting,2024-05-20,2027-06-19,MEDIUM,read_only,Payment_Gateway|Identity_Provider|Analytics_DB,True,2028-05-17,False,True,1,2024-10-18,MEDIUM,Ransomware encrypted backup files,B,363498.17,False,False
+VND-1295,Nexus Solutions,Managed Services,2024-11-26,2027-06-19,MEDIUM,read_write,FileServer_Corporate|Backup_Storage|HR_System,True,2027-11-22,True,True,0,,,,A-,216389.08,False,True
+VND-1363,Stratum Systems,Cloud Infrastructure,2023-03-25,2027-06-19,MEDIUM,read_only,HR_System|FileServer_Corporate|ERP,True,2028-01-14,False,False,0,,,,A,1240023.32,False,False
+VND-1089,Stratum Cloud,Consulting,2023-02-20,2027-06-19,HIGH,read_write,Ticketing_System|Identity_Provider|Email_Platform,False,,False,True,0,,,,B-,1214799.32,False,False
+VND-1011,Vertex Works,SaaS,2023-12-27,2027-06-19,HIGH,read_only,ERP,False,,True,False,1,2026-04-26,MEDIUM,Unencrypted data exposed on cloud storage,B,1322904.14,False,False
+VND-1138,Nova Systems,Cloud Infrastructure,2021-10-08,2027-06-19,MEDIUM,read_only,Monitoring_Tools|S3_Buckets|Identity_Provider,True,2025-10-05,False,True,0,,,,D,1043472.09,False,False
+VND-1409,Echo Labs,Software,2021-04-11,2027-06-19,LOW,read_only,Ticketing_System,True,2027-10-18,True,False,0,,,,B,884712.21,False,False
+VND-1040,Nexus Services,SaaS,2024-03-31,2027-06-19,HIGH,read_write,Ticketing_System,True,2027-01-12,False,True,1,2025-10-15,CRITICAL,Third-party library supply-chain compromise,B,1155835.49,False,False
+VND-1373,Vertex Platforms,Software,2022-10-02,2027-06-19,MEDIUM,read_only,Analytics_DB|Monitoring_Tools,True,2027-04-18,True,False,0,,,,A+,1459191.79,False,False
+VND-1133,Cascade Solutions,Analytics,2023-07-10,2027-06-19,MEDIUM,read_only,ERP,False,,True,False,0,,,,C-,202655.19,False,False
+VND-1329,Nexus Integrations,HR Technology,2024-09-12,2027-06-19,LOW,read_only,Audit_Logs,True,2027-02-27,True,False,0,,,,B,1878958.76,False,False
+VND-1022,Prime Partners,Software,2022-06-25,2027-06-19,HIGH,read_write,Audit_Logs|ERP|Backup_Storage,False,,True,True,1,2026-04-25,CRITICAL,SQL injection led to partial DB dump,C,111089.8,False,False
+VND-1375,Orbit Technologies,Consulting,2021-07-03,2027-06-19,LOW,read_write,Analytics_DB,True,2028-01-16,False,True,0,,,,A,1004839.22,False,False
+VND-1242,Titan Group,Data Warehousing,2024-08-15,2026-05-21,HIGH,read_write,ERP|FileServer_Corporate,False,,False,False,0,,,,D,1811105.16,False,True
+VND-1313,Quantum Technologies,Backup & Disaster Recovery,2021-05-20,2027-06-19,MEDIUM,read_write,Analytics_DB|Payment_Gateway|Email_Platform,True,2028-03-08,False,True,0,,,,B,1078701.55,False,False
+VND-1302,Stratum Dynamics,Consulting,2024-12-08,2027-06-19,MEDIUM,read_only,FileServer_Corporate,True,2027-07-12,False,True,0,,,,A+,1794785.47,False,True
+VND-1280,Echo Services,DevOps Tooling,2021-12-15,2027-06-19,LOW,read_write,Analytics_DB|ERP|FileServer_Corporate,True,2027-09-19,True,True,0,,,,A,946853.94,False,False
+VND-1057,Pinnacle Integrations,Cloud Infrastructure,2021-12-25,2027-06-19,LOW,read_only,Data_Warehouse|Audit_Logs,True,2026-10-08,True,True,0,,,,B,563531.58,True,False
+VND-1209,Cascade Systems,Integration,2022-02-19,2027-06-19,HIGH,read_only,ERP|Data_Warehouse|Monitoring_Tools,True,2026-07-18,False,True,0,,,,A,610712.35,False,False
+VND-1227,Apex Group,Cloud Infrastructure,2023-08-25,2026-01-30,HIGH,read_write,S3_Buckets|Data_Warehouse,False,,False,False,0,,,,D,308668.49,False,True
+VND-1113,Nova Services,Data Warehousing,2023-08-26,2025-12-09,LOW,read_write,ERP|S3_Buckets|CI_CD_Pipeline,True,2026-04-09,True,True,0,,,,C,943529.15,False,False
+VND-1299,Stratum Partners,Integration,2023-04-06,2027-06-19,LOW,read_write,HR_System,True,2027-05-03,True,False,0,,,,A-,923598.24,False,False
+VND-1201,Nova Networks,Analytics,2022-12-15,2027-06-19,MEDIUM,read_only,Data_Warehouse,True,2026-07-09,True,True,0,,,,B,1731928.04,False,False
+VND-1076,Nova Services,Marketing Technology,2023-06-22,2027-06-19,HIGH,read_write,CI_CD_Pipeline,True,2026-04-30,True,False,0,,,,C,1467395.94,False,True
+VND-1263,Vertex Global,Software,2022-06-27,2027-06-19,LOW,read_write,S3_Buckets,True,2028-01-12,False,True,0,,,,A+,377913.63,False,False
+VND-1402,Horizon Networks,Backup & Disaster Recovery,2021-09-27,2027-06-19,MEDIUM,read_only,ERP,True,2028-05-28,False,True,0,,,,B+,1166251.09,False,False
+VND-1136,Fusion Labs,Integration,2023-01-20,2027-06-19,MEDIUM,read_only,S3_Buckets,True,2025-06-11,False,True,0,,,,C-,111803.8,False,False
+VND-1303,Prime Networks,DevOps Tooling,2022-01-26,2027-06-19,MEDIUM,read_only,Monitoring_Tools|FileServer_Corporate|S3_Buckets,True,2027-10-24,True,False,0,,,,B+,834795.99,False,False
+VND-1413,Nexus Labs,Legal,2021-04-16,2027-06-19,LOW,read_write,Ticketing_System|ERP,True,2027-02-12,True,False,0,,,,B,1463021.88,False,True
+VND-1370,Vantage Services,Analytics,2021-09-14,2027-06-19,MEDIUM,read_only,Data_Warehouse|CI_CD_Pipeline|Database_Primary,True,2027-03-26,False,True,0,,,,A-,473292.89,False,False
+VND-1401,Stratum Services,Payment Processor,2021-11-07,2027-06-19,MEDIUM,read_only,S3_Buckets|Monitoring_Tools,True,2026-10-17,True,True,0,,,,A-,283148.75,False,True
+VND-1185,Relay Dynamics,Managed Services,2024-11-04,2027-06-19,MEDIUM,read_only,Analytics_DB|HR_System,True,2027-05-23,False,True,1,2024-10-05,LOW,Third-party library supply-chain compromise,B-,545148.74,False,False
+VND-1156,Titan Dynamics,Security,2023-12-18,2027-06-19,HIGH,read_only,CI_CD_Pipeline|FileServer_Corporate|Ticketing_System,True,2028-05-19,True,False,0,,,,B+,233295.5,False,True
+VND-1032,Vertex Platforms,Payment Processor,2021-10-30,2027-06-19,HIGH,read_write,Database_Primary|Data_Warehouse|S3_Buckets,True,2027-10-15,True,True,1,2026-05-27,CRITICAL,Credential stuffing attack on admin portal,B,1722276.73,False,False
+VND-1211,Quantum Dynamics,Software,2023-07-01,2027-06-19,MEDIUM,read_only,Database_Primary,True,2026-07-27,False,False,0,,,,A,1394238.24,False,False
+VND-1135,Quantum Group,HR Technology,2022-12-24,2027-06-19,MEDIUM,read_only,FileServer_Corporate,True,2027-12-29,False,False,0,,,,C-,569899.11,False,False
+VND-1217,Vertex Platforms,SaaS,2022-05-09,2026-01-05,HIGH,read_write,HR_System|Email_Platform,True,2026-02-16,False,False,1,2024-04-28,MEDIUM,Unencrypted data exposed on cloud storage,C,1778561.81,False,True
+VND-1005,Stratum Cloud,Payment Processor,2021-12-01,2027-06-19,HIGH,read_only,S3_Buckets|ERP,True,2027-03-11,True,False,1,2026-01-29,MEDIUM,Third-party library supply-chain compromise,B,1979151.47,False,False
+VND-1307,Stratum Cloud,Software,2022-10-23,2027-06-19,MEDIUM,read_write,CRM|S3_Buckets|Analytics_DB,True,2028-02-14,True,True,0,,,,A,1128937.62,False,True
+VND-1091,Horizon Partners,Analytics,2023-02-06,2027-06-19,HIGH,read_write,Audit_Logs,False,,True,False,0,,,,C+,143595.28,False,False
+VND-1055,Nova Technologies,Marketing Technology,2022-09-22,2027-06-19,LOW,read_only,Ticketing_System|Identity_Provider|FileServer_Corporate,False,,False,False,0,,,,D,942708.96,True,False
+VND-1387,Stellar Global,Analytics,2021-01-14,2027-06-19,MEDIUM,read_write,Identity_Provider|CRM,True,2028-02-29,True,True,0,,,,A+,1712883.65,False,True
+VND-1350,Quantum Services,SaaS,2023-03-29,2027-06-19,LOW,read_only,Monitoring_Tools|FileServer_Corporate|Email_Platform,True,2027-06-13,True,True,0,,,,A-,1863478.52,False,False
+VND-1353,Pinnacle Platforms,Payment Processor,2024-03-27,2027-06-19,MEDIUM,read_write,FileServer_Corporate,True,2028-02-22,True,True,0,,,,B,1056213.53,False,True
+VND-1095,Fusion Systems,Managed Services,2021-10-21,2027-06-19,HIGH,read_write,S3_Buckets|FileServer_Corporate|HR_System,False,,True,True,0,,,,B-,1484528.43,False,False
+VND-1207,Fusion Works,SaaS,2023-12-31,2027-06-19,MEDIUM,read_only,Payment_Gateway|Audit_Logs,True,2026-08-03,True,True,0,,,,B,1651446.82,False,False
+VND-1359,Core Solutions,Consulting,2024-10-23,2027-06-19,MEDIUM,read_write,Payment_Gateway|Ticketing_System|Data_Warehouse,True,2026-10-07,True,False,0,,,,A-,1303232.31,False,False
+VND-1036,Fusion Services,Marketing Technology,2023-03-10,2027-06-19,HIGH,read_write,Identity_Provider|Audit_Logs,True,2026-09-23,True,False,1,2026-01-11,HIGH,Unencrypted data exposed on cloud storage,B,446649.05,False,False
+VND-1241,Prime Works,Integration,2023-02-02,2026-05-05,HIGH,read_write,HR_System|Ticketing_System|Data_Warehouse,False,,False,False,1,2025-04-18,LOW,SQL injection led to partial DB dump,C,525053.1,False,True
+VND-1009,Vantage Services,Integration,2021-11-20,2027-06-19,HIGH,read_write,Database_Primary|CI_CD_Pipeline,True,2027-08-31,True,False,1,2025-08-10,CRITICAL,Credential stuffing attack on admin portal,C,1752947.35,False,False
+VND-1298,Nova Systems,Software,2021-11-18,2027-06-19,MEDIUM,read_write,Audit_Logs|Backup_Storage|Identity_Provider,True,2028-06-05,True,True,0,,,,B+,1740137.11,False,False
+VND-1221,Titan Dynamics,Data Warehousing,2022-02-21,2025-12-28,HIGH,read_write,Monitoring_Tools,True,2026-01-11,False,False,1,2024-07-05,MEDIUM,Credential stuffing attack on admin portal,C,787555.69,False,True
+VND-1043,Vertex Networks,Integration,2024-04-28,2027-06-19,HIGH,read_only,Monitoring_Tools|Backup_Storage,False,,True,True,0,,,,D,498535.39,True,False
+VND-1238,Pinnacle Works,SaaS,2021-07-05,2026-04-17,HIGH,read_write,Ticketing_System,True,2025-10-24,False,False,0,,,,D,1654509.51,False,True
+VND-1395,Orbit Technologies,Security,2021-04-02,2027-06-19,MEDIUM,read_only,Payment_Gateway,True,2027-12-13,True,True,0,,,,A-,1373864.86,False,False
+VND-1225,Pinnacle Dynamics,SaaS,2022-06-23,2026-04-02,HIGH,read_write,HR_System|Identity_Provider|Data_Warehouse,True,2025-11-11,False,False,1,2025-03-20,LOW,Misconfigured API exposed internal records,C,1026455.94,False,True
+VND-1134,Relay Cloud,Consulting,2022-01-24,2027-06-19,MEDIUM,read_only,Audit_Logs,True,2027-08-18,True,True,0,,,,C-,1991979.13,False,False
+VND-1336,Nexus Integrations,Software,2023-11-13,2027-06-19,MEDIUM,read_write,Analytics_DB|CI_CD_Pipeline,True,2028-05-05,True,False,0,,,,A,1374326.42,False,False
+VND-1178,Atlas Platforms,Integration,2024-02-06,2027-06-19,LOW,read_only,FileServer_Corporate|Monitoring_Tools,True,2026-12-21,True,True,1,2024-07-02,LOW,Third-party library supply-chain compromise,A-,28805.84,False,False
+VND-1093,Summit Analytics,SaaS,2024-03-29,2027-06-19,HIGH,read_write,Payment_Gateway|HR_System|Monitoring_Tools,True,2025-08-15,True,True,0,,,,C+,969556.9,False,True
+VND-1219,Titan Systems,HR Technology,2021-05-19,2026-02-09,HIGH,read_write,Email_Platform,True,2025-05-20,False,False,0,,,,D,439328.45,False,True
+VND-1189,Vertex Technologies,Software,2022-09-13,2027-06-19,HIGH,read_only,Email_Platform,True,2027-11-09,True,False,1,2024-04-30,MEDIUM,Phishing campaign compromised employee accounts,B-,1320739.31,False,False
+VND-1031,Titan Works,Marketing Technology,2022-04-27,2027-06-19,HIGH,read_only,Ticketing_System|CRM|S3_Buckets,False,,True,True,1,2026-03-22,MEDIUM,Credential stuffing attack on admin portal,C,406268.57,False,False
+VND-1389,Titan Cloud,Consulting,2023-09-16,2027-06-19,LOW,read_only,Audit_Logs,True,2027-04-27,False,True,0,,,,A-,1653153.44,False,True
+VND-1317,Titan Cloud,Software,2021-11-11,2027-06-19,LOW,read_only,Data_Warehouse,True,2027-12-06,False,True,0,,,,B+,1436567.88,False,True
+VND-1380,Horizon Platforms,Software,2022-10-22,2027-06-19,MEDIUM,read_only,CRM,True,2027-07-03,True,False,0,,,,B,1051169.07,False,False
+VND-1132,Prime Analytics,HR Technology,2021-10-22,2027-06-19,MEDIUM,read_only,Monitoring_Tools|CI_CD_Pipeline,True,2025-10-24,False,True,0,,,,C-,1976166.51,False,False
+VND-1072,Cascade Partners,Analytics,2023-07-31,2027-06-19,HIGH,read_write,Database_Primary|Data_Warehouse,True,2026-02-20,False,True,0,,,,C,1611219.82,False,True
+VND-1279,Vertex Services,Analytics,2023-05-08,2027-06-19,LOW,read_only,S3_Buckets|CI_CD_Pipeline,True,2026-10-13,True,False,0,,,,B,80284.82,False,False
+VND-1007,Relay Platforms,Data Warehousing,2024-04-10,2027-06-19,HIGH,read_only,CI_CD_Pipeline|CRM,False,,True,False,1,2025-08-01,HIGH,SQL injection led to partial DB dump,A,1994678.3,False,False
+VND-1071,Relay Partners,Marketing Technology,2022-01-04,2027-06-19,HIGH,read_write,Analytics_DB,False,,False,True,0,,,,C+,167147.02,False,False
+VND-1314,Prime Labs,HR Technology,2023-12-23,2027-06-19,LOW,read_write,Database_Primary|FileServer_Corporate,True,2027-07-14,True,True,0,,,,A,1341187.55,False,True
+VND-1198,Orbit Systems,DevOps Tooling,2023-01-06,2027-06-19,HIGH,read_only,Audit_Logs,False,,False,True,1,2024-05-09,LOW,SQL injection led to partial DB dump,B-,281704.08,False,False
+VND-1188,Fusion Solutions,Data Warehousing,2024-02-29,2027-06-19,MEDIUM,read_only,Analytics_DB,True,2027-10-24,False,False,1,2024-08-14,MEDIUM,Insider threat — unauthorized data export,C,1366608.14,False,False
+VND-1169,Summit Global,Cloud Infrastructure,2022-03-10,2027-06-19,MEDIUM,read_only,CRM,False,,True,False,0,,,,B-,1496289.66,False,True
+VND-1052,Relay Platforms,Analytics,2024-03-10,2027-06-19,LOW,read_only,FileServer_Corporate|Ticketing_System|CI_CD_Pipeline,False,,True,False,0,,,,D,207474.81,True,False
+VND-1066,Horizon Cloud,Security,2024-12-15,2027-06-19,HIGH,read_write,S3_Buckets|Monitoring_Tools,True,2026-05-27,False,True,0,,,,B-,1586863.38,False,True
+VND-1150,Summit Networks,Software,2024-01-18,2027-06-19,MEDIUM,read_only,Audit_Logs|Data_Warehouse|HR_System,False,,False,True,0,,,,C,1703608.88,False,False
+VND-1002,Apex Labs,Marketing Technology,2021-11-23,2027-06-19,HIGH,read_write,Backup_Storage|Analytics_DB|ERP,False,,True,True,1,2026-03-16,MEDIUM,Ransomware encrypted backup files,C,319404.2,False,False
+VND-1346,Pinnacle Labs,Integration,2022-12-25,2027-06-19,LOW,read_only,S3_Buckets|Payment_Gateway|Ticketing_System,True,2026-12-14,True,True,0,,,,A+,408617.66,False,False
+VND-1116,Stratum Systems,Integration,2023-08-21,2026-02-15,MEDIUM,read_write,S3_Buckets,True,2028-02-18,True,True,0,,,,B,1962268.45,False,False
+VND-1341,Core Integrations,Consulting,2024-06-07,2027-06-19,MEDIUM,read_write,S3_Buckets|Audit_Logs,True,2028-03-18,True,False,0,,,,A+,415350.39,False,False
+VND-1056,Cascade Solutions,HR Technology,2021-03-23,2027-06-19,MEDIUM,read_only,Monitoring_Tools|Ticketing_System,False,,False,True,0,,,,D,508232.13,True,False
+VND-1223,Orbit Integrations,Cloud Infrastructure,2022-09-26,2026-02-18,HIGH,read_write,Analytics_DB|FileServer_Corporate|Database_Primary,False,,False,False,0,,,,D,1418722.21,False,True
+VND-1250,Fusion Global,HR Technology,2021-02-27,2026-03-20,HIGH,read_write,CI_CD_Pipeline|Ticketing_System|Data_Warehouse,True,2025-06-26,False,False,0,,,,D,292783.56,False,True
+VND-1216,Orbit Services,Marketing Technology,2024-11-15,2026-04-07,HIGH,read_write,Ticketing_System,True,2025-08-15,False,False,0,,,,D,418836.98,False,True
+VND-1039,Prime Works,Cloud Infrastructure,2024-06-26,2027-06-19,HIGH,read_only,Identity_Provider,True,2027-05-28,True,True,1,2025-11-29,CRITICAL,Credential stuffing attack on admin portal,A,261179.74,False,False
+VND-1151,Nexus Cloud,Security,2024-08-20,2027-06-19,HIGH,read_only,Analytics_DB|Database_Primary,False,,False,False,0,,,,B,1475869.61,False,True
+VND-1127,Core Works,HR Technology,2021-06-01,2026-04-13,LOW,read_write,Monitoring_Tools,False,,False,False,0,,,,C,1288253.79,False,False
+VND-1390,Horizon Analytics,Data Warehousing,2023-06-09,2027-06-19,LOW,read_write,CRM|Backup_Storage,True,2026-11-13,True,False,0,,,,A+,1543076.21,False,True
+VND-1026,Quantum Group,Cloud Infrastructure,2024-09-13,2027-06-19,HIGH,read_only,S3_Buckets,False,,True,False,1,2025-10-04,HIGH,Phishing campaign compromised employee accounts,A,663241.28,False,False
+VND-1252,Echo Networks,Cloud Infrastructure,2022-11-11,2026-01-06,HIGH,read_write,Payment_Gateway|S3_Buckets|HR_System,False,,False,False,0,,,,D,688110.5,False,True
+VND-1301,Cascade Analytics,Backup & Disaster Recovery,2024-06-23,2027-06-19,MEDIUM,read_only,Audit_Logs|CI_CD_Pipeline|Monitoring_Tools,True,2027-05-03,True,False,0,,,,B+,732956.15,False,True
+VND-1167,Stratum Dynamics,Managed Services,2023-03-07,2027-06-19,MEDIUM,read_only,Email_Platform,True,2027-11-17,True,False,0,,,,B-,414640.1,False,True
+VND-1050,Horizon Technologies,Cloud Infrastructure,2022-06-02,2027-06-19,MEDIUM,read_only,CRM|Backup_Storage,True,2027-12-12,True,False,0,,,,B,140033.44,True,False
+VND-1038,Pinnacle Labs,DevOps Tooling,2023-05-14,2027-06-19,HIGH,read_write,HR_System|Identity_Provider,True,2027-10-10,False,False,1,2025-08-07,HIGH,Ransomware encrypted backup files,A,48572.74,False,False
+VND-1069,Vertex Works,Backup & Disaster Recovery,2021-03-15,2027-06-19,HIGH,read_write,HR_System|CRM|Monitoring_Tools,True,2025-05-26,False,True,0,,,,C,1371955.15,False,False
+VND-1343,Orbit Cloud,Software,2024-12-18,2027-06-19,LOW,read_write,Analytics_DB,True,2028-04-02,True,True,0,,,,A,784316.32,False,False
+VND-1249,Quantum Integrations,DevOps Tooling,2023-03-07,2026-04-30,HIGH,read_write,Analytics_DB|HR_System,False,,False,False,1,2024-06-14,MEDIUM,Unencrypted data exposed on cloud storage,C,480736.75,False,True
+VND-1118,Prime Systems,Marketing Technology,2022-02-13,2025-05-16,MEDIUM,read_only,Monitoring_Tools,True,2027-07-14,True,False,0,,,,B,1867408.25,False,False
+VND-1161,Apex Labs,Cloud Infrastructure,2022-09-04,2027-06-19,MEDIUM,read_only,Backup_Storage|Email_Platform,True,2027-05-03,True,False,0,,,,B-,764760.17,False,True
+VND-1397,Stratum Networks,HR Technology,2021-10-17,2027-06-19,LOW,read_write,Database_Primary|Payment_Gateway|Ticketing_System,True,2027-06-08,False,True,0,,,,A,1813020.17,False,True
+VND-1420,Vertex Labs,Managed Services,2024-06-02,2027-06-19,MEDIUM,read_write,Ticketing_System,True,2028-02-08,True,True,0,,,,A,1958722.74,False,False
+VND-1130,Nova Works,DevOps Tooling,2021-02-28,2027-06-19,LOW,read_only,FileServer_Corporate,True,2025-09-03,True,True,0,,,,C,1897608.24,False,False
+VND-1082,Nova Cloud,Consulting,2022-03-21,2027-06-19,HIGH,read_write,Data_Warehouse|CRM,True,2026-01-26,False,False,0,,,,C,1712345.88,False,False
+VND-1097,Echo Solutions,Consulting,2023-05-31,2025-05-28,LOW,read_write,Ticketing_System,True,2027-04-25,True,False,0,,,,C,1359653.61,False,False
+VND-1075,Quantum Integrations,Marketing Technology,2022-12-23,2027-06-19,HIGH,read_write,Payment_Gateway,True,2026-01-23,True,True,0,,,,C,1245573.41,False,True
+VND-1129,Stratum Services,Managed Services,2024-07-04,2026-03-28,MEDIUM,read_write,HR_System|Email_Platform,True,2027-04-06,False,False,0,,,,C,1285564.98,False,False
+VND-1306,Summit Works,Legal,2024-01-27,2027-06-19,MEDIUM,read_write,Payment_Gateway|CRM,True,2028-02-23,True,True,0,,,,A,427328.27,False,False
+VND-1128,Core Dynamics,Data Warehousing,2021-04-24,2025-10-31,MEDIUM,read_only,ERP,True,2026-04-13,True,False,0,,,,B,615207.84,False,False
+VND-1281,Core Labs,Data Warehousing,2022-11-10,2027-06-19,MEDIUM,read_only,Email_Platform|Ticketing_System,True,2027-07-28,False,False,0,,,,A-,595161.73,False,False
+VND-1186,Fusion Services,Payment Processor,2024-07-04,2027-06-19,LOW,read_only,Payment_Gateway|Identity_Provider,False,,False,True,1,2024-11-13,LOW,SQL injection led to partial DB dump,B-,222875.01,False,False
+VND-1184,Core Solutions,Cloud Infrastructure,2021-07-03,2027-06-19,MEDIUM,read_only,HR_System|Ticketing_System,False,,False,True,1,2024-07-12,LOW,SQL injection led to partial DB dump,A-,1200107.16,False,False
+VND-1083,Nova Platforms,Analytics,2022-01-24,2027-06-19,HIGH,read_write,Data_Warehouse,False,,True,True,0,,,,C,192430.11,False,False
+VND-1064,Horizon Global,Marketing Technology,2023-11-06,2027-06-19,HIGH,read_write,Database_Primary|ERP,True,2025-11-18,False,True,0,,,,B-,1454841.46,False,True
+VND-1042,Vantage Platforms,Consulting,2024-07-25,2027-06-19,HIGH,read_only,ERP|Payment_Gateway,True,2028-01-31,False,True,1,2026-02-04,HIGH,Credential stuffing attack on admin portal,C,360512.55,False,False
+VND-1049,Stellar Services,Cloud Infrastructure,2021-04-22,2027-06-19,MEDIUM,read_only,Ticketing_System|CI_CD_Pipeline|HR_System,False,,False,True,0,,,,B,1279360.61,True,False
+VND-1256,Relay Systems,Managed Services,2024-05-18,2027-06-19,MEDIUM,read_only,Identity_Provider|Monitoring_Tools,True,2027-10-22,True,True,0,,,,A,1135444.99,False,True
+VND-1149,Nexus Global,Data Warehousing,2021-03-16,2027-06-19,LOW,read_only,Audit_Logs|HR_System,True,2025-11-17,False,True,0,,,,D,1873851.4,False,False
+VND-1339,Vantage Platforms,Managed Services,2022-06-06,2027-06-19,MEDIUM,read_write,Identity_Provider|Data_Warehouse,True,2028-04-28,True,True,0,,,,A-,1719515.96,False,False
+VND-1105,Echo Partners,Managed Services,2021-03-22,2025-10-05,LOW,read_write,Data_Warehouse,False,,False,True,0,,,,C,1982062.19,False,False
+VND-1231,Prime Cloud,Data Warehousing,2024-01-25,2026-02-11,HIGH,read_write,ERP,True,2025-10-09,False,False,0,,,,D,22691.99,False,True
+VND-1312,Nova Technologies,Data Warehousing,2022-10-23,2027-06-19,MEDIUM,read_only,FileServer_Corporate|S3_Buckets|Monitoring_Tools,True,2027-02-22,False,True,0,,,,A,1235061.27,False,False
+VND-1018,Titan Integrations,SaaS,2024-10-14,2027-06-19,HIGH,read_only,S3_Buckets,False,,True,True,1,2026-05-15,CRITICAL,SQL injection led to partial DB dump,C,248574.36,False,False
+VND-1294,Orbit Services,Data Warehousing,2021-07-10,2027-06-19,LOW,read_only,Monitoring_Tools|HR_System,True,2027-12-09,False,True,0,,,,A,236525.68,False,False
+VND-1308,Nova Partners,Cloud Infrastructure,2022-02-14,2027-06-19,MEDIUM,read_write,Analytics_DB|ERP,True,2027-02-12,True,False,0,,,,B+,1369946.75,False,True
+VND-1234,Quantum Global,DevOps Tooling,2023-12-01,2026-05-17,HIGH,read_write,CI_CD_Pipeline|Identity_Provider,False,,False,False,0,,,,D,1949364.03,False,True
+VND-1335,Relay Partners,Cloud Infrastructure,2024-09-17,2027-06-19,LOW,read_only,HR_System|CRM,True,2028-05-22,False,True,0,,,,A,903914.69,False,False
+VND-1384,Stratum Cloud,Backup & Disaster Recovery,2023-05-01,2027-06-19,MEDIUM,read_only,CRM|S3_Buckets|Monitoring_Tools,True,2027-03-19,False,True,0,,,,A,1157361.68,False,False
+VND-1163,Quantum Cloud,Cloud Infrastructure,2023-04-04,2027-06-19,MEDIUM,read_only,Identity_Provider|Email_Platform,True,2026-11-05,True,False,0,,,,A-,442365.73,False,True
+VND-1325,Apex Analytics,Payment Processor,2022-03-30,2027-06-19,MEDIUM,read_only,Backup_Storage|ERP|Audit_Logs,True,2027-03-08,True,True,0,,,,B,725377.14,False,False
+VND-1030,Core Labs,HR Technology,2024-05-27,2027-06-19,HIGH,read_write,Monitoring_Tools|Identity_Provider|Data_Warehouse,True,2027-04-20,True,False,1,2026-01-24,CRITICAL,Third-party library supply-chain compromise,C,889898.0,False,False
+VND-1233,Echo Group,Integration,2023-10-05,2025-12-23,HIGH,read_write,ERP,True,2026-03-05,False,False,1,2024-05-03,MEDIUM,Credential stuffing attack on admin portal,C,1426188.42,False,True
+VND-1381,Vantage Systems,HR Technology,2024-08-07,2027-06-19,LOW,read_only,Audit_Logs|Email_Platform,True,2027-04-01,False,False,0,,,,A,1251701.26,False,False
+VND-1288,Atlas Global,Software,2022-06-08,2027-06-19,LOW,read_only,FileServer_Corporate|Ticketing_System|Database_Primary,True,2026-10-25,False,True,0,,,,A+,1327320.13,False,False
+VND-1270,Horizon Works,Marketing Technology,2022-09-13,2027-06-19,MEDIUM,read_only,Email_Platform|Backup_Storage,True,2026-10-07,True,True,0,,,,A+,988322.23,False,True
+VND-1304,Apex Dynamics,Legal,2021-04-10,2027-06-19,LOW,read_write,Backup_Storage|Audit_Logs|Ticketing_System,True,2028-02-09,True,False,0,,,,B+,971034.61,False,False
+VND-1398,Nova Networks,Software,2021-01-18,2027-06-19,LOW,read_write,S3_Buckets,True,2027-06-21,False,True,0,,,,A,1324141.92,False,False
+VND-1112,Apex Platforms,Cloud Infrastructure,2023-03-23,2026-01-30,MEDIUM,read_write,CI_CD_Pipeline|CRM|Payment_Gateway,False,,True,True,0,,,,C,1989105.45,False,False
+VND-1367,Summit Systems,Marketing Technology,2023-06-01,2027-06-19,LOW,read_write,Identity_Provider|S3_Buckets,True,2028-01-18,False,True,0,,,,A-,24363.79,False,False
+VND-1054,Cascade Solutions,Software,2022-04-24,2027-06-19,HIGH,read_only,Payment_Gateway|Audit_Logs,False,,False,True,0,,,,C,238404.84,True,False
+VND-1088,Atlas Platforms,Software,2021-08-10,2027-06-19,HIGH,read_write,Data_Warehouse|FileServer_Corporate,True,2025-10-16,True,False,0,,,,C+,1799540.86,False,False
+VND-1205,Stellar Integrations,Software,2022-07-05,2027-06-19,HIGH,read_only,Backup_Storage|Payment_Gateway|Identity_Provider,True,2026-07-21,True,True,0,,,,A,160277.38,False,False
+VND-1417,Nexus Networks,Legal,2024-03-31,2027-06-19,LOW,read_only,FileServer_Corporate|Audit_Logs,True,2028-04-14,True,True,0,,,,A-,1539338.85,False,False
+VND-1124,Vantage Services,Marketing Technology,2022-06-18,2025-07-21,MEDIUM,read_write,Data_Warehouse|CRM|Ticketing_System,False,,True,True,0,,,,B,578297.99,False,False
+VND-1041,Vantage Cloud,Marketing Technology,2022-09-10,2027-06-19,HIGH,read_only,CRM|S3_Buckets|Ticketing_System,False,,True,True,1,2025-07-24,CRITICAL,Phishing campaign compromised employee accounts,B,1567444.34,False,False
+VND-1266,Prime Labs,Payment Processor,2021-09-16,2027-06-19,LOW,read_only,Backup_Storage,True,2027-03-07,True,True,0,,,,A+,165953.36,False,True
+VND-1063,Quantum Networks,Backup & Disaster Recovery,2021-10-24,2027-06-19,MEDIUM,read_only,Payment_Gateway|Data_Warehouse,True,2028-01-13,False,False,0,,,,D,1202761.42,True,False
+VND-1062,Vantage Networks,SaaS,2024-08-19,2027-06-19,LOW,read_only,Audit_Logs,False,,False,True,0,,,,D,1865979.59,True,False
+VND-1262,Core Solutions,Analytics,2024-09-17,2027-06-19,LOW,read_write,Audit_Logs|CRM|FileServer_Corporate,True,2026-09-20,True,False,0,,,,B,61214.03,False,False
+VND-1230,Cascade Systems,Consulting,2022-02-15,2026-03-18,HIGH,read_write,Ticketing_System|CI_CD_Pipeline,False,,False,False,0,,,,D,1249207.87,False,True
+VND-1277,Relay Solutions,Cloud Infrastructure,2023-11-14,2027-06-19,MEDIUM,read_write,CI_CD_Pipeline|Email_Platform|Monitoring_Tools,True,2027-10-28,True,True,0,,,,A,1191607.36,False,False
+VND-1344,Quantum Analytics,SaaS,2024-06-01,2027-06-19,LOW,read_only,S3_Buckets,True,2027-06-13,True,False,0,,,,A,1862063.13,False,False
+VND-1214,Orbit Partners,Security,2022-03-21,2025-12-31,HIGH,read_write,CRM,True,2025-11-20,False,False,0,,,,D,288626.15,False,True
+VND-1078,Cascade Solutions,Managed Services,2022-04-08,2027-06-19,HIGH,read_write,S3_Buckets|Backup_Storage|Audit_Logs,True,2026-04-21,False,True,0,,,,C+,1119052.11,False,True
+VND-1254,Atlas Integrations,SaaS,2022-11-21,2026-03-06,HIGH,read_write,Monitoring_Tools|HR_System,True,2025-07-14,False,False,0,,,,D,1951962.74,False,True
+VND-1143,Cascade Global,Backup & Disaster Recovery,2022-12-03,2027-06-19,LOW,read_only,CI_CD_Pipeline|Monitoring_Tools|S3_Buckets,True,2026-03-22,True,False,0,,,,D,1736632.26,False,False
+VND-1218,Stellar Platforms,DevOps Tooling,2024-03-10,2026-06-06,HIGH,read_write,CI_CD_Pipeline|Email_Platform,True,2026-01-07,False,False,0,,,,D,1369054.68,False,True
+VND-1286,Nexus Solutions,DevOps Tooling,2021-04-04,2027-06-19,LOW,read_only,Ticketing_System|Identity_Provider,True,2027-07-27,False,True,0,,,,A-,1458385.5,False,False
+VND-1315,Atlas Global,Marketing Technology,2021-08-21,2027-06-19,MEDIUM,read_only,Email_Platform|Audit_Logs,True,2027-08-11,False,False,0,,,,B,1450711.46,False,True
+VND-1027,Vantage Global,Analytics,2022-01-01,2027-06-19,HIGH,read_only,Email_Platform|Database_Primary|FileServer_Corporate,True,2026-10-15,True,False,1,2025-08-08,CRITICAL,Ransomware encrypted backup files,B,1197176.8,False,False
+VND-1396,Summit Systems,Consulting,2024-11-21,2027-06-19,LOW,read_only,Ticketing_System,True,2027-02-15,False,True,0,,,,A+,905622.53,False,True
+VND-1033,Cascade Technologies,Marketing Technology,2023-08-10,2027-06-19,HIGH,read_only,Monitoring_Tools|S3_Buckets|Identity_Provider,False,,False,True,1,2025-08-01,MEDIUM,Insider threat — unauthorized data export,A,1229178.12,False,False
+VND-1148,Summit Analytics,Analytics,2024-08-15,2027-06-19,LOW,read_only,HR_System,True,2025-05-27,False,True,0,,,,C-,1308074.47,False,False
+VND-1320,Atlas Works,Software,2021-03-05,2027-06-19,LOW,read_write,Analytics_DB|Email_Platform,True,2027-10-12,False,True,0,,,,A-,447532.79,False,False
+VND-1337,Echo Partners,Integration,2021-11-03,2027-06-19,MEDIUM,read_only,CRM|HR_System|Identity_Provider,True,2028-03-05,False,False,0,,,,A,1804200.35,False,False
+VND-1258,Cascade Cloud,Integration,2021-12-07,2027-06-19,LOW,read_only,Audit_Logs|Data_Warehouse,True,2027-10-17,False,False,0,,,,A-,763638.02,False,False
+VND-1403,Stellar Partners,Data Warehousing,2024-03-02,2027-06-19,LOW,read_only,Monitoring_Tools,True,2027-12-01,True,True,0,,,,A-,144949.94,False,False
+VND-1119,Nova Works,Software,2022-11-11,2025-09-28,MEDIUM,read_only,CRM|S3_Buckets,False,,False,True,0,,,,C,742358.16,False,False
+VND-1123,Fusion Networks,Marketing Technology,2021-06-07,2025-05-16,MEDIUM,read_only,ERP|Email_Platform|Analytics_DB,True,2027-10-01,False,False,0,,,,C,802087.75,False,False
+VND-1319,Titan Labs,Legal,2024-04-14,2027-06-19,MEDIUM,read_only,HR_System,True,2028-06-11,True,True,0,,,,B+,721823.28,False,False
+VND-1361,Horizon Group,Consulting,2022-10-11,2027-06-19,MEDIUM,read_write,Ticketing_System|CI_CD_Pipeline|ERP,True,2027-03-01,True,False,0,,,,B,1214716.1,False,False
+VND-1326,Nexus Partners,HR Technology,2021-06-17,2027-06-19,MEDIUM,read_write,ERP|Data_Warehouse,True,2027-01-06,True,True,0,,,,B+,1081849.89,False,False
+VND-1383,Summit Solutions,Payment Processor,2023-11-30,2027-06-19,MEDIUM,read_write,CRM,True,2026-11-28,False,False,0,,,,A+,1453092.15,False,True
+VND-1245,Stratum Networks,Cloud Infrastructure,2021-06-29,2026-01-03,HIGH,read_write,S3_Buckets|HR_System,True,2025-11-20,False,False,1,2025-01-13,MEDIUM,Insider threat — unauthorized data export,C,844277.29,False,True
+VND-1125,Horizon Partners,Consulting,2024-12-24,2025-10-10,LOW,read_write,Ticketing_System,True,2026-12-15,True,False,0,,,,B,1783750.05,False,False
+VND-1202,Fusion Works,Legal,2024-06-03,2027-06-19,MEDIUM,read_only,Backup_Storage|HR_System|Ticketing_System,True,2026-08-03,False,True,0,,,,A,287077.58,False,False
+VND-1084,Quantum Technologies,Marketing Technology,2024-03-02,2027-06-19,HIGH,read_write,HR_System,False,,False,True,0,,,,C,1661337.5,False,True
+VND-1340,Echo Solutions,Backup & Disaster Recovery,2021-01-15,2027-06-19,MEDIUM,read_write,Payment_Gateway|CI_CD_Pipeline,True,2028-04-30,True,True,0,,,,A-,1610531.43,False,False
+VND-1404,Core Platforms,Analytics,2023-06-27,2027-06-19,LOW,read_only,Email_Platform|HR_System|S3_Buckets,True,2027-08-09,False,False,0,,,,A-,383987.87,False,True
+VND-1271,Pinnacle Cloud,Integration,2024-05-23,2027-06-19,LOW,read_only,HR_System|CRM|Identity_Provider,True,2027-08-11,True,True,0,,,,A,430667.1,False,False
+VND-1047,Stratum Analytics,Consulting,2024-12-10,2027-06-19,MEDIUM,read_only,Email_Platform|ERP,True,2027-11-26,False,True,0,,,,D,510293.32,True,False
+VND-1235,Stellar Partners,DevOps Tooling,2023-03-19,2026-05-19,HIGH,read_write,FileServer_Corporate,True,2025-10-03,False,False,0,,,,D,875615.93,False,True
+VND-1094,Quantum Labs,Integration,2024-02-23,2027-06-19,HIGH,read_write,Database_Primary|Ticketing_System|Monitoring_Tools,True,2025-08-29,False,True,0,,,,C+,1660626.97,False,True
+VND-1067,Horizon Works,SaaS,2023-06-21,2027-06-19,HIGH,read_write,Data_Warehouse,True,2025-08-20,False,True,0,,,,B-,40541.72,False,False
+VND-1224,Vertex Analytics,Backup & Disaster Recovery,2023-11-26,2025-12-12,HIGH,read_write,Email_Platform|HR_System|Analytics_DB,False,,False,False,0,,,,D,262591.91,False,True
+VND-1037,Stratum Systems,Data Warehousing,2023-03-18,2027-06-19,HIGH,read_write,Database_Primary|FileServer_Corporate|Monitoring_Tools,True,2028-06-15,True,True,1,2026-01-04,HIGH,Ransomware encrypted backup files,B,862939.41,False,False
+VND-1318,Quantum Global,Analytics,2023-04-15,2027-06-19,LOW,read_only,Data_Warehouse|Monitoring_Tools,True,2028-04-27,True,True,0,,,,A+,814851.56,False,False
+VND-1382,Vertex Global,Data Warehousing,2021-06-13,2027-06-19,MEDIUM,read_only,FileServer_Corporate|Analytics_DB,True,2027-04-18,True,False,0,,,,A-,1120459.58,False,False
+VND-1244,Prime Global,Managed Services,2022-07-18,2025-12-17,HIGH,read_write,Data_Warehouse|Audit_Logs,True,2025-12-19,False,False,0,,,,D,305776.5,False,True
+VND-1204,Nova Services,DevOps Tooling,2024-09-05,2027-06-19,MEDIUM,read_only,ERP,True,2026-08-17,True,True,0,,,,A,506857.71,False,False
+VND-1197,Atlas Platforms,HR Technology,2021-10-10,2027-06-19,MEDIUM,read_only,S3_Buckets|Payment_Gateway|HR_System,False,,False,False,1,2024-02-04,LOW,Phishing campaign compromised employee accounts,B,978473.73,False,False
+VND-1349,Relay Works,Cloud Infrastructure,2023-09-15,2027-06-19,MEDIUM,read_write,Email_Platform,True,2028-01-01,True,True,0,,,,A,144432.98,False,True
+VND-1278,Pinnacle Services,Software,2024-12-27,2027-06-19,MEDIUM,read_write,Ticketing_System|CRM|HR_System,True,2027-08-15,True,False,0,,,,A+,1039414.24,False,False
+VND-1176,Echo Cloud,Analytics,2024-01-03,2027-06-19,HIGH,read_only,Database_Primary|Email_Platform,False,,True,False,1,2024-03-13,MEDIUM,Insider threat — unauthorized data export,A-,1628182.87,False,False
+VND-1222,Titan Services,Legal,2023-06-15,2025-12-29,HIGH,read_write,Identity_Provider|Database_Primary|CRM,True,2025-07-21,False,False,0,,,,D,181563.47,False,True
+VND-1117,Horizon Technologies,Cloud Infrastructure,2022-12-23,2026-02-09,LOW,read_only,Monitoring_Tools|Backup_Storage|Audit_Logs,False,,True,True,0,,,,B,358427.36,False,False
+VND-1025,Core Systems,Managed Services,2022-11-12,2027-06-19,HIGH,read_only,Identity_Provider|ERP,True,2027-03-17,False,False,1,2026-04-30,CRITICAL,SQL injection led to partial DB dump,C,326803.71,False,False
+VND-1220,Echo Services,Software,2024-12-30,2026-05-25,HIGH,read_write,Backup_Storage|Payment_Gateway|CI_CD_Pipeline,True,2025-11-27,False,False,0,,,,D,810532.05,False,True
+VND-1179,Quantum Group,Data Warehousing,2024-11-18,2027-06-19,MEDIUM,read_only,Audit_Logs|ERP|Database_Primary,True,2026-10-30,True,True,1,2025-01-20,MEDIUM,Misconfigured API exposed internal records,C,1849076.94,False,False
+VND-1206,Fusion Networks,Security,2022-11-02,2027-06-19,MEDIUM,read_only,Database_Primary|Backup_Storage|S3_Buckets,True,2026-08-15,True,False,0,,,,A-,1695862.98,False,False
+VND-1355,Stratum Services,Payment Processor,2022-07-06,2027-06-19,LOW,read_write,Monitoring_Tools|Analytics_DB,True,2027-03-27,True,True,0,,,,B,375988.21,False,False
+VND-1374,Vantage Group,Software,2023-06-09,2027-06-19,LOW,read_write,Database_Primary|HR_System,True,2027-04-28,False,True,0,,,,B+,1590836.89,False,False
+VND-1309,Vantage Integrations,DevOps Tooling,2024-10-15,2027-06-19,LOW,read_only,Identity_Provider|CI_CD_Pipeline|Monitoring_Tools,True,2027-12-24,True,True,0,,,,A-,1126928.4,False,False
+VND-1120,Pinnacle Labs,SaaS,2023-05-20,2025-11-26,MEDIUM,read_only,Backup_Storage,True,2028-03-01,False,True,0,,,,C,1208882.06,False,False
+VND-1196,Cascade Integrations,Managed Services,2024-10-11,2027-06-19,MEDIUM,read_only,Ticketing_System|Data_Warehouse|Audit_Logs,True,2027-09-12,False,False,1,2024-07-03,MEDIUM,Misconfigured API exposed internal records,C,1184435.05,False,False
+VND-1194,Quantum Labs,Integration,2024-07-13,2027-06-19,LOW,read_only,Analytics_DB,False,,True,True,1,2024-02-01,LOW,SQL injection led to partial DB dump,C,1284552.96,False,False
+VND-1021,Apex Partners,DevOps Tooling,2024-02-10,2027-06-19,HIGH,read_only,CRM|Data_Warehouse,True,2028-03-11,True,True,1,2025-08-03,MEDIUM,Insider threat — unauthorized data export,B,277239.32,False,False
+VND-1137,Orbit Partners,HR Technology,2021-09-01,2027-06-19,LOW,read_only,CRM,True,2027-06-30,True,True,0,,,,C-,793868.39,False,False
+VND-1208,Relay Technologies,HR Technology,2023-09-21,2027-06-19,HIGH,read_only,FileServer_Corporate|Database_Primary,True,2026-07-25,False,False,0,,,,A-,208153.74,False,False
+VND-1364,Stellar Dynamics,DevOps Tooling,2021-12-16,2027-06-19,LOW,read_write,FileServer_Corporate,True,2027-01-24,True,True,0,,,,A-,1330462.78,False,False
+VND-1195,Titan Integrations,SaaS,2024-01-05,2027-06-19,LOW,read_only,CI_CD_Pipeline,True,2027-06-29,False,False,1,2024-07-21,LOW,Insider threat — unauthorized data export,C,658709.97,False,False
+VND-1183,Atlas Analytics,Consulting,2021-08-07,2027-06-19,LOW,read_only,Database_Primary,False,,True,True,1,2024-03-13,LOW,Credential stuffing attack on admin portal,B,1886490.85,False,False
+VND-1300,Vantage Platforms,Integration,2021-03-15,2027-06-19,MEDIUM,read_only,Database_Primary|Backup_Storage|FileServer_Corporate,True,2026-10-05,False,True,0,,,,B+,1585648.74,False,False
+VND-1210,Nexus Systems,Integration,2024-07-05,2027-06-19,HIGH,read_only,Identity_Provider|Payment_Gateway,True,2026-07-13,True,False,0,,,,A,1314415.6,False,False
+VND-1086,Relay Analytics,Cloud Infrastructure,2021-12-23,2027-06-19,HIGH,read_write,FileServer_Corporate|HR_System,False,,False,True,0,,,,B-,1486018.93,False,False
+VND-1253,Stellar Integrations,Legal,2021-10-18,2026-04-25,HIGH,read_write,CI_CD_Pipeline,True,2026-06-07,False,False,1,2024-03-09,MEDIUM,Unencrypted data exposed on cloud storage,C,1921511.91,False,True
+VND-1092,Stratum Systems,HR Technology,2024-02-25,2027-06-19,HIGH,read_write,Monitoring_Tools|Audit_Logs|FileServer_Corporate,True,2026-04-13,True,False,0,,,,B-,827509.18,False,False
+VND-1333,Nexus Technologies,Consulting,2024-05-17,2027-06-19,LOW,read_write,CRM|Monitoring_Tools|Audit_Logs,True,2027-02-17,True,False,0,,,,A,835081.23,False,False
+VND-1115,Echo Integrations,Payment Processor,2021-10-22,2026-02-16,MEDIUM,read_only,Backup_Storage|Database_Primary,False,,True,False,0,,,,B,1233471.07,False,False
+VND-1261,Stratum Cloud,Data Warehousing,2024-01-12,2027-06-19,LOW,read_write,Ticketing_System|ERP,True,2027-11-10,True,True,0,,,,A,482721.09,False,False
+VND-1177,Fusion Services,Marketing Technology,2023-03-24,2027-06-19,LOW,read_only,CI_CD_Pipeline,False,,False,True,1,2024-02-03,LOW,Credential stuffing attack on admin portal,C,1919002.61,False,False
+VND-1215,Fusion Platforms,Consulting,2021-10-14,2026-05-09,HIGH,read_write,Email_Platform,True,2025-12-04,False,False,0,,,,D,1292794.93,False,True
+VND-1332,Fusion Works,DevOps Tooling,2022-12-08,2027-06-19,MEDIUM,read_only,Audit_Logs|Data_Warehouse,True,2027-11-06,True,False,0,,,,B,1212379.85,False,False
+VND-1152,Atlas Works,Integration,2023-11-22,2027-06-19,HIGH,read_only,HR_System|Payment_Gateway,False,,True,False,0,,,,B+,1341819.15,False,True
+VND-1251,Stratum Services,Managed Services,2023-10-02,2026-04-22,HIGH,read_write,HR_System,True,2025-10-09,False,False,0,,,,D,121774.27,False,True
+VND-1153,Pinnacle Platforms,Payment Processor,2023-07-04,2027-06-19,MEDIUM,read_only,Monitoring_Tools|ERP,True,2026-09-23,True,False,0,,,,B+,1169096.9,False,True
+VND-1181,Nova Solutions,Integration,2022-04-21,2027-06-19,HIGH,read_only,Monitoring_Tools,True,2027-09-06,True,False,1,2023-10-03,MEDIUM,Ransomware encrypted backup files,B+,1214285.8,False,False
+VND-1046,Cascade Labs,Cloud Infrastructure,2021-07-10,2027-06-19,MEDIUM,read_only,Identity_Provider|Payment_Gateway,True,2028-02-01,True,True,0,,,,D,1386656.44,True,False
+VND-1101,Nexus Solutions,Backup & Disaster Recovery,2024-07-20,2026-02-14,MEDIUM,read_only,Payment_Gateway,False,,False,False,0,,,,B,1812786.24,False,False
+VND-1110,Fusion Partners,HR Technology,2023-06-22,2025-11-03,MEDIUM,read_only,Ticketing_System|S3_Buckets,True,2027-04-03,True,False,0,,,,B,769926.14,False,False
+VND-1289,Stellar Group,Legal,2024-11-05,2027-06-19,LOW,read_only,Database_Primary|ERP|Payment_Gateway,True,2028-01-15,True,True,0,,,,A+,1326712.51,False,False
+VND-1014,Vantage Solutions,Software,2023-06-02,2027-06-19,HIGH,read_write,Backup_Storage|Payment_Gateway,False,,False,False,1,2025-10-15,MEDIUM,Insider threat — unauthorized data export,C,939379.09,False,False
+VND-1276,Quantum Services,HR Technology,2022-09-18,2027-06-19,LOW,read_only,Email_Platform|Payment_Gateway|Data_Warehouse,True,2026-09-25,True,True,0,,,,B+,1704656.48,False,True
+VND-1028,Apex Dynamics,Data Warehousing,2024-01-08,2027-06-19,HIGH,read_only,Payment_Gateway|Analytics_DB|Audit_Logs,True,2027-12-07,True,False,1,2026-02-04,CRITICAL,Credential stuffing attack on admin portal,B,149247.88,False,False
+VND-1369,Stellar Services,SaaS,2024-07-28,2027-06-19,MEDIUM,read_write,Data_Warehouse|ERP,True,2027-03-22,True,True,0,,,,B,1403940.47,False,True
+VND-1173,Pinnacle Labs,DevOps Tooling,2023-09-28,2027-06-19,HIGH,read_only,Audit_Logs|Identity_Provider|HR_System,True,2027-08-28,True,False,0,,,,B+,1468216.75,False,True
+VND-1324,Titan Global,Payment Processor,2022-10-13,2027-06-19,MEDIUM,read_write,Data_Warehouse|Analytics_DB,True,2028-06-12,True,False,0,,,,A-,1236521.44,False,False
+VND-1121,Core Technologies,Legal,2023-06-29,2026-03-18,MEDIUM,read_only,Data_Warehouse|Database_Primary,False,,False,True,0,,,,B,1456360.65,False,False
+VND-1264,Pinnacle Integrations,Cloud Infrastructure,2021-11-06,2027-06-19,MEDIUM,read_write,CRM|FileServer_Corporate|Monitoring_Tools,True,2027-05-06,False,True,0,,,,A,694144.86,False,False
+VND-1357,Apex Technologies,Integration,2023-10-21,2027-06-19,LOW,read_write,Monitoring_Tools,True,2028-01-14,True,True,0,,,,B+,1572812.54,False,False
+VND-1338,Core Dynamics,Integration,2023-01-29,2027-06-19,LOW,read_only,Backup_Storage,True,2026-09-18,False,True,0,,,,A+,466677.65,False,False
+VND-1114,Echo Platforms,SaaS,2022-08-14,2025-08-07,LOW,read_write,Ticketing_System,False,,True,True,0,,,,B,252478.21,False,False
+VND-1259,Nexus Networks,SaaS,2021-03-10,2027-06-19,MEDIUM,read_only,Database_Primary|Analytics_DB,True,2027-05-05,True,True,0,,,,B+,529644.14,False,True
+VND-1087,Vantage Networks,Backup & Disaster Recovery,2022-03-30,2027-06-19,HIGH,read_write,FileServer_Corporate|CI_CD_Pipeline|S3_Buckets,True,2025-08-19,False,False,0,,,,C,1818415.86,False,False
+VND-1229,Echo Systems,Integration,2021-05-22,2026-01-14,HIGH,read_write,Ticketing_System|S3_Buckets,True,2026-02-24,False,False,1,2024-09-02,LOW,SQL injection led to partial DB dump,C,1691244.54,False,True
+VND-1157,Cascade Solutions,Software,2022-02-25,2027-06-19,MEDIUM,read_only,Audit_Logs|FileServer_Corporate|Email_Platform,False,,True,False,0,,,,B+,896510.56,False,True
+VND-1368,Atlas Group,Analytics,2021-06-12,2027-06-19,MEDIUM,read_only,Identity_Provider|Email_Platform,True,2027-10-21,True,False,0,,,,B+,1531431.21,False,True
+VND-1351,Vertex Cloud,Payment Processor,2022-04-26,2027-06-19,MEDIUM,read_write,Identity_Provider|Backup_Storage|ERP,True,2027-03-30,True,False,0,,,,A-,421489.48,False,False
+VND-1044,Atlas Analytics,Cloud Infrastructure,2023-10-10,2027-06-19,LOW,read_only,Analytics_DB|Identity_Provider,True,2028-06-02,False,False,0,,,,C,432118.5,True,False
+VND-1126,Apex Analytics,Backup & Disaster Recovery,2024-03-18,2026-03-30,LOW,read_only,Data_Warehouse|S3_Buckets,False,,False,True,0,,,,B,1966193.8,False,False
+VND-1146,Pinnacle Global,Backup & Disaster Recovery,2024-11-26,2027-06-19,LOW,read_only,ERP|FileServer_Corporate,True,2025-09-16,True,False,0,,,,C-,1235197.3,False,False
+VND-1073,Summit Partners,Integration,2024-11-14,2027-06-19,HIGH,read_write,Data_Warehouse|Backup_Storage,True,2025-08-22,False,True,0,,,,C,611222.12,False,True
+VND-1139,Orbit Cloud,DevOps Tooling,2022-09-05,2027-06-19,LOW,read_only,Monitoring_Tools|Email_Platform|Backup_Storage,True,2027-10-24,True,False,0,,,,D,1024331.06,False,False
+VND-1272,Titan Services,Legal,2023-11-04,2027-06-19,MEDIUM,read_write,ERP|S3_Buckets,True,2027-02-26,True,True,0,,,,B,1704077.73,False,True
+VND-1405,Orbit Group,HR Technology,2022-04-21,2027-06-19,LOW,read_only,Database_Primary,True,2028-04-19,True,False,0,,,,A+,724930.06,False,True
+VND-1297,Echo Dynamics,Legal,2024-12-05,2027-06-19,MEDIUM,read_only,CRM|Payment_Gateway|Monitoring_Tools,True,2027-08-29,True,True,0,,,,B,1456037.42,False,True
+VND-1284,Relay Labs,Managed Services,2023-09-30,2027-06-19,LOW,read_write,ERP,True,2027-03-08,False,True,0,,,,A+,1232814.68,False,False
+VND-1008,Orbit Solutions,Integration,2023-02-21,2027-06-19,HIGH,read_only,Data_Warehouse|Email_Platform|ERP,False,,False,True,1,2026-04-17,MEDIUM,Credential stuffing attack on admin portal,A,1942445.97,False,False
+VND-1388,Nova Networks,Consulting,2021-11-16,2027-06-19,LOW,read_write,Email_Platform,True,2026-12-22,True,True,0,,,,B,740494.96,False,False
+VND-1141,Atlas Technologies,DevOps Tooling,2024-10-26,2027-06-19,LOW,read_only,FileServer_Corporate,False,,True,True,0,,,,D,1149414.84,False,False
+VND-1081,Atlas Networks,Consulting,2024-10-05,2027-06-19,HIGH,read_write,Backup_Storage|Ticketing_System|CI_CD_Pipeline,False,,False,True,0,,,,C+,1455932.31,False,False
+VND-1347,Fusion Analytics,DevOps Tooling,2022-07-21,2027-06-19,LOW,read_only,Payment_Gateway,True,2028-05-05,True,True,0,,,,A+,914970.43,False,False
+VND-1330,Echo Global,Marketing Technology,2023-01-10,2027-06-19,LOW,read_only,Audit_Logs|Data_Warehouse,True,2027-04-16,False,False,0,,,,B+,914740.47,False,False
+VND-1414,Pinnacle Systems,Security,2023-10-17,2027-06-19,MEDIUM,read_write,Database_Primary|Ticketing_System,True,2028-06-15,False,False,0,,,,A,1766578.81,False,False
+VND-1226,Nexus Analytics,Managed Services,2022-06-07,2026-05-26,HIGH,read_write,CRM,True,2025-09-01,False,False,0,,,,D,464524.8,False,True
+VND-1164,Horizon Integrations,HR Technology,2024-10-09,2027-06-19,MEDIUM,read_only,Identity_Provider|ERP,True,2028-04-28,False,False,0,,,,B+,1753754.06,False,True
+VND-1273,Cascade Systems,Data Warehousing,2023-01-09,2027-06-19,LOW,read_only,Payment_Gateway|ERP|Analytics_DB,True,2026-10-20,False,False,0,,,,A,1648777.52,False,True
+VND-1142,Core Dynamics,Marketing Technology,2024-06-06,2027-06-19,LOW,read_only,FileServer_Corporate|CI_CD_Pipeline,False,,False,True,0,,,,C,284784.15,False,False
+VND-1147,Vantage Platforms,Consulting,2023-08-26,2027-06-19,LOW,read_only,ERP,False,,False,False,0,,,,C,20311.08,False,False
+VND-1099,Fusion Solutions,Integration,2021-03-28,2025-06-01,MEDIUM,read_write,Database_Primary|Identity_Provider,False,,True,True,0,,,,B,1843113.24,False,False
+VND-1103,Pinnacle Integrations,Cloud Infrastructure,2022-12-22,2025-08-26,MEDIUM,read_only,HR_System|ERP|Identity_Provider,False,,False,False,0,,,,C,909308.59,False,False
+VND-1165,Nexus Partners,Software,2023-05-25,2027-06-19,MEDIUM,read_only,Audit_Logs|Database_Primary|Analytics_DB,True,2028-05-14,False,False,0,,,,B-,1883756.96,False,True
+VND-1108,Vertex Group,Payment Processor,2021-10-09,2026-04-14,LOW,read_only,HR_System,False,,True,False,0,,,,C,598626.28,False,False
+VND-1391,Horizon Dynamics,Legal,2022-03-29,2027-06-19,LOW,read_write,FileServer_Corporate,True,2027-02-17,False,True,0,,,,A+,1350534.13,False,False
+VND-1012,Summit Platforms,Software,2024-08-23,2027-06-19,HIGH,read_write,Data_Warehouse|Audit_Logs,True,2027-04-10,True,True,1,2025-07-11,CRITICAL,Ransomware encrypted backup files,B,1039975.92,False,False
+VND-1358,Nova Group,DevOps Tooling,2022-06-05,2027-06-19,MEDIUM,read_write,CRM|Identity_Provider,True,2027-03-03,False,False,0,,,,B,1491740.51,False,True
+VND-1360,Titan Platforms,HR Technology,2022-08-10,2027-06-19,LOW,read_write,ERP|Backup_Storage,True,2027-12-18,True,True,0,,,,A-,343475.32,False,False
+VND-1053,Nexus Dynamics,SaaS,2021-11-17,2027-06-19,LOW,read_only,Backup_Storage,False,,True,False,0,,,,D,906502.37,True,False
+VND-1407,Prime Solutions,Managed Services,2023-06-19,2027-06-19,MEDIUM,read_only,Audit_Logs|CI_CD_Pipeline|Analytics_DB,True,2027-04-12,False,True,0,,,,A-,1734882.06,False,True
+VND-1240,Nexus Systems,Integration,2023-07-16,2026-05-28,HIGH,read_write,Identity_Provider|FileServer_Corporate|Audit_Logs,True,2026-02-05,False,False,0,,,,D,212795.62,False,True
+VND-1386,Quantum Integrations,Backup & Disaster Recovery,2022-03-15,2027-06-19,MEDIUM,read_write,Email_Platform|Analytics_DB,True,2028-06-01,True,True,0,,,,B+,1923687.03,False,True
+VND-1400,Nexus Systems,Consulting,2024-11-02,2027-06-19,MEDIUM,read_only,CI_CD_Pipeline|Monitoring_Tools,True,2027-10-24,True,True,0,,,,A+,611629.16,False,False
+VND-1023,Stratum Cloud,Integration,2024-02-23,2027-06-19,HIGH,read_only,CRM,True,2027-12-13,True,False,1,2025-10-27,MEDIUM,Misconfigured API exposed internal records,A,159735.28,False,False
+VND-1160,Atlas Platforms,SaaS,2024-10-30,2027-06-19,MEDIUM,read_only,ERP|Monitoring_Tools|Backup_Storage,True,2027-12-20,True,False,0,,,,B-,702062.08,False,True
+VND-1003,Nova Cloud,Security,2024-01-04,2027-06-19,HIGH,read_only,S3_Buckets,False,,True,True,1,2025-07-07,MEDIUM,Ransomware encrypted backup files,A,166812.39,False,False
+VND-1334,Apex Group,Cloud Infrastructure,2021-09-19,2027-06-19,MEDIUM,read_only,Analytics_DB|HR_System|Monitoring_Tools,True,2027-11-11,True,True,0,,,,B+,1030159.2,False,False
+VND-1268,Vantage Integrations,Marketing Technology,2021-07-26,2027-06-19,LOW,read_write,CI_CD_Pipeline|Data_Warehouse,True,2026-12-28,False,True,0,,,,A+,827671.17,False,False
+VND-1199,Relay Systems,Marketing Technology,2022-03-28,2027-06-19,HIGH,read_only,FileServer_Corporate|ERP,True,2026-12-10,True,False,1,2023-10-27,MEDIUM,Ransomware encrypted backup files,B-,457438.4,False,False
+VND-1366,Fusion Platforms,Analytics,2021-11-15,2027-06-19,MEDIUM,read_write,Database_Primary|Audit_Logs,True,2027-07-29,False,False,0,,,,A-,1051399.32,False,False
+VND-1372,Pinnacle Works,Integration,2021-01-26,2027-06-19,LOW,read_only,Identity_Provider,True,2027-04-01,False,True,0,,,,A-,775747.82,False,True
+VND-1106,Horizon Solutions,Consulting,2021-07-13,2025-09-23,LOW,read_only,S3_Buckets|ERP|Data_Warehouse,True,2026-11-09,True,True,0,,,,C,1450229.97,False,False
+VND-1068,Pinnacle Analytics,HR Technology,2024-11-19,2027-06-19,HIGH,read_write,HR_System|Backup_Storage,False,,False,True,0,,,,C,663845.52,False,True
+VND-1265,Vertex Integrations,Data Warehousing,2022-04-28,2027-06-19,MEDIUM,read_only,Ticketing_System|FileServer_Corporate,True,2028-03-18,True,True,0,,,,B,795660.69,False,False
+VND-1051,Summit Solutions,Payment Processor,2021-08-31,2027-06-19,MEDIUM,read_only,Backup_Storage|Ticketing_System|Data_Warehouse,True,2028-04-15,True,False,0,,,,B,1583574.25,True,False
+VND-1074,Summit Systems,DevOps Tooling,2024-09-10,2027-06-19,HIGH,read_write,Email_Platform|Database_Primary,True,2026-01-18,False,False,0,,,,C+,1136198.74,False,False
+VND-1168,Nova Services,Integration,2024-10-11,2027-06-19,MEDIUM,read_only,FileServer_Corporate|Backup_Storage|Audit_Logs,True,2027-03-31,False,False,0,,,,B-,384444.95,False,True
+VND-1159,Titan Dynamics,Cloud Infrastructure,2021-05-22,2027-06-19,MEDIUM,read_only,FileServer_Corporate|ERP,True,2027-09-04,False,False,0,,,,B+,823645.2,False,True
+VND-1342,Fusion Labs,Legal,2023-03-27,2027-06-19,MEDIUM,read_only,ERP|Backup_Storage|Data_Warehouse,True,2028-04-30,True,True,0,,,,A-,1321972.87,False,False
+VND-1310,Stratum Systems,Cloud Infrastructure,2022-05-30,2027-06-19,LOW,read_write,Data_Warehouse,True,2027-08-03,True,True,0,,,,A+,1661667.13,False,True
+VND-1385,Nexus Dynamics,HR Technology,2023-06-27,2027-06-19,MEDIUM,read_write,Monitoring_Tools|Email_Platform,True,2027-08-28,False,True,0,,,,A+,1983011.35,False,False
+VND-1098,Prime Labs,Managed Services,2022-06-08,2025-08-19,MEDIUM,read_only,Monitoring_Tools|FileServer_Corporate,False,,False,False,0,,,,B,25382.51,False,False
+VND-1079,Pinnacle Integrations,Integration,2024-07-31,2027-06-19,HIGH,read_write,CRM|Monitoring_Tools,False,,False,False,0,,,,C+,475305.59,False,False
+VND-1257,Titan Works,Legal,2024-10-04,2027-06-19,MEDIUM,read_only,Monitoring_Tools|Identity_Provider|Database_Primary,True,2027-03-07,False,True,0,,,,A-,537772.76,False,True
+VND-1248,Pinnacle Systems,Marketing Technology,2023-08-25,2026-03-20,HIGH,read_write,CI_CD_Pipeline|S3_Buckets|Ticketing_System,True,2026-06-03,False,False,0,,,,D,1999215.44,False,True
+VND-1418,Summit Networks,Managed Services,2021-09-07,2027-06-19,MEDIUM,read_write,Email_Platform|Analytics_DB|Audit_Logs,True,2026-11-22,True,True,0,,,,B+,833378.24,False,True
+VND-1392,Stellar Technologies,Consulting,2021-06-19,2027-06-19,MEDIUM,read_write,FileServer_Corporate|Email_Platform,True,2027-10-25,False,True,0,,,,B,804390.69,False,False
+VND-1228,Core Group,Consulting,2022-05-24,2026-05-31,HIGH,read_write,Monitoring_Tools|ERP,True,2025-06-18,False,False,0,,,,D,1653734.02,False,True
+VND-1048,Nexus Group,Payment Processor,2023-09-19,2027-06-19,LOW,read_only,Ticketing_System|FileServer_Corporate,False,,False,True,0,,,,D,1666930.44,True,False
+VND-1399,Echo Cloud,SaaS,2022-10-09,2027-06-19,MEDIUM,read_only,HR_System|Audit_Logs,True,2027-10-11,True,True,0,,,,A+,405761.65,False,False
+VND-1020,Vantage Solutions,Backup & Disaster Recovery,2022-03-13,2027-06-19,HIGH,read_only,Email_Platform|HR_System|Analytics_DB,False,,True,True,1,2025-10-14,HIGH,Credential stuffing attack on admin portal,B,1762919.71,False,False
+VND-1192,Vantage Works,Legal,2021-10-18,2027-06-19,HIGH,read_only,Ticketing_System|Analytics_DB,True,2026-12-13,False,True,1,2023-11-26,LOW,Misconfigured API exposed internal records,A-,916111.94,False,False
+VND-1058,Core Analytics,Consulting,2024-10-04,2027-06-19,HIGH,read_only,Analytics_DB,True,2027-09-08,False,False,0,,,,C,666309.29,True,False
+VND-1379,Orbit Works,Consulting,2024-06-24,2027-06-19,MEDIUM,read_write,Monitoring_Tools,True,2026-10-06,True,True,0,,,,A+,1444797.09,False,True
+VND-1323,Cascade Partners,Backup & Disaster Recovery,2021-05-30,2027-06-19,MEDIUM,read_only,HR_System|ERP,True,2028-04-01,True,True,0,,,,A+,205422.78,False,False
+VND-1269,Orbit Integrations,Software,2024-11-21,2027-06-19,MEDIUM,read_write,FileServer_Corporate|Payment_Gateway,True,2027-02-11,False,False,0,,,,B,1780252.69,False,False
+VND-1111,Stratum Global,SaaS,2024-12-27,2025-09-21,MEDIUM,read_write,CRM|ERP|FileServer_Corporate,True,2027-10-02,False,True,0,,,,B,1528602.49,False,False
+VND-1155,Vertex Technologies,Security,2024-05-25,2027-06-19,HIGH,read_only,Backup_Storage|CI_CD_Pipeline,True,2027-01-31,False,False,0,,,,B,1102976.67,False,True
+VND-1232,Stratum Analytics,Software,2024-11-21,2026-02-25,HIGH,read_write,Monitoring_Tools,False,,False,False,0,,,,D,12909.46,False,True
+VND-1191,Quantum Dynamics,Legal,2023-11-29,2027-06-19,LOW,read_only,Identity_Provider|Audit_Logs|Analytics_DB,True,2027-06-08,False,False,1,2024-02-09,LOW,Ransomware encrypted backup files,B,788357.0,False,False
+VND-1122,Nexus Systems,Managed Services,2024-05-29,2025-12-20,MEDIUM,read_only,Data_Warehouse|Database_Primary|HR_System,False,,False,True,0,,,,B,143794.39,False,False
+VND-1255,Fusion Group,Software,2024-04-21,2027-06-19,MEDIUM,read_write,S3_Buckets,True,2028-06-06,True,True,0,,,,A-,620578.23,False,False
+VND-1045,Stratum Systems,Backup & Disaster Recovery,2022-01-27,2027-06-19,MEDIUM,read_only,Identity_Provider,False,,True,True,0,,,,C,1442948.58,True,False
+VND-1362,Cascade Platforms,Managed Services,2022-01-12,2027-06-19,MEDIUM,read_write,ERP,True,2028-03-03,True,True,0,,,,B+,1458267.11,False,True
+VND-1140,Core Integrations,Analytics,2024-11-10,2027-06-19,MEDIUM,read_only,Database_Primary|Ticketing_System|Identity_Provider,True,2027-01-07,False,False,0,,,,D,538405.57,False,False
+VND-1017,Stellar Group,Analytics,2022-03-22,2027-06-19,HIGH,read_only,FileServer_Corporate,True,2028-01-28,True,True,1,2025-06-27,HIGH,Ransomware encrypted backup files,B,1498471.37,False,False
+VND-1356,Cascade Technologies,HR Technology,2021-09-26,2027-06-19,MEDIUM,read_only,Identity_Provider|Backup_Storage|FileServer_Corporate,True,2027-06-30,True,True,0,,,,B+,1444422.76,False,True
+VND-1394,Titan Solutions,Software,2023-04-28,2027-06-19,LOW,read_only,CI_CD_Pipeline|Analytics_DB,True,2028-04-28,True,True,0,,,,A+,389074.59,False,False
+VND-1060,Core Systems,Payment Processor,2023-11-28,2027-06-19,MEDIUM,read_only,Audit_Logs|Monitoring_Tools,True,2028-01-03,False,True,0,,,,D,889661.5,True,False
+VND-1305,Echo Global,Integration,2023-05-08,2027-06-19,LOW,read_only,Identity_Provider|ERP|Payment_Gateway,True,2027-08-12,True,True,0,,,,A,1927551.14,False,False
+VND-1096,Nexus Analytics,Analytics,2022-10-27,2027-06-19,HIGH,read_write,HR_System|Data_Warehouse|Database_Primary,True,2025-12-26,False,False,0,,,,B-,319604.01,False,True
+VND-1200,Fusion Dynamics,DevOps Tooling,2021-03-27,2027-06-19,MEDIUM,read_only,Data_Warehouse|Email_Platform|CRM,False,,True,True,1,2024-10-30,MEDIUM,Credential stuffing attack on admin portal,C,1979653.7,False,False
+VND-1311,Nexus Cloud,Backup & Disaster Recovery,2021-09-02,2027-06-19,MEDIUM,read_only,FileServer_Corporate|Payment_Gateway,True,2027-03-27,False,True,0,,,,A,565433.37,False,False
+VND-1293,Fusion Labs,Software,2022-10-03,2027-06-19,MEDIUM,read_write,CRM|FileServer_Corporate,True,2027-07-11,True,True,0,,,,B+,1703979.34,False,False
+VND-1085,Orbit Systems,Analytics,2021-10-24,2027-06-19,HIGH,read_write,Email_Platform,True,2026-04-04,True,False,0,,,,C,1599042.51,False,False
+VND-1274,Relay Dynamics,Consulting,2022-12-07,2027-06-19,MEDIUM,read_only,Email_Platform,True,2028-01-15,True,True,0,,,,A+,1500432.66,False,False
+VND-1416,Summit Analytics,Data Warehousing,2021-06-29,2027-06-19,LOW,read_write,CRM,True,2028-05-26,False,True,0,,,,A+,839744.28,False,False
+VND-1193,Nova Labs,Legal,2021-08-24,2027-06-19,MEDIUM,read_only,Monitoring_Tools,True,2027-07-21,True,False,1,2024-12-26,MEDIUM,Insider threat — unauthorized data export,A-,1299460.14,False,False
+VND-1376,Stellar Networks,Payment Processor,2022-10-11,2027-06-19,MEDIUM,read_only,CI_CD_Pipeline|S3_Buckets|Identity_Provider,True,2027-01-04,False,True,0,,,,A+,1469045.78,False,False
+VND-1016,Core Networks,Security,2022-03-14,2027-06-19,HIGH,read_write,FileServer_Corporate|HR_System,True,2027-03-06,True,True,1,2026-05-09,CRITICAL,Unencrypted data exposed on cloud storage,A,764156.51,False,False
+VND-1144,Summit Cloud,Payment Processor,2024-11-14,2027-06-19,MEDIUM,read_only,Audit_Logs|Analytics_DB|Identity_Provider,True,2026-01-17,False,False,0,,,,D,704118.32,False,False
+VND-1077,Stratum Global,Consulting,2023-12-24,2027-06-19,HIGH,read_write,Email_Platform|Backup_Storage|HR_System,False,,False,False,0,,,,C+,521370.47,False,False
+VND-1034,Pinnacle Labs,Marketing Technology,2023-12-04,2027-06-19,HIGH,read_only,Identity_Provider|ERP,True,2027-05-28,False,False,1,2025-09-28,HIGH,SQL injection led to partial DB dump,C,885346.46,False,False
+VND-1182,Fusion Dynamics,Integration,2023-06-04,2027-06-19,HIGH,read_only,S3_Buckets,True,2027-05-08,True,False,1,2024-03-16,MEDIUM,Misconfigured API exposed internal records,A-,180531.29,False,False
+VND-1377,Stratum Services,Backup & Disaster Recovery,2024-11-28,2027-06-19,LOW,read_write,Payment_Gateway|Ticketing_System,True,2027-12-09,False,False,0,,,,A-,381387.19,False,True
+VND-1296,Vertex Global,Security,2021-08-20,2027-06-19,MEDIUM,read_write,Data_Warehouse|Database_Primary,True,2027-01-28,True,True,0,,,,A,136038.73,False,False
+VND-1412,Atlas Cloud,Marketing Technology,2023-11-14,2027-06-19,LOW,read_only,Analytics_DB|Payment_Gateway|Email_Platform,True,2028-03-06,True,True,0,,,,A+,767407.95,False,False
+VND-1010,Nexus Dynamics,Marketing Technology,2023-12-23,2027-06-19,HIGH,read_write,Monitoring_Tools,True,2027-10-04,True,False,1,2026-03-05,MEDIUM,Third-party library supply-chain compromise,C,982325.36,False,False
+VND-1365,Stellar Cloud,Backup & Disaster Recovery,2021-12-29,2027-06-19,MEDIUM,read_write,Data_Warehouse|Monitoring_Tools|CI_CD_Pipeline,True,2027-12-16,True,False,0,,,,B+,1275343.76,False,True
+VND-1285,Fusion Systems,Data Warehousing,2022-10-22,2027-06-19,MEDIUM,read_write,Payment_Gateway|Database_Primary|Monitoring_Tools,True,2027-04-09,True,False,0,,,,B+,18206.43,False,True
+VND-1162,Vantage Systems,Marketing Technology,2024-09-14,2027-06-19,MEDIUM,read_only,Database_Primary|CRM,True,2027-03-29,False,False,0,,,,B+,420102.43,False,True
+VND-1348,Summit Analytics,SaaS,2023-11-18,2027-06-19,MEDIUM,read_only,Email_Platform|CI_CD_Pipeline,True,2028-02-14,True,True,0,,,,A-,891109.59,False,False
+VND-1290,Summit Solutions,Marketing Technology,2021-08-06,2027-06-19,MEDIUM,read_only,Payment_Gateway|Ticketing_System,True,2027-01-15,False,True,0,,,,B+,407501.28,False,True
+VND-1393,Stratum Group,Security,2023-03-21,2027-06-19,LOW,read_write,Payment_Gateway|Email_Platform|Ticketing_System,True,2028-01-22,True,True,0,,,,B,1994186.75,False,False
+VND-1267,Titan Platforms,Backup & Disaster Recovery,2023-03-25,2027-06-19,MEDIUM,read_only,Monitoring_Tools|Backup_Storage|ERP,True,2026-11-24,False,True,0,,,,A,1044179.47,False,True
+VND-1029,Horizon Platforms,Legal,2022-08-29,2027-06-19,HIGH,read_only,ERP|CRM|Payment_Gateway,True,2027-11-09,False,False,1,2025-10-17,HIGH,Credential stuffing attack on admin portal,C,1333209.57,False,False
+VND-1415,Orbit Systems,Payment Processor,2024-01-26,2027-06-19,LOW,read_only,Payment_Gateway|Database_Primary,True,2028-05-24,True,True,0,,,,B,377831.57,False,False
+VND-1237,Nexus Networks,Security,2022-10-06,2026-05-21,HIGH,read_write,CRM|Email_Platform,True,2026-04-25,False,False,1,2025-03-10,LOW,SQL injection led to partial DB dump,C,722992.02,False,True
+VND-1172,Relay Integrations,Legal,2023-05-06,2027-06-19,MEDIUM,read_only,ERP|CRM,True,2028-04-05,False,False,0,,,,B+,666431.92,False,True
+VND-1275,Quantum Partners,Payment Processor,2024-10-19,2027-06-19,LOW,read_write,Email_Platform,True,2027-04-24,False,True,0,,,,A+,1306658.79,False,False
+VND-1236,Pinnacle Works,Consulting,2023-03-16,2026-05-07,HIGH,read_write,Monitoring_Tools|Analytics_DB|Identity_Provider,False,,False,False,0,,,,D,551192.18,False,True
+VND-1322,Core Global,Software,2023-11-16,2027-06-19,MEDIUM,read_only,Analytics_DB,True,2027-04-21,True,True,0,,,,A-,376145.52,False,False
+VND-1080,Cascade Global,Legal,2022-09-11,2027-06-19,HIGH,read_write,Backup_Storage|FileServer_Corporate|HR_System,False,,True,True,0,,,,C,100240.15,False,False
+VND-1247,Fusion Global,HR Technology,2023-10-26,2026-03-10,HIGH,read_write,S3_Buckets|ERP,True,2025-10-13,False,False,0,,,,D,367833.59,False,True
+VND-1070,Vantage Networks,Managed Services,2024-11-22,2027-06-19,HIGH,read_write,Database_Primary|Audit_Logs,False,,False,False,0,,,,B-,655505.59,False,True
+VND-1331,Pinnacle Integrations,Backup & Disaster Recovery,2024-03-13,2027-06-19,LOW,read_only,S3_Buckets,True,2027-06-24,True,True,0,,,,A-,1310813.87,False,False
+VND-1019,Horizon Global,Analytics,2022-02-23,2027-06-19,HIGH,read_write,Monitoring_Tools|CRM|ERP,True,2028-03-05,False,True,1,2025-07-30,CRITICAL,Unencrypted data exposed on cloud storage,C,797613.84,False,False
+VND-1243,Cascade Systems,Managed Services,2024-03-21,2026-03-17,HIGH,read_write,S3_Buckets|Identity_Provider,False,,False,False,0,,,,D,68669.76,False,True
+VND-1246,Quantum Partners,Marketing Technology,2024-01-19,2025-12-27,HIGH,read_write,S3_Buckets,True,2025-09-22,False,False,0,,,,D,1566012.38,False,True
+VND-1345,Cascade Systems,Payment Processor,2024-09-07,2027-06-19,MEDIUM,read_write,Ticketing_System|CRM|Database_Primary,True,2028-02-05,True,False,0,,,,B,1570079.3,False,False
+VND-1174,Nexus Global,Data Warehousing,2024-01-16,2027-06-19,HIGH,read_only,FileServer_Corporate|Email_Platform|Database_Primary,False,,True,False,0,,,,B+,1679746.3,False,True
+VND-1170,Quantum Dynamics,Consulting,2022-08-03,2027-06-19,HIGH,read_only,Data_Warehouse|Email_Platform,True,2027-10-28,True,False,0,,,,B+,1300955.47,False,True
+VND-1100,Orbit Networks,DevOps Tooling,2024-11-13,2026-01-09,MEDIUM,read_only,HR_System|Payment_Gateway,False,,True,False,0,,,,C,1690523.88,False,False
+VND-1090,Stratum Cloud,DevOps Tooling,2022-03-17,2027-06-19,HIGH,read_write,Data_Warehouse|Audit_Logs,False,,True,True,0,,,,C,464702.21,False,False
+VND-1015,Cascade Technologies,Integration,2022-01-11,2027-06-19,HIGH,read_write,Data_Warehouse|CRM,True,2028-03-19,False,False,1,2025-09-24,HIGH,Misconfigured API exposed internal records,A,1750227.05,False,False
+VND-1411,Prime Global,Security,2021-07-04,2027-06-19,LOW,read_only,Monitoring_Tools|CI_CD_Pipeline,True,2028-05-13,True,False,0,,,,B+,1300667.1,False,False
+VND-1292,Titan Cloud,Legal,2021-07-27,2027-06-19,LOW,read_only,Identity_Provider|Audit_Logs,True,2028-02-22,False,False,0,,,,B,1977445.2,False,False
+VND-1371,Fusion Networks,Legal,2021-03-06,2027-06-19,LOW,read_only,HR_System|Backup_Storage,True,2028-02-09,True,True,0,,,,B+,1503633.47,False,False
+VND-1203,Pinnacle Integrations,Backup & Disaster Recovery,2021-12-11,2027-06-19,MEDIUM,read_only,Ticketing_System|ERP,True,2026-07-24,True,True,0,,,,A,1149743.8,False,False
+VND-1175,Titan Cloud,Managed Services,2021-01-19,2027-06-19,MEDIUM,read_only,Data_Warehouse,True,2027-05-11,False,False,0,,,,A-,752669.38,False,True
+VND-1406,Atlas Networks,Security,2021-10-09,2027-06-19,MEDIUM,read_only,Payment_Gateway,True,2027-03-24,True,True,0,,,,B,460283.39,False,True
+VND-1352,Vertex Integrations,Cloud Infrastructure,2024-01-14,2027-06-19,LOW,read_only,Audit_Logs,True,2026-12-06,True,False,0,,,,B,748681.11,False,False
+VND-1059,Stratum Systems,Security,2021-06-30,2027-06-19,HIGH,read_only,Email_Platform|Analytics_DB,False,,True,True,0,,,,C,240683.99,True,False
+VND-1004,Titan Works,Payment Processor,2021-07-26,2027-06-19,HIGH,read_only,Email_Platform|Identity_Provider,False,,False,False,1,2026-02-23,MEDIUM,Credential stuffing attack on admin portal,C,1275012.04,False,False
+VND-1166,Atlas Technologies,Marketing Technology,2024-01-07,2027-06-19,HIGH,read_only,Identity_Provider|Backup_Storage,True,2027-07-21,False,False,0,,,,B,458435.65,False,True
+VND-1282,Vertex Global,Payment Processor,2023-10-22,2027-06-19,LOW,read_write,S3_Buckets,True,2026-11-28,True,True,0,,,,A+,1064378.62,False,True
+VND-1260,Titan Analytics,HR Technology,2024-06-10,2027-06-19,LOW,read_only,Database_Primary|Payment_Gateway,True,2028-03-30,True,True,0,,,,A-,1885460.09,False,False
+VND-1154,Vantage Networks,Analytics,2021-11-24,2027-06-19,MEDIUM,read_only,Ticketing_System|CI_CD_Pipeline,True,2026-11-19,True,False,0,,,,B,243657.33,False,True
+VND-1158,Relay Systems,Backup & Disaster Recovery,2023-08-05,2027-06-19,MEDIUM,read_only,Ticketing_System|CI_CD_Pipeline|Database_Primary,False,,False,False,0,,,,B-,797937.93,False,True
+VND-1035,Stellar Cloud,Payment Processor,2021-05-12,2027-06-19,HIGH,read_write,Backup_Storage|Analytics_DB,True,2027-10-14,False,False,1,2025-09-30,HIGH,Misconfigured API exposed internal records,B,1089796.17,False,False
+VND-1131,Stratum Services,Software,2022-09-11,2027-06-19,MEDIUM,read_only,Identity_Provider|S3_Buckets,False,,True,False,0,,,,D,1616625.14,False,False
+VND-1145,Fusion Labs,Marketing Technology,2021-10-27,2027-06-19,MEDIUM,read_only,FileServer_Corporate|ERP,False,,False,True,0,,,,C-,1911074.3,False,False
+VND-1354,Cascade Solutions,Legal,2023-11-28,2027-06-19,MEDIUM,read_write,Monitoring_Tools|CI_CD_Pipeline,True,2027-03-14,True,True,0,,,,B,26753.02,False,False
+VND-1104,Cascade Integrations,Backup & Disaster Recovery,2021-03-26,2026-05-20,MEDIUM,read_only,Payment_Gateway|Analytics_DB,True,2025-12-04,False,True,0,,,,B,1213961.61,False,False
+VND-1328,Stellar Networks,Backup & Disaster Recovery,2023-11-12,2027-06-19,MEDIUM,read_only,S3_Buckets,True,2027-07-11,True,True,0,,,,A-,734092.46,False,False
+VND-1006,Pinnacle Solutions,Payment Processor,2024-03-07,2027-06-19,HIGH,read_write,Monitoring_Tools|CRM|Audit_Logs,False,,False,False,1,2025-10-25,HIGH,Unencrypted data exposed on cloud storage,C,1003470.21,False,False
+VND-1109,Nexus Cloud,Security,2021-03-31,2026-04-28,LOW,read_only,CI_CD_Pipeline|Monitoring_Tools,True,2028-06-17,False,True,0,,,,B,1441975.49,False,False
+VND-1327,Relay Platforms,Marketing Technology,2024-04-23,2027-06-19,MEDIUM,read_only,FileServer_Corporate,True,2028-05-04,True,True,0,,,,A+,1107672.06,False,True
+VND-1287,Nexus Global,Data Warehousing,2023-04-07,2027-06-19,MEDIUM,read_write,Identity_Provider,True,2027-03-28,True,True,0,,,,A,456399.51,False,False
+VND-1180,Atlas Global,SaaS,2022-09-05,2027-06-19,MEDIUM,read_only,Identity_Provider,False,,False,False,1,2024-01-27,LOW,SQL injection led to partial DB dump,B,1137724.88,False,False
+VND-1171,Vantage Labs,Legal,2023-08-20,2027-06-19,HIGH,read_only,Payment_Gateway|Analytics_DB,True,2028-01-07,True,False,0,,,,B,632714.82,False,True
+VND-1024,Fusion Global,Data Warehousing,2021-03-23,2027-06-19,HIGH,read_write,Payment_Gateway|Monitoring_Tools,True,2027-07-29,False,False,1,2025-08-02,MEDIUM,Misconfigured API exposed internal records,C,506564.18,False,False
+VND-1212,Atlas Solutions,Legal,2021-07-29,2027-06-19,MEDIUM,read_only,Monitoring_Tools,True,2026-07-04,True,False,0,,,,A-,741447.76,False,False
+VND-1213,Titan Dynamics,HR Technology,2021-01-18,2026-03-25,HIGH,read_write,Analytics_DB|Identity_Provider|Audit_Logs,False,,False,False,1,2024-04-15,LOW,SQL injection led to partial DB dump,C,1447639.73,False,True
+VND-1316,Horizon Dynamics,SaaS,2021-07-16,2027-06-19,LOW,read_write,Database_Primary,True,2027-04-02,True,False,0,,,,B,1257596.82,False,True
+VND-1410,Stellar Networks,DevOps Tooling,2024-08-16,2027-06-19,MEDIUM,read_write,HR_System|CI_CD_Pipeline,True,2028-02-28,False,True,0,,,,B+,1006309.0,False,False
+VND-1107,Stellar Integrations,Legal,2021-06-23,2025-07-17,LOW,read_only,S3_Buckets|Monitoring_Tools,True,2027-10-23,False,True,0,,,,B,1585407.3,False,False
+VND-1378,Nexus Solutions,Backup & Disaster Recovery,2021-11-14,2027-06-19,MEDIUM,read_write,Ticketing_System|Backup_Storage,True,2028-04-06,True,True,0,,,,B+,534065.05,False,False
+VND-1419,Titan Networks,Legal,2024-11-11,2027-06-19,LOW,read_only,Ticketing_System|Payment_Gateway|Audit_Logs,True,2028-03-11,True,True,0,,,,B,1697117.96,False,False
+VND-1408,Atlas Integrations,Legal,2024-03-17,2027-06-19,LOW,read_write,FileServer_Corporate|Email_Platform|Audit_Logs,True,2027-08-03,True,True,0,,,,B+,908703.09,False,True
+VND-1321,Apex Dynamics,DevOps Tooling,2024-02-11,2027-06-19,MEDIUM,read_write,CRM,True,2027-10-04,True,True,0,,,,A,93128.55,False,False
+VND-1239,Horizon Technologies,SaaS,2024-12-27,2025-12-13,HIGH,read_write,CI_CD_Pipeline,True,2026-02-28,False,False,0,,,,D,798526.48,False,True
+VND-1013,Nova Group,SaaS,2021-03-06,2027-06-19,HIGH,read_write,HR_System|Email_Platform,True,2026-11-28,False,False,1,2026-04-23,HIGH,Unencrypted data exposed on cloud storage,A,483629.22,False,False
+VND-1061,Vertex Solutions,Cloud Infrastructure,2024-07-14,2027-06-19,LOW,read_only,Identity_Provider|CI_CD_Pipeline|HR_System,False,,False,False,0,,,,B,628392.78,True,False
+VND-1001,Stratum Solutions,HR Technology,2023-05-15,2027-06-19,HIGH,read_write,Database_Primary,False,,True,True,1,2025-10-25,HIGH,Phishing campaign compromised employee accounts,C,196453.53,False,False
+VND-9001,BoundaryBreach Corp,Cloud Infrastructure,2023-01-01,2027-06-19,HIGH,read_write,Database_Primary,True,2027-01-01,True,True,1,2025-06-19,HIGH,Major data exfiltration — exactly at the 12-month boundary,B,,False,False
+VND-9002,InvestigatedCleanCo,SaaS,2024-01-01,2027-01-01,LOW,read_only,Analytics_DB,True,2028-01-01,True,True,0,,,,A,,True,False
+VND-9003,NearExpirySaaS Ltd,SaaS,2024-03-01,2027-03-01,MEDIUM,read_write,CRM|HR_System,True,2026-08-17,False,True,0,,,,B,,False,True
+VND-9004,ExactBoundaryCert Inc,Analytics,2024-03-01,2027-03-01,MEDIUM,read_only,Analytics_DB,True,2026-08-18,True,True,0,,,,A-,,False,True
+VND-9005,JustOutsideAlert Co,Analytics,2024-03-01,2027-03-01,MEDIUM,read_only,Analytics_DB,True,2026-08-19,True,True,0,,,,A-,,False,True
+VND-9006,OrphanedAccess Corp,Integration,2020-01-01,2025-12-21,MEDIUM,read_write,Database_Primary|FileServer_Corporate|Identity_Provider,False,,False,False,0,,,,C,,False,False
+VND-9007,PerfectScore Vendor,Security,2025-01-01,2028-01-01,LOW,read_only,Monitoring_Tools,True,2028-06-01,True,True,0,,,,A+,50000.0,False,False
+VND-9008,MaxRisk Everything LLC,Managed Services,2019-01-01,2026-03-21,HIGH,read_write,Database_Primary|Payment_Gateway|Identity_Provider,True,2026-05-20,False,False,1,2026-04-20,CRITICAL,Full database dump exfiltrated; ransom paid,D,1200000.0,False,True
+VND-9009,EUHandler NoDPA Ltd,Payment Processor,2024-01-01,2027-01-01,LOW,read_only,Payment_Gateway,True,2027-01-01,True,False,0,,,,A,,False,True
+VND-9010,AmbiguousMiddleGround Co,Software,2023-01-01,2026-12-31,MEDIUM,read_write,Ticketing_System|CRM,True,2026-08-03,False,True,1,2024-12-18,LOW,"Minor config exposure, no confirmed data exfiltration",B-,,False,False

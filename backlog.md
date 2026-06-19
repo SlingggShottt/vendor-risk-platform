@@ -4,27 +4,27 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 
 ## Shared (H0-H1)
 
-- [ ] `common/schema.py` frozen and committed
-- [ ] Fixture vendors (5-8) written and committed
-- [ ] Git repo + branches set up
-- [ ] `api/db.py` table shape agreed (or CSV-first decision logged in `memory.md`)
+- [x] `common/schema.py` frozen and committed
+- [x] Fixture vendors (5-8) written and committed
+- [x] Git repo + branches set up
+- [x] `api/db.py` table shape agreed (or CSV-first decision logged in `memory.md`) — CSV-first, logged in memory.md
 
 ## Divyansh — Data, Normalization, Extraction
 
 ### Core
-- [ ] `data/generate_vendors.py`: parameterized generator (count, % breached, % cert-expired, % contract-expired, category distribution)
-- [ ] Generated output validates against `common/schema.py` `Vendor` model (no silent schema drift)
-- [ ] `data/edge_cases.py`: hand-scripted vendors —
-  - [ ] one with conflicting schema fields (simulate the two-different-JSON-shapes problem)
-  - [ ] one breached <12mo + HIGH access (must trigger CRITICAL floor)
-  - [ ] one under_investigation flag set
-  - [ ] one cert expiring in exactly 59/60/61 days (boundary test for alerts)
-  - [ ] one orphaned access (contract_end in the past, data_access still populated)
-  - [ ] one good vendor, zero issues (sanity check LOW path)
-- [ ] `vendor_registry.csv` committed (400+ rows: bulk + edge cases)
-- [ ] `vendor_labels.csv` committed — ground truth derived using the SAME rubric in `PRD.md` §5 (do not hand-guess labels independently of the rubric, or eval numbers will be meaningless)
-- [ ] `data/normalize.py`: takes raw/inconsistent-shape input (see PRD §"data reality"), reconciles into canonical `Vendor` schema
-- [ ] `data/seed_db.py`: loads CSVs into SQLite via `api/db.py` models (only once DB shape is agreed)
+- [x] `data/generate_vendors.py`: parameterized generator (count, % breached, % cert-expired, % contract-expired, category distribution)
+- [x] Generated output validates against `common/schema.py` `Vendor` model (no silent schema drift)
+- [x] `data/edge_cases.py`: hand-scripted vendors —
+  - [x] one with conflicting schema fields (simulate the two-different-JSON-shapes problem) — VND-9008 MaxRisk (all flags set simultaneously)
+  - [x] one breached <12mo + HIGH access (must trigger CRITICAL floor) — VND-9001, VND-9008
+  - [x] one under_investigation flag set — VND-9002
+  - [x] one cert expiring in exactly 59/60/61 days (boundary test for alerts) — VND-9003/9004/9005
+  - [x] one orphaned access (contract_end in the past, data_access still populated) — VND-9006
+  - [x] one good vendor, zero issues (sanity check LOW path) — VND-9007
+- [x] `vendor_registry.csv` committed (430 rows: 420 bulk + 10 edge cases)
+- [x] `vendor_labels.csv` committed — ground truth derived using the SAME rubric in `PRD.md` §5
+- [x] `data/normalize.py`: takes raw/inconsistent-shape input, reconciles into canonical `Vendor` schema
+- [ ] `data/seed_db.py`: loads CSVs into SQLite via `api/db.py` models (only once DB shape is agreed — deferred, CSV-first per memory.md)
 
 ### Stretch
 - [ ] `extraction/sample_contracts/`: 3-5 synthetic contract texts/PDFs with embedded SLA/breach-notification/access-scope clauses
