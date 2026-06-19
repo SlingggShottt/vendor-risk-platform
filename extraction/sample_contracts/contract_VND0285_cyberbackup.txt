@@ -1,0 +1,51 @@
+MASTER SERVICE AGREEMENT
+Vendor: CyberBackup Solutions Inc.
+Client: Acme Enterprises Ltd.
+Contract Reference: MSA-2023-0285
+Effective Date: June 1, 2023
+Expiration Date: June 1, 2026
+
+1. SCOPE OF SERVICES
+CyberBackup Solutions Inc. ("Vendor") shall provide managed backup and disaster recovery services,
+including full access to Client's primary database servers (Database_Primary) and corporate file
+servers (FileServer_Corporate) for the purposes of data replication, snapshot management, and
+recovery orchestration. Access type: read-write.
+
+2. DATA CLASSIFICATION AND SENSITIVITY
+The Vendor will handle data classified as HIGH sensitivity, including personally identifiable
+information (PII), payroll records, and customer financial data. The Vendor acknowledges that
+all data processed under this Agreement is subject to the Client's Data Classification Policy
+(Tier 1 — Confidential).
+
+3. COMPLIANCE AND CERTIFICATIONS
+3.1 The Vendor represents that it holds a valid SOC 2 Type II certification, most recently
+    renewed on September 15, 2023, valid through September 15, 2026.
+3.2 The Vendor does NOT currently hold ISO/IEC 27001 certification.
+3.3 This Agreement does not include a GDPR Data Processing Agreement (DPA), as the Vendor
+    processes data on behalf of EU-based subsidiaries of the Client. A GDPR DPA is pending
+    and will be executed as a separate addendum within 30 days of this Agreement.
+3.4 The Vendor is NOT subject to any known regulatory investigations as of the Effective Date.
+
+4. BREACH NOTIFICATION
+The Vendor shall notify the Client of any confirmed or suspected security breach within 72 hours
+of discovery. The Vendor warrants that it will maintain an incident response plan and conduct
+annual penetration testing.
+
+5. FINANCIAL STANDING
+Vendor's current credit rating is B (stable), as certified by the Vendor's most recent annual
+financial review dated March 2023.
+
+6. DATA ACCESS SCOPE
+Systems accessed: Database_Primary, FileServer_Corporate
+Access level: read-write
+Data sensitivity: HIGH (PII, financial records)
+
+7. ANNUAL CONTRACT VALUE
+The total annual contract value under this Agreement is USD 850,000.
+
+8. GOVERNING LAW
+This Agreement shall be governed by the laws of the State of Delaware, United States.
+
+Signed:
+[Client Representative]                    [Vendor Representative]
+Date: June 1, 2023                         Date: June 1, 2023

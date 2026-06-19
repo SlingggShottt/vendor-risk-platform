@@ -1,0 +1,45 @@
+VENDOR SERVICES AGREEMENT
+Parties:    EuroPay Processing GmbH ("Service Provider")
+            Acme Enterprises Ltd. ("Customer")
+Agreement No.: VSA-2024-0420
+Commencement: 1 March 2024
+Term End:     28 February 2027
+
+RECITALS
+EuroPay Processing GmbH is a licensed payment processor operating under PCI-DSS Level 1
+certification. This Agreement governs the provision of payment gateway and transaction
+processing services for the Customer's European e-commerce operations.
+
+ARTICLE 1 — SERVICES
+1.1 Service Provider shall process card-present and card-not-present payment transactions on
+    behalf of Customer via the Payment_Gateway integration endpoint.
+1.2 Access type: read-write to Payment_Gateway systems.
+1.3 Data handled includes cardholder data, billing addresses, and transaction history.
+    Classification: HIGH sensitivity (financial/PII).
+
+ARTICLE 2 — DATA PROTECTION
+2.1 The Service Provider confirms that it handles personal data of EU data subjects on behalf
+    of the Customer. A GDPR Data Processing Agreement has NOT been executed between the parties
+    at the time of this Agreement. The parties acknowledge this as an open action item.
+2.2 The Service Provider confirms:
+    - SOC 2 Type II certification: VALID, issued 1 March 2024, expiry 28 February 2027.
+    - ISO/IEC 27001: VALID, certified by BSI Group.
+    - GDPR DPA: NOT EXECUTED (see 2.1 above).
+2.3 The Service Provider is not currently under investigation by any regulatory authority.
+
+ARTICLE 3 — FINANCIAL INFORMATION
+3.1 Service Provider's Dun & Bradstreet financial strength rating: A- (low risk of default).
+3.2 Annual contract value: EUR 320,000 (~USD 348,000 at prevailing rates).
+
+ARTICLE 4 — INCIDENT NOTIFICATION
+Service Provider shall notify Customer of any data breach or suspected unauthorised access
+within 24 hours of the Provider becoming aware, and in any event within 72 hours as required
+by GDPR Article 33.
+
+ARTICLE 5 — GOVERNING LAW
+This Agreement is governed by German law. Disputes shall be resolved before the courts of
+Frankfurt am Main, Germany.
+
+[Signatures]
+Acme Enterprises Ltd.             EuroPay Processing GmbH
+Date: 01.03.2024                  Date: 01.03.2024

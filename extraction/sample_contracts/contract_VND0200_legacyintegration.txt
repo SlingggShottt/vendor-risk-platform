@@ -1,0 +1,40 @@
+SOFTWARE INTEGRATION SERVICES AGREEMENT
+
+Between:  LegacyIntegration Corp ("Contractor")
+And:      Acme Enterprises Ltd. ("Client")
+
+Contract Number: SISA-2021-0200
+Start Date:      January 15, 2021
+End Date:        December 31, 2025     ← NOTE: This contract is expired as of today.
+
+PURPOSE
+Contractor was engaged to integrate the Client's legacy ERP system with a third-party
+HR platform. During the integration period, Contractor requires limited read-only access
+to the FileServer_Corporate to retrieve configuration templates and historical export files.
+
+SCOPE OF ACCESS
+- System: FileServer_Corporate
+- Access type: READ ONLY
+- Data classification: MEDIUM (internal business records, no PII)
+- Duration of access: co-terminus with this Agreement
+
+NOTE FROM CLIENT SECURITY TEAM (annotated post-expiry):
+This contract expired December 31, 2025. As of Q1 2026, the Contractor's access credentials
+to FileServer_Corporate have NOT been revoked. This is an outstanding remediation ticket
+(SEC-4892). The access should be removed immediately and a formal off-boarding process
+completed. This vendor is flagged as having ORPHANED ACCESS pending remediation.
+
+COMPLIANCE AT TIME OF SIGNING (January 2021)
+- SOC 2 Type II: NOT certified at signing. Contractor was small (< 50 employees).
+- ISO/IEC 27001: NOT certified.
+- GDPR DPA: Not applicable — no EU data processed.
+- Investigation status: None known.
+
+FINANCIAL INFORMATION (at time of signing)
+- Credit rating: C (borderline)
+- Annual contract value: USD 65,000
+
+GOVERNING LAW
+State of New York, USA.
+
+[Signatures — original execution January 2021]
