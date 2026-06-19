@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ v.name }} — Vendor Risk Platform{% endblock %}
+{% block nav_vendors %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="/" class="back-link">← All Vendors</a>
+  <h1>{{ v.name }}</h1>
+  <span class="subtext">{{ v.vendor_id }} &nbsp;·&nbsp; {{ v.category }} &nbsp;·&nbsp; As of {{ today }}</span>
+</div>
+
+<!-- Risk header -->
+<div class="detail-risk-header risk-header-{{ sv.risk_level.value | lower }}">
+  <div class="risk-block">
+    <div class="risk-level-label">Risk Level</div>
+    <div class="risk-level-value">{{ sv.risk_level.value }}</div>
+  </div>
+  <div class="risk-block">
+    <div class="risk-level-label">Risk Score</div>
+    <div class="risk-level-value">{{ sv.risk_score }}</div>
+  </div>
+  <div class="risk-block">
+    <div class="risk-level-label">Anomaly</div>
+    <div class="risk-level-value anomaly-text">{{ sv.anomaly_type.value.replace('_', ' ') }}</div>
+  </div>
+  {% if v.under_investigation %}
+  <div class="risk-block investigation-flag">⚠ Under Investigation</div>
+  {% endif %}
+</div>
+
+<!-- Alerts panel -->
+{% if alerts %}
+<div class="detail-section">
+  <h2>Active Alerts ({{ alerts|length }})</h2>
+  {% for a in alerts %}
+  <div class="alert-row alert-{{ a.severity | lower }}">
+    <span class="alert-sev">{{ a.severity }}</span>
+    <span class="alert-msg">{{ a.message }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Recommendation -->
+<div class="detail-section">
+  <h2>Recommendation</h2>
+  <div class="recommendation-box risk-border-{{ sv.risk_level.value | lower }}">
+    {{ sv.recommendation }}
+  </div>
+</div>
+
+<!-- Risk factors -->
+<div class="detail-section">
+  <h2>Risk Factors</h2>
+  {% if sv.risk_factors and sv.risk_factors[0] != "No significant risk factors identified" %}
+  <ul class="risk-factors-list">
+    {% for f in sv.risk_factors %}
+    <li>{{ f }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="no-issues">✓ No significant risk factors identified.</p>
+  {% endif %}
+</div>
+
+<!-- Compliance grid -->
+<div class="detail-section">
+  <h2>Compliance Status</h2>
+  <div class="compliance-grid">
+    <div class="compliance-item {% if v.compliance.soc2_type2 %}comp-ok{% else %}comp-fail{% endif %}">
+      <span class="comp-icon">{% if v.compliance.soc2_type2 %}✓{% else %}✗{% endif %}</span>
+      <span>SOC 2 Type II</span>
+      {% if v.compliance.soc2_expiry %}
+      <span class="comp-date">Expires: {{ v.compliance.soc2_expiry }}</span>
+      {% endif %}
+    </div>
+    <div class="compliance-item {% if v.compliance.iso27001 %}comp-ok{% else %}comp-fail{% endif %}">
+      <span class="comp-icon">{% if v.compliance.iso27001 %}✓{% else %}✗{% endif %}</span>
+      <span>ISO 27001</span>
+    </div>
+    <div class="compliance-item {% if not v.handles_eu_data or v.compliance.gdpr_dpa %}comp-ok{% else %}comp-fail{% endif %}">
+      <span class="comp-icon">{% if not v.handles_eu_data or v.compliance.gdpr_dpa %}✓{% else %}✗{% endif %}</span>
+      <span>GDPR DPA</span>
+      {% if v.handles_eu_data %}<span class="comp-date">Handles EU data</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Data access -->
+<div class="detail-section">
+  <h2>Data Access</h2>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span class="detail-label">Sensitivity</span>
+      <span class="badge badge-sens-{{ v.data_access.data_sensitivity.value | lower }}">{{ v.data_access.data_sensitivity.value }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Access Type</span>
+      <span>{{ v.data_access.access_type.value.replace('_', ' ').upper() }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Systems</span>
+      <span>{{ v.data_access.systems | join(', ') or '—' }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Contract + financial -->
+<div class="detail-section">
+  <h2>Contract &amp; Financial</h2>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span class="detail-label">Contract Start</span>
+      <span>{{ v.contract_start }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Contract End</span>
+      <span {% if v.contract_end.isoformat() < today %}class="expired-date"{% endif %}>
+        {{ v.contract_end }}
+        {% if v.contract_end.isoformat() < today %}<span class="expired-tag">EXPIRED</span>{% endif %}
+      </span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Financial Rating</span>
+      <span>{{ v.financial_rating }}</span>
+    </div>
+    {% if v.annual_spend %}
+    <div class="detail-item">
+      <span class="detail-label">Annual Spend</span>
+      <span>${{ "{:,.0f}".format(v.annual_spend) }}</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Breach history -->
+{% if v.breach_history %}
+<div class="detail-section">
+  <h2>Breach History</h2>
+  {% for b in v.breach_history %}
+  <div class="breach-row breach-sev-{{ b.severity.value | lower }}">
+    <span class="breach-date">{{ b.date }}</span>
+    <span class="breach-sev">{{ b.severity.value }}</span>
+    <span class="breach-desc">{{ b.description }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

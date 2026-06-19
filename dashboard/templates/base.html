@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Vendor Risk Platform{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">🛡 Vendor Risk Platform</div>
+    <div class="nav-links">
+      <a href="/" class="{% block nav_vendors %}{% endblock %}">Vendors</a>
+      <a href="/reports" class="{% block nav_reports %}{% endblock %}">Reports</a>
+      <a href="/api/reports/csv" class="btn-export">Export CSV ↓</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

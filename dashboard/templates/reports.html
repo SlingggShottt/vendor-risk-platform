@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Portfolio Report — Vendor Risk Platform{% endblock %}
+{% block nav_reports %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Portfolio Risk Report</h1>
+  <span class="subtext">As of {{ today }}</span>
+  <a href="/api/reports/csv" class="btn btn-primary export-btn">⬇ Download CSV Report</a>
+</div>
+
+<!-- Report cards populated by JS -->
+<div id="reportLoading" class="loading">Generating report…</div>
+<div id="reportContent" style="display:none">
+
+  <!-- Risk summary -->
+  <div class="detail-section">
+    <h2>Risk Summary</h2>
+    <div class="stats-row" id="riskSummaryRow"></div>
+  </div>
+
+  <!-- Compliance stats -->
+  <div class="detail-section">
+    <h2>Compliance Coverage</h2>
+    <div class="compliance-stats-grid" id="complianceStats"></div>
+  </div>
+
+  <!-- Alert summary -->
+  <div class="detail-section">
+    <h2>Active Alerts</h2>
+    <div id="alertSummary"></div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="detail-section">
+    <h2>Top Recommendations</h2>
+    <ol id="topRecs" class="recs-list"></ol>
+  </div>
+
+  <!-- Red-flag vendors table -->
+  <div class="detail-section">
+    <h2>Red-Flag Vendors (CRITICAL &amp; HIGH)</h2>
+    <div class="table-wrap">
+      <table class="vendor-table">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Risk Level</th>
+            <th>Score</th>
+            <th>Primary Issue</th>
+            <th>Action Required</th>
+          </tr>
+        </thead>
+        <tbody id="redFlagBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const RISK_COLORS = {
+  CRITICAL: 'badge-critical', HIGH: 'badge-high',
+  MEDIUM: 'badge-medium', LOW: 'badge-low',
+};
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadReport() {
+  const resp = await fetch('/api/reports');
+  const r = await resp.json();
+
+  // Risk summary cards
+  const summaryRow = document.getElementById('riskSummaryRow');
+  ['CRITICAL','HIGH','MEDIUM','LOW'].forEach(lvl => {
+    const cls = lvl.toLowerCase();
+    summaryRow.innerHTML += `
+      <div class="stat-card ${cls}">
+        <div class="stat-num">${r.risk_summary[lvl]}</div>
+        <div class="stat-label">${lvl}</div>
+      </div>`;
+  });
+
+  // Compliance stats
+  const c = r.compliance_stats;
+  const compGrid = document.getElementById('complianceStats');
+  const compItems = [
+    { label: 'SOC 2 Valid Coverage',    val: c.soc2_coverage_pct + '%' },
+    { label: 'ISO 27001 Coverage',       val: c.iso27001_coverage_pct + '%' },
+    { label: 'GDPR Compliance',          val: c.gdpr_compliance_pct + '%' },
+    { label: 'SOC 2 Expiring ≤60 days',  val: c.soc2_expiring_60d },
+    { label: 'Orphaned Access',          val: c.orphaned_access_count },
+    { label: 'Under Investigation',      val: c.under_investigation_count },
+    { label: 'Recently Breached',        val: c.recently_breached_count },
+  ];
+  compItems.forEach(({ label, val }) => {
+    compGrid.innerHTML += `
+      <div class="comp-stat-item">
+        <div class="comp-stat-val">${escHtml(val)}</div>
+        <div class="comp-stat-label">${escHtml(label)}</div>
+      </div>`;
+  });
+
+  // Alert summary
+  const as = r.alert_summary;
+  const alertDiv = document.getElementById('alertSummary');
+  alertDiv.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card critical"><div class="stat-num">${as.CRITICAL}</div><div class="stat-label">CRITICAL alerts</div></div>
+      <div class="stat-card high"><div class="stat-num">${as.HIGH}</div><div class="stat-label">HIGH alerts</div></div>
+      <div class="stat-card medium"><div class="stat-num">${as.MEDIUM}</div><div class="stat-label">MEDIUM alerts</div></div>
+      <div class="stat-card low"><div class="stat-num">${as.LOW}</div><div class="stat-label">LOW alerts</div></div>
+    </div>`;
+
+  // Top recommendations
+  const recsList = document.getElementById('topRecs');
+  r.top_recommendations.forEach(rec => {
+    recsList.innerHTML += `<li>${escHtml(rec)}</li>`;
+  });
+
+  // Red-flag table
+  const tbody = document.getElementById('redFlagBody');
+  if (!r.red_flag_vendors.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No CRITICAL or HIGH vendors.</td></tr>';
+  } else {
+    r.red_flag_vendors.forEach(v => {
+      tbody.innerHTML += `
+        <tr class="vendor-row" onclick="location.href='/vendor/${v.vendor_id}'">
+          <td>
+            <div class="vendor-name">${escHtml(v.name)}</div>
+            <div class="vendor-id">${escHtml(v.vendor_id)} · ${escHtml(v.category)}</div>
+          </td>
+          <td><span class="badge ${RISK_COLORS[v.risk_level]}">${v.risk_level}</span></td>
+          <td>${v.risk_score.toFixed(1)}</td>
+          <td class="anomaly-cell">${escHtml(v.top_risk_factor.slice(0,80))}</td>
+          <td class="rec-cell">${escHtml(v.recommendation.slice(0,100))}…</td>
+        </tr>`;
+    });
+  }
+
+  document.getElementById('reportLoading').style.display = 'none';
+  document.getElementById('reportContent').style.display = 'block';
+}
+
+loadReport();
+</script>
+{% endblock %}
