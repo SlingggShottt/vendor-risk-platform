@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.env
+*.db
+.venv/
+venv/
+node_modules/
+.DS_Store
+*.egg-info/
+
+# Claude Code LOCAL state only (per-machine session/cache, not shared project knowledge).
+# Do NOT add CLAUDE.md, PRD.md, plan.md, backlog.md, memory.md, person-a.md, person-b.md,
+# tech-stack.md, style-guide.md, or restart.md here — those are the shared coordination
+# layer both of you and both Claude Code sessions depend on, and must stay committed.
+.claude/
+.claude.json
