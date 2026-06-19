@@ -1,136 +1,232 @@
 {% extends "base.html" %}
-{% block title %}Vendors — Vendor Risk Platform{% endblock %}
+{% block title %}Dashboard — Vendor Risk Platform{% endblock %}
 {% block nav_vendors %}active{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h1>Vendor Risk Dashboard</h1>
-  <span class="subtext">As of {{ today }} &nbsp;·&nbsp; {{ total_vendors }} vendors tracked</span>
+
+<!-- Page header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <div class="page-eyebrow"><i class="bi bi-calendar3 me-1"></i>{{ today }}</div>
+    <h1 class="fw-bold fs-3 mb-0">Vendor Risk Dashboard</h1>
+    <div class="text-muted" style="font-size:.85rem;">{{ total_vendors }} vendors tracked across your portfolio</div>
+  </div>
+  <a href="/reports" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-bar-chart-line me-1"></i>Full Report
+  </a>
 </div>
 
-<!-- Portfolio stats bar -->
-<div class="stats-row">
-  <div class="stat-card critical">
-    <div class="stat-num">{{ level_counts.CRITICAL }}</div>
-    <div class="stat-label">CRITICAL</div>
+<!-- Risk stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md">
+    <div class="risk-card card card-critical h-100">
+      <div class="card-body d-flex justify-content-between align-items-start">
+        <div>
+          <div class="risk-num">{{ level_counts.CRITICAL }}</div>
+          <div class="risk-lbl">Critical</div>
+        </div>
+        <i class="bi bi-exclamation-octagon-fill risk-icon"></i>
+      </div>
+    </div>
   </div>
-  <div class="stat-card high">
-    <div class="stat-num">{{ level_counts.HIGH }}</div>
-    <div class="stat-label">HIGH</div>
+  <div class="col-6 col-md">
+    <div class="risk-card card card-high h-100">
+      <div class="card-body d-flex justify-content-between align-items-start">
+        <div>
+          <div class="risk-num">{{ level_counts.HIGH }}</div>
+          <div class="risk-lbl">High</div>
+        </div>
+        <i class="bi bi-exclamation-triangle-fill risk-icon"></i>
+      </div>
+    </div>
   </div>
-  <div class="stat-card medium">
-    <div class="stat-num">{{ level_counts.MEDIUM }}</div>
-    <div class="stat-label">MEDIUM</div>
+  <div class="col-6 col-md">
+    <div class="risk-card card card-medium h-100">
+      <div class="card-body d-flex justify-content-between align-items-start">
+        <div>
+          <div class="risk-num">{{ level_counts.MEDIUM }}</div>
+          <div class="risk-lbl">Medium</div>
+        </div>
+        <i class="bi bi-exclamation-circle-fill risk-icon"></i>
+      </div>
+    </div>
   </div>
-  <div class="stat-card low">
-    <div class="stat-num">{{ level_counts.LOW }}</div>
-    <div class="stat-label">LOW</div>
+  <div class="col-6 col-md">
+    <div class="risk-card card card-low h-100">
+      <div class="card-body d-flex justify-content-between align-items-start">
+        <div>
+          <div class="risk-num">{{ level_counts.LOW }}</div>
+          <div class="risk-lbl">Low</div>
+        </div>
+        <i class="bi bi-shield-check-fill risk-icon"></i>
+      </div>
+    </div>
   </div>
-  <div class="stat-card alerts">
-    <div class="stat-num">{{ alert_counts.CRITICAL + alert_counts.HIGH }}</div>
-    <div class="stat-label">Active Alerts</div>
+  <div class="col-6 col-md">
+    <div class="risk-card card card-alerts h-100">
+      <div class="card-body d-flex justify-content-between align-items-start">
+        <div>
+          <div class="risk-num">{{ alert_counts.CRITICAL + alert_counts.HIGH }}</div>
+          <div class="risk-lbl">Active Alerts</div>
+        </div>
+        <i class="bi bi-bell-fill risk-icon"></i>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Risk level bar chart -->
-<div class="chart-row">
-  <div class="chart-card">
-    <h3>Risk Level Distribution</h3>
-    <canvas id="riskChart" height="80"></canvas>
+<!-- Charts row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="card chart-card h-100">
+      <div class="card-body p-4">
+        <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-bar-chart me-2"></i>Risk Level Distribution</h6>
+        <canvas id="riskBarChart" height="90"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card chart-card h-100">
+      <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center">
+        <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-pie-chart me-2"></i>Portfolio Split</h6>
+        <canvas id="riskDoughnut" style="max-width:180px;"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Search + filter controls -->
-<div class="controls-row">
-  <input
-    type="text"
-    id="searchInput"
-    placeholder="🔍  Search vendor name or ID…"
-    class="search-box"
-    autofocus
-  />
-  <select id="riskFilter" class="filter-select">
+<div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
+  <div class="flex-grow-1" style="min-width:220px;">
+    <div class="input-group">
+      <span class="input-group-text bg-white border-end-0" style="border-radius:10px 0 0 10px; border:1.5px solid #e2e8f0;">
+        <i class="bi bi-search text-muted"></i>
+      </span>
+      <input type="text" id="searchInput" class="form-control search-control border-start-0"
+             placeholder="Search vendor name or ID…" autofocus
+             style="border-radius:0 10px 10px 0; border-left:none;">
+    </div>
+  </div>
+  <select id="riskFilter" class="form-select filter-select" style="width:auto;">
     <option value="">All risk levels</option>
-    <option value="CRITICAL">CRITICAL</option>
-    <option value="HIGH">HIGH</option>
-    <option value="MEDIUM">MEDIUM</option>
-    <option value="LOW">LOW</option>
+    <option value="CRITICAL">🔴 CRITICAL</option>
+    <option value="HIGH">🟠 HIGH</option>
+    <option value="MEDIUM">🟡 MEDIUM</option>
+    <option value="LOW">🟢 LOW</option>
   </select>
-  <select id="sortBy" class="filter-select">
-    <option value="risk_score_desc">Risk Score ↓</option>
-    <option value="risk_score_asc">Risk Score ↑</option>
+  <select id="sortBy" class="form-select filter-select" style="width:auto;">
+    <option value="risk_score_desc">Score ↓</option>
+    <option value="risk_score_asc">Score ↑</option>
     <option value="name_asc">Name A→Z</option>
   </select>
 </div>
-
-<!-- Results count -->
-<div id="resultsCount" class="results-count"></div>
+<div id="resultsCount" class="text-muted mb-2" style="font-size:.8rem;"></div>
 
 <!-- Vendor table -->
-<div class="table-wrap">
-  <table class="vendor-table" id="vendorTable">
-    <thead>
-      <tr>
-        <th>Vendor</th>
-        <th>Risk Level</th>
-        <th>Score</th>
-        <th>Anomaly</th>
-        <th>Alerts</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="vendorTableBody">
-      <tr><td colspan="6" class="loading">Loading vendors…</td></tr>
-    </tbody>
-  </table>
+<div class="card vendor-table-card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table vendor-table mb-0" id="vendorTable">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Risk Level</th>
+            <th style="min-width:140px;">Score</th>
+            <th>Anomaly</th>
+            <th>Alerts</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="vendorTableBody">
+          <tr>
+            <td colspan="6" class="loading-overlay">
+              <div class="spinner-border spinner-border-sm text-secondary me-2"></div>Loading vendors…
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // ── Chart ────────────────────────────────────────────────────────────────
-  const ctx = document.getElementById('riskChart').getContext('2d');
-  new Chart(ctx, {
+  const LEVEL_COLORS = {
+    CRITICAL: { bar: '#dc3545', badge: 'badge-critical' },
+    HIGH:     { bar: '#fd7e14', badge: 'badge-high' },
+    MEDIUM:   { bar: '#ffc107', badge: 'badge-medium' },
+    LOW:      { bar: '#198754', badge: 'badge-low' },
+  };
+
+  // ── Bar chart ─────────────────────────────────────────────────────────────
+  new Chart(document.getElementById('riskBarChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
       datasets: [{
-        data: [
-          {{ level_counts.CRITICAL }},
-          {{ level_counts.HIGH }},
-          {{ level_counts.MEDIUM }},
-          {{ level_counts.LOW }},
-        ],
-        backgroundColor: ['#e53e3e', '#dd6b20', '#d69e2e', '#38a169'],
-        borderRadius: 4,
+        data: [{{ level_counts.CRITICAL }}, {{ level_counts.HIGH }}, {{ level_counts.MEDIUM }}, {{ level_counts.LOW }}],
+        backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#198754'],
+        borderRadius: 6, borderSkipped: false,
       }]
     },
     options: {
-      plugins: { legend: { display: false } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: ctx => ` ${ctx.raw} vendors`
+      }}},
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } },
-        x: { grid: { display: false } }
-      }
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8' } },
+        x: { grid: { display: false }, ticks: { color: '#64748b', font: { weight: '600' } } }
+      },
+      animation: { duration: 800, easing: 'easeOutQuart' }
     }
   });
 
-  // ── Vendor data + rendering ───────────────────────────────────────────────
-  const RISK_COLORS = {
-    CRITICAL: 'badge-critical',
-    HIGH: 'badge-high',
-    MEDIUM: 'badge-medium',
-    LOW: 'badge-low',
-  };
+  // ── Doughnut chart ────────────────────────────────────────────────────────
+  new Chart(document.getElementById('riskDoughnut').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
+      datasets: [{
+        data: [{{ level_counts.CRITICAL }}, {{ level_counts.HIGH }}, {{ level_counts.MEDIUM }}, {{ level_counts.LOW }}],
+        backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#198754'],
+        borderWidth: 0, hoverOffset: 6,
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 12, color: '#64748b' }}},
+      animation: { duration: 800 }
+    }
+  });
 
-  let allVendors = [];
+  // ── Vendor table rendering ────────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
-  async function fetchVendors(riskLevel = '', search = '', sortKey = 'risk_score', sortDir = 'desc') {
-    const params = new URLSearchParams({ limit: 1000, sort_by: sortKey, sort_dir: sortDir });
-    if (riskLevel) params.append('risk_level', riskLevel);
-    if (search)    params.append('search', search);
-    const resp = await fetch(`/api/vendors?${params}`);
-    const data = await resp.json();
-    return data;
+  function anomalyLabel(type) {
+    const m = {
+      BREACHED_VENDOR_HIGH_ACCESS: '<i class="bi bi-fire text-danger me-1"></i>Breach + High Access',
+      VENDOR_UNDER_INVESTIGATION:  '<i class="bi bi-search text-danger me-1"></i>Under Investigation',
+      HIGH_RISK_SCORE:             '<i class="bi bi-graph-up-arrow text-warning me-1"></i>High Risk Score',
+      EXPIRED_CERTIFICATION:       '<i class="bi bi-patch-exclamation text-warning me-1"></i>Expired Cert',
+      RECENTLY_BREACHED_VENDOR:    '<i class="bi bi-lightning text-warning me-1"></i>Recent Breach',
+      CONTRACT_EXPIRED_ACTIVE_ACCESS: '<i class="bi bi-door-open text-warning me-1"></i>Orphaned Access',
+      ELEVATED_RISK_VENDOR:        '<i class="bi bi-arrow-up text-secondary me-1"></i>Elevated Risk',
+      NONE: '<span class="text-muted">—</span>',
+    };
+    return m[type] || type;
+  }
+
+  function scoreBar(score, level) {
+    const color = { CRITICAL:'#dc3545', HIGH:'#fd7e14', MEDIUM:'#ffc107', LOW:'#198754' }[level] || '#6c757d';
+    return `
+      <div class="score-val">${score.toFixed(1)}</div>
+      <div style="height:4px;border-radius:4px;background:#f1f5f9;margin-top:4px;">
+        <div style="height:100%;width:${score}%;border-radius:4px;background:${color};transition:width .6s ease;"></div>
+      </div>`;
   }
 
   function renderTable(vendors) {
@@ -139,77 +235,57 @@
       `Showing ${vendors.length} vendor${vendors.length !== 1 ? 's' : ''}`;
 
     if (!vendors.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">No vendors match your filters.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">No vendors match your filters.</td></tr>';
       return;
     }
 
     tbody.innerHTML = vendors.map(v => {
-      const alertBadge = v.has_critical_alert
-        ? `<span class="alert-dot critical-dot" title="Critical alert">●</span>`
+      const alertCell = v.has_critical_alert
+        ? `<span class="alert-pill alert-pill-critical"><i class="bi bi-bell-fill"></i>${v.alert_count}</span>`
         : v.alert_count > 0
-          ? `<span class="alert-dot high-dot" title="${v.alert_count} alert(s)">●</span>`
-          : '';
-      const alertText = v.alert_count > 0
-        ? `<span class="alert-count">${v.alert_count} alert${v.alert_count !== 1 ? 's' : ''}</span>`
-        : '<span class="no-alert">—</span>';
+          ? `<span class="alert-pill alert-pill-high"><i class="bi bi-bell"></i>${v.alert_count}</span>`
+          : `<span class="alert-pill-none"><i class="bi bi-bell-slash"></i></span>`;
 
       return `
         <tr class="vendor-row" onclick="location.href='/vendor/${v.vendor_id}'">
           <td>
-            <div class="vendor-name">${alertBadge}${escHtml(v.name)}</div>
-            <div class="vendor-id">${escHtml(v.vendor_id)}</div>
+            <div class="vendor-name">${escHtml(v.name)}</div>
+            <div class="vendor-id-sub">${escHtml(v.vendor_id)}</div>
           </td>
-          <td><span class="badge ${RISK_COLORS[v.risk_level]}">${v.risk_level}</span></td>
-          <td><span class="score-cell">${v.risk_score.toFixed(1)}</span></td>
-          <td class="anomaly-cell">${formatAnomaly(v.anomaly_type)}</td>
-          <td>${alertText}</td>
-          <td><a href="/vendor/${v.vendor_id}" class="detail-link">View →</a></td>
+          <td><span class="badge-risk ${LEVEL_COLORS[v.risk_level].badge}">${v.risk_level}</span></td>
+          <td class="score-bar-wrap">${scoreBar(v.risk_score, v.risk_level)}</td>
+          <td style="font-size:.82rem;color:#475569;">${anomalyLabel(v.anomaly_type)}</td>
+          <td>${alertCell}</td>
+          <td><a href="/vendor/${v.vendor_id}" class="text-decoration-none text-primary fw-semibold" style="font-size:.82rem;">
+            View <i class="bi bi-arrow-right"></i></a>
+          </td>
         </tr>`;
     }).join('');
   }
 
-  function formatAnomaly(type) {
-    const map = {
-      BREACHED_VENDOR_HIGH_ACCESS: 'Breach + High Access',
-      VENDOR_UNDER_INVESTIGATION: 'Under Investigation',
-      HIGH_RISK_SCORE: 'High Risk Score',
-      EXPIRED_CERTIFICATION: 'Expired Cert',
-      RECENTLY_BREACHED_VENDOR: 'Recent Breach',
-      CONTRACT_EXPIRED_ACTIVE_ACCESS: 'Orphaned Access',
-      ELEVATED_RISK_VENDOR: 'Elevated Risk',
-      NONE: '—',
-    };
-    return map[type] || type;
+  async function fetchVendors(riskLevel='', search='', sortKey='risk_score', sortDir='desc') {
+    const p = new URLSearchParams({ limit: 1000, sort_by: sortKey, sort_dir: sortDir });
+    if (riskLevel) p.append('risk_level', riskLevel);
+    if (search)    p.append('search', search);
+    const r = await fetch(`/api/vendors?${p}`);
+    return (await r.json()).vendors;
   }
 
-  function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── Live filtering ────────────────────────────────────────────────────────
-  let debounceTimer;
+  let timer;
   async function refresh() {
-    const search   = document.getElementById('searchInput').value.trim();
-    const level    = document.getElementById('riskFilter').value;
-    const sortVal  = document.getElementById('sortBy').value;
-    const [sortKey, sortDir] = sortVal.includes('name')
-      ? ['name', 'asc']
-      : sortVal.endsWith('asc') ? ['risk_score', 'asc'] : ['risk_score', 'desc'];
-
-    const data = await fetchVendors(level, search, sortKey, sortDir);
-    renderTable(data.vendors);
+    const search  = document.getElementById('searchInput').value.trim();
+    const level   = document.getElementById('riskFilter').value;
+    const sortVal = document.getElementById('sortBy').value;
+    const [sk, sd] = sortVal.includes('name') ? ['name','asc']
+                   : sortVal.endsWith('asc')  ? ['risk_score','asc']
+                                               : ['risk_score','desc'];
+    renderTable(await fetchVendors(level, search, sk, sd));
   }
 
-  function debounceRefresh() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(refresh, 250);
-  }
-
-  document.getElementById('searchInput').addEventListener('input', debounceRefresh);
+  document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(refresh, 220); });
   document.getElementById('riskFilter').addEventListener('change', refresh);
   document.getElementById('sortBy').addEventListener('change', refresh);
 
-  // Initial load
   refresh();
 </script>
 {% endblock %}

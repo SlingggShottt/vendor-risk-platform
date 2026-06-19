@@ -3,103 +3,146 @@
 {% block nav_extract %}active{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h1>Contract Extraction</h1>
-  <span class="subtext">Paste a vendor contract to extract fields and compute a risk score</span>
+
+<div class="mb-4">
+  <div class="page-eyebrow"><i class="bi bi-cpu me-1"></i>AI-Powered</div>
+  <h1 class="fw-bold fs-3 mb-0">Contract Extraction</h1>
+  <div class="text-muted" style="font-size:.85rem;">Paste a vendor contract — AI extracts fields and computes a live risk score</div>
 </div>
 
-<div class="extract-layout">
+<div class="row g-4">
 
-  <!-- ── Input panel ─────────────────────────────────────────────────────── -->
-  <div class="extract-panel">
-    <div class="detail-section">
-      <h2>Load Sample Contract</h2>
-      <select id="sampleSelect" class="filter-select" style="width:100%;">
-        <option value="">— select a sample —</option>
-      </select>
-    </div>
+  <!-- ── Input panel ──────────────────────────────────────────────────────── -->
+  <div class="col-lg-5">
 
-    <div class="detail-section" style="margin-top:12px;">
-      <h2>Contract Text</h2>
-      <textarea
-        id="contractText"
-        rows="22"
-        placeholder="Paste vendor contract text here, or load a sample above…"
-        style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px;
-               font-family:monospace; font-size:0.82rem; resize:vertical; outline:none;
-               background:#f7f8fa; color:#2d3748;"
-      ></textarea>
-      <button id="analyzeBtn" class="export-btn" style="margin-top:12px; width:100%; font-size:1rem; padding:10px;">
-        Analyze Contract ↗
-      </button>
-      <div id="loadingMsg" style="display:none; text-align:center; margin-top:10px; color:#718096; font-size:0.9rem;">
-        Extracting fields…
+    <div class="card section-card mb-3">
+      <div class="card-header"><i class="bi bi-collection me-2"></i>Load Sample Contract</div>
+      <div class="card-body">
+        <select id="sampleSelect" class="form-select filter-select">
+          <option value="">— select a sample contract —</option>
+        </select>
+        <div class="text-muted mt-2" style="font-size:.75rem;">
+          <i class="bi bi-info-circle me-1"></i>Samples cover LOW, MEDIUM, HIGH risk scenarios, expired contracts, and investigation flags.
+        </div>
       </div>
     </div>
+
+    <div class="card section-card">
+      <div class="card-header"><i class="bi bi-file-text me-2"></i>Contract Text</div>
+      <div class="card-body">
+        <textarea
+          id="contractText"
+          class="form-control extract-textarea"
+          rows="20"
+          placeholder="Paste vendor contract text here, or load a sample above…"
+        ></textarea>
+        <div class="d-grid mt-3">
+          <button id="analyzeBtn" class="btn btn-primary btn-lg fw-semibold">
+            <i class="bi bi-cpu me-2"></i>Analyze Contract
+          </button>
+        </div>
+        <div id="loadingMsg" class="text-center mt-3 text-muted" style="display:none;">
+          <div class="spinner-border spinner-border-sm me-2 text-primary"></div>Extracting fields with AI…
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- ── Result panel ────────────────────────────────────────────────────── -->
-  <div class="extract-panel" id="resultPanel" style="display:none;">
-    <div class="detail-section">
+  <!-- ── Result panel ─────────────────────────────────────────────────────── -->
+  <div class="col-lg-7">
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h2 style="margin-bottom:0;">Extraction Result</h2>
-        <span id="modeTag" class="badge" style="font-size:0.8rem;"></span>
+    <!-- Placeholder state -->
+    <div id="resultPlaceholder" class="text-center py-5 text-muted">
+      <i class="bi bi-file-earmark-text display-1 d-block mb-3" style="opacity:.2;"></i>
+      <div class="fs-6 fw-semibold">No contract analyzed yet</div>
+      <div style="font-size:.85rem;">Load a sample or paste contract text, then click Analyze</div>
+    </div>
+
+    <!-- Error panel -->
+    <div id="errorPanel" class="alert alert-danger d-flex align-items-center gap-2" style="display:none !important;" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span id="errorMsg"></span>
+    </div>
+
+    <!-- Result panel -->
+    <div id="resultPanel" style="display:none;">
+
+      <!-- Risk hero -->
+      <div id="riskHero" class="risk-hero mb-3">
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="level-label mb-1">Extracted Vendor</div>
+            <div id="heroVendorName" class="level-val" style="font-size:1.5rem;"></div>
+            <div id="heroVendorId" class="text-white-50" style="font-size:.8rem;"></div>
+          </div>
+          <div class="col-auto text-end">
+            <div class="level-label mb-1">Risk Level</div>
+            <div id="heroLevel" class="level-val"></div>
+            <div class="risk-progress mt-2" style="width:120px;">
+              <div id="heroProgressFill" class="risk-progress-fill" style="width:0%;transition:width .8s ease;"></div>
+            </div>
+            <div id="heroScore" class="text-white-50 mt-1" style="font-size:.78rem;"></div>
+          </div>
+          <div class="col-auto">
+            <span id="modeTag" class="badge rounded-pill fs-6 px-3 py-2"></span>
+          </div>
+        </div>
       </div>
 
-      <!-- Risk banner -->
-      <div id="riskBanner" style="padding:14px 18px; border-radius:8px; margin-bottom:16px; display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
-        <div>
-          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:.4px; color:#718096;">Risk Level</div>
-          <div id="riskLevel" style="font-size:1.8rem; font-weight:800;"></div>
+      <div class="row g-3">
+
+        <!-- Extracted fields -->
+        <div class="col-md-6">
+          <div class="card section-card h-100">
+            <div class="card-header"><i class="bi bi-table me-2"></i>Extracted Fields</div>
+            <div class="card-body p-0">
+              <table class="table mb-0" id="extractedTable">
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div>
-          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:.4px; color:#718096;">Score</div>
-          <div id="riskScore" style="font-size:1.4rem; font-weight:700;"></div>
+
+        <!-- Risk factors + recommendation -->
+        <div class="col-md-6">
+          <div class="card section-card mb-3">
+            <div class="card-header"><i class="bi bi-list-ul me-2"></i>Risk Factors</div>
+            <div class="card-body d-flex flex-column gap-2" id="riskFactorsBody"></div>
+          </div>
+          <div class="card section-card">
+            <div class="card-header"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Recommendation</div>
+            <div class="card-body">
+              <div id="recommendation" class="rec-box"></div>
+            </div>
+          </div>
         </div>
-        <div>
-          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:.4px; color:#718096;">Anomaly</div>
-          <div id="anomalyType" style="font-size:0.9rem; font-weight:600;"></div>
-        </div>
+
       </div>
-
-      <!-- Extracted fields -->
-      <h2 style="margin-bottom:10px;">Extracted Fields</h2>
-      <table style="width:100%; border-collapse:collapse; font-size:0.88rem;" id="extractedTable">
-        <tbody></tbody>
-      </table>
-
-      <!-- Risk factors -->
-      <h2 style="margin-top:18px; margin-bottom:8px;">Risk Factors</h2>
-      <ul id="riskFactors" class="risk-factors-list"></ul>
-
-      <!-- Recommendation -->
-      <h2 style="margin-top:18px; margin-bottom:8px;">Recommendation</h2>
-      <div id="recommendation" class="recommendation-box"></div>
 
       <!-- Demo notice -->
-      <div id="demoNotice" style="display:none; margin-top:14px; padding:10px 14px;
-           border-radius:8px; background:#fffff0; border-left:3px solid #d69e2e;
-           font-size:0.82rem; color:#744210;">
+      <div id="demoNotice" class="alert alert-warning d-flex align-items-center gap-2 mt-3" style="display:none !important;">
+        <i class="bi bi-info-circle-fill"></i>
+        <span id="demoMsg"></span>
       </div>
+
     </div>
   </div>
-
-</div>
-
-<!-- Error -->
-<div id="errorPanel" style="display:none; margin-top:16px; padding:14px 18px;
-     background:#fff5f5; border-left:4px solid #e53e3e; border-radius:8px;
-     color:#c53030; font-size:0.9rem;">
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+const RISK_STYLES = {
+  CRITICAL: { hero: 'risk-hero-critical', color: '#b91c1c', rec: 'rec-box-critical' },
+  HIGH:     { hero: 'risk-hero-high',     color: '#c2410c', rec: 'rec-box-high' },
+  MEDIUM:   { hero: 'risk-hero-medium',   color: '#854d0e', rec: 'rec-box-medium' },
+  LOW:      { hero: 'risk-hero-low',      color: '#166534', rec: 'rec-box-low' },
+};
+
 async function loadSamples() {
   try {
-    const res = await fetch('/api/sample-contracts');
-    const samples = await res.json();
+    const samples = await (await fetch('/api/sample-contracts')).json();
     const sel = document.getElementById('sampleSelect');
     samples.forEach(s => {
       const opt = document.createElement('option');
@@ -107,31 +150,27 @@ async function loadSamples() {
       opt.textContent = s.display;
       sel.appendChild(opt);
     });
-  } catch (e) {
-    console.error('Could not load samples:', e);
-  }
+  } catch(e) { console.error('Could not load samples', e); }
 }
 
 document.getElementById('sampleSelect').addEventListener('change', async function () {
-  const filename = this.value;
-  if (!filename) return;
+  if (!this.value) return;
   try {
-    const res = await fetch('/api/sample-contracts/' + encodeURIComponent(filename));
-    const data = await res.json();
+    const data = await (await fetch('/api/sample-contracts/' + encodeURIComponent(this.value))).json();
     document.getElementById('contractText').value = data.text;
-  } catch (e) {
-    alert('Could not load contract: ' + e);
-  }
+  } catch(e) { alert('Could not load contract: ' + e); }
 });
 
 document.getElementById('analyzeBtn').addEventListener('click', async function () {
   const text = document.getElementById('contractText').value.trim();
-  if (!text) { alert('Paste or select a contract first.'); return; }
+  if (!text) { alert('Paste or load a contract first.'); return; }
 
   this.disabled = true;
+  this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing…';
   document.getElementById('loadingMsg').style.display = 'block';
   document.getElementById('resultPanel').style.display = 'none';
-  document.getElementById('errorPanel').style.display = 'none';
+  document.getElementById('resultPlaceholder').style.display = 'none';
+  document.getElementById('errorPanel').style.setProperty('display','none','important');
 
   try {
     const res = await fetch('/api/extract', {
@@ -141,108 +180,106 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
     });
 
     document.getElementById('loadingMsg').style.display = 'none';
-    document.getElementById('analyzeBtn').disabled = false;
+    this.disabled = false;
+    this.innerHTML = '<i class="bi bi-cpu me-2"></i>Analyze Contract';
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      document.getElementById('errorPanel').textContent = 'Error: ' + (err.detail || res.statusText);
-      document.getElementById('errorPanel').style.display = 'block';
+      document.getElementById('errorMsg').textContent = 'Error: ' + (err.detail || res.statusText);
+      document.getElementById('errorPanel').style.removeProperty('display');
       return;
     }
-
     renderResult(await res.json());
-  } catch (e) {
+  } catch(e) {
     document.getElementById('loadingMsg').style.display = 'none';
-    document.getElementById('analyzeBtn').disabled = false;
-    document.getElementById('errorPanel').textContent = 'Request failed: ' + e;
-    document.getElementById('errorPanel').style.display = 'block';
+    this.disabled = false;
+    this.innerHTML = '<i class="bi bi-cpu me-2"></i>Analyze Contract';
+    document.getElementById('errorMsg').textContent = 'Request failed: ' + e;
+    document.getElementById('errorPanel').style.removeProperty('display');
   }
 });
 
-const RISK_COLORS = {
-  CRITICAL: { bg: '#fff5f5', color: '#c53030', border: '#e53e3e' },
-  HIGH:     { bg: '#fffaf0', color: '#c05621', border: '#dd6b20' },
-  MEDIUM:   { bg: '#fffff0', color: '#975a16', border: '#d69e2e' },
-  LOW:      { bg: '#f0fff4', color: '#276749', border: '#38a169' },
-};
-
-function renderResult(data) {
-  const { scored, extracted, mode, message } = data;
+function renderResult({ scored, extracted, mode, message }) {
   const level = scored.risk_level;
-  const rc = RISK_COLORS[level] || RISK_COLORS.LOW;
+  const style = RISK_STYLES[level] || RISK_STYLES.LOW;
+
+  // Hero
+  const hero = document.getElementById('riskHero');
+  hero.className = `risk-hero ${style.hero} mb-3`;
+  document.getElementById('heroVendorName').textContent = extracted.vendor_name || '—';
+  document.getElementById('heroVendorId').textContent = extracted.vendor_id || '';
+  document.getElementById('heroLevel').textContent = level;
+  document.getElementById('heroProgressFill').style.width = scored.risk_score + '%';
+  document.getElementById('heroScore').textContent = `Score ${scored.risk_score.toFixed(1)} / 100`;
 
   // Mode badge
   const modeTag = document.getElementById('modeTag');
   if (mode === 'live') {
-    modeTag.textContent = 'Live AI Extraction';
-    modeTag.style.cssText = 'background:#f0fff4;color:#276749;border:1px solid #9ae6b4;';
+    modeTag.textContent = '✦ Live AI';
+    modeTag.style.cssText = 'background:rgba(255,255,255,.25);color:#fff;border:1px solid rgba(255,255,255,.4);';
   } else {
-    modeTag.textContent = 'Demo Mode';
-    modeTag.style.cssText = 'background:#fffff0;color:#975a16;border:1px solid #f6e05e;';
+    modeTag.textContent = '⟳ Demo';
+    modeTag.style.cssText = 'background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);';
   }
 
-  // Risk banner
-  const banner = document.getElementById('riskBanner');
-  banner.style.cssText = `padding:14px 18px;border-radius:8px;margin-bottom:16px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;background:${rc.bg};border-left:5px solid ${rc.border};`;
-  document.getElementById('riskLevel').style.color = rc.color;
-  document.getElementById('riskLevel').textContent = level;
-  document.getElementById('riskScore').textContent = scored.risk_score.toFixed(1) + ' / 100';
-  document.getElementById('anomalyType').textContent = scored.anomaly_type.replace(/_/g, ' ');
-
-  // Extracted fields table
+  // Extracted fields
   const tbody = document.querySelector('#extractedTable tbody');
   tbody.innerHTML = '';
   const fields = [
-    ['Vendor ID',        extracted.vendor_id],
-    ['Vendor Name',      extracted.vendor_name],
-    ['Category',         extracted.category],
-    ['Contract Start',   extracted.contract_start],
-    ['Contract End',     extracted.contract_end],
-    ['Systems',          Array.isArray(extracted.systems) ? extracted.systems.join(', ') : (extracted.systems || '—')],
-    ['Data Sensitivity', extracted.data_sensitivity],
-    ['Access Type',      (extracted.access_type || '').replace(/_/g, ' ')],
-    ['SOC 2 Type II',    extracted.soc2_type2  ? '✓ Yes' : '✗ No'],
-    ['SOC 2 Expiry',     extracted.soc2_expiry || '—'],
-    ['ISO 27001',        extracted.iso27001    ? '✓ Yes' : '✗ No'],
-    ['GDPR DPA',         extracted.gdpr_dpa    ? '✓ Yes' : '✗ No'],
-    ['Handles EU Data',  extracted.handles_eu_data ? 'Yes' : 'No'],
-    ['Financial Rating', extracted.financial_rating],
-    ['Annual Spend',     extracted.annual_spend ? '$' + Number(extracted.annual_spend).toLocaleString() : '—'],
-    ['Under Investigation', extracted.under_investigation ? '⚠ Yes' : 'No'],
+    ['Vendor ID',       extracted.vendor_id],
+    ['Name',            extracted.vendor_name],
+    ['Category',        extracted.category],
+    ['Contract Start',  extracted.contract_start],
+    ['Contract End',    extracted.contract_end],
+    ['Systems',         Array.isArray(extracted.systems) ? extracted.systems.join(', ') : (extracted.systems||'—')],
+    ['Sensitivity',     extracted.data_sensitivity],
+    ['Access Type',     (extracted.access_type||'').replace(/_/g,' ')],
+    ['SOC 2 Type II',   extracted.soc2_type2  ? '✓ Yes' : '✗ No'],
+    ['SOC 2 Expiry',    extracted.soc2_expiry || '—'],
+    ['ISO 27001',       extracted.iso27001    ? '✓ Yes' : '✗ No'],
+    ['GDPR DPA',        extracted.gdpr_dpa    ? '✓ Yes' : '✗ No'],
+    ['Handles EU Data', extracted.handles_eu_data ? 'Yes' : 'No'],
+    ['Financial Rating',extracted.financial_rating],
+    ['Annual Spend',    extracted.annual_spend ? '$' + Number(extracted.annual_spend).toLocaleString() : '—'],
+    ['Investigation',   extracted.under_investigation ? '⚠ YES' : 'No'],
   ];
-  fields.forEach(([label, value]) => {
+  fields.forEach(([label, val]) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="padding:6px 10px 6px 0; color:#718096; font-size:0.78rem; text-transform:uppercase;
-                 letter-spacing:.3px; white-space:nowrap; border-top:1px solid #edf2f7;">${label}</td>
-      <td style="padding:6px 0; border-top:1px solid #edf2f7;">${value ?? '—'}</td>`;
+    tr.className = 'field-row';
+    tr.innerHTML = `<td>${label}</td><td class="fw-medium">${val ?? '—'}</td>`;
     tbody.appendChild(tr);
   });
 
   // Risk factors
-  const rfList = document.getElementById('riskFactors');
-  rfList.innerHTML = '';
-  (scored.risk_factors || []).forEach(f => {
-    const li = document.createElement('li');
-    li.textContent = f;
-    rfList.appendChild(li);
-  });
+  const rfBody = document.getElementById('riskFactorsBody');
+  rfBody.innerHTML = '';
+  if (scored.risk_factors && scored.risk_factors.length) {
+    scored.risk_factors.forEach((f, i) => {
+      const div = document.createElement('div');
+      div.className = `risk-factor-item${i === 0 ? ' sev-' + level.toLowerCase() : ''}`;
+      div.innerHTML = `<i class="bi bi-dot me-1"></i>${f}`;
+      rfBody.appendChild(div);
+    });
+  } else {
+    rfBody.innerHTML = '<div class="text-success fw-semibold"><i class="bi bi-shield-check me-2"></i>No significant risk factors.</div>';
+  }
 
   // Recommendation
   const recBox = document.getElementById('recommendation');
   recBox.textContent = scored.recommendation || '';
-  recBox.className = 'recommendation-box risk-border-' + level.toLowerCase();
+  recBox.className = `rec-box ${style.rec}`;
 
   // Demo notice
   const notice = document.getElementById('demoNotice');
   if (mode === 'demo' && message) {
-    notice.textContent = 'ℹ ' + message;
-    notice.style.display = 'block';
+    document.getElementById('demoMsg').textContent = message;
+    notice.style.removeProperty('display');
   } else {
-    notice.style.display = 'none';
+    notice.style.setProperty('display','none','important');
   }
 
   document.getElementById('resultPanel').style.display = 'block';
+  document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 loadSamples();

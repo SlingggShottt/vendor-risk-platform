@@ -3,147 +3,205 @@
 {% block nav_vendors %}active{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <a href="/" class="back-link">← All Vendors</a>
-  <h1>{{ v.name }}</h1>
-  <span class="subtext">{{ v.vendor_id }} &nbsp;·&nbsp; {{ v.category }} &nbsp;·&nbsp; As of {{ today }}</span>
+
+<!-- Back + breadcrumb -->
+<div class="mb-3">
+  <a href="/" class="back-btn"><i class="bi bi-arrow-left me-1"></i>All Vendors</a>
 </div>
 
-<!-- Risk header -->
-<div class="detail-risk-header risk-header-{{ sv.risk_level.value | lower }}">
-  <div class="risk-block">
-    <div class="risk-level-label">Risk Level</div>
-    <div class="risk-level-value">{{ sv.risk_level.value }}</div>
+<!-- Hero risk banner -->
+<div class="risk-hero risk-hero-{{ sv.risk_level.value | lower }} mb-4">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-eyebrow text-white-50 mb-1">{{ v.vendor_id }} · {{ v.category }}</div>
+      <h2 class="fw-bold text-white mb-1">{{ v.name }}</h2>
+      <div class="text-white-50" style="font-size:.8rem;">Last assessed {{ today }}</div>
+    </div>
+    <div class="col-auto text-end">
+      <div class="level-label mb-1">Risk Level</div>
+      <div class="level-val">{{ sv.risk_level.value }}</div>
+      <div class="risk-progress mt-2" style="width:140px;">
+        <div class="risk-progress-fill" style="width:{{ sv.risk_score }}%;"></div>
+      </div>
+      <div class="text-white-50 mt-1" style="font-size:.78rem;">Score {{ sv.risk_score }} / 100</div>
+    </div>
   </div>
-  <div class="risk-block">
-    <div class="risk-level-label">Risk Score</div>
-    <div class="risk-level-value">{{ sv.risk_score }}</div>
-  </div>
-  <div class="risk-block">
-    <div class="risk-level-label">Anomaly</div>
-    <div class="risk-level-value anomaly-text">{{ sv.anomaly_type.value.replace('_', ' ') }}</div>
-  </div>
-  {% if v.under_investigation %}
-  <div class="risk-block investigation-flag">⚠ Under Investigation</div>
-  {% endif %}
 </div>
 
-<!-- Alerts panel -->
-{% if alerts %}
-<div class="detail-section">
-  <h2>Active Alerts ({{ alerts|length }})</h2>
-  {% for a in alerts %}
-  <div class="alert-row alert-{{ a.severity | lower }}">
-    <span class="alert-sev">{{ a.severity }}</span>
-    <span class="alert-msg">{{ a.message }}</span>
-  </div>
-  {% endfor %}
+<!-- Investigation banner -->
+{% if v.under_investigation %}
+<div class="investigation-banner mb-4">
+  <i class="bi bi-exclamation-octagon-fill me-2"></i>
+  This vendor is currently <strong>UNDER ACTIVE INVESTIGATION</strong> — immediate escalation required.
 </div>
 {% endif %}
 
-<!-- Recommendation -->
-<div class="detail-section">
-  <h2>Recommendation</h2>
-  <div class="recommendation-box risk-border-{{ sv.risk_level.value | lower }}">
-    {{ sv.recommendation }}
-  </div>
-</div>
+<div class="row g-3">
 
-<!-- Risk factors -->
-<div class="detail-section">
-  <h2>Risk Factors</h2>
-  {% if sv.risk_factors and sv.risk_factors[0] != "No significant risk factors identified" %}
-  <ul class="risk-factors-list">
-    {% for f in sv.risk_factors %}
-    <li>{{ f }}</li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="no-issues">✓ No significant risk factors identified.</p>
-  {% endif %}
-</div>
+  <!-- LEFT COLUMN -->
+  <div class="col-lg-8">
 
-<!-- Compliance grid -->
-<div class="detail-section">
-  <h2>Compliance Status</h2>
-  <div class="compliance-grid">
-    <div class="compliance-item {% if v.compliance.soc2_type2 %}comp-ok{% else %}comp-fail{% endif %}">
-      <span class="comp-icon">{% if v.compliance.soc2_type2 %}✓{% else %}✗{% endif %}</span>
-      <span>SOC 2 Type II</span>
-      {% if v.compliance.soc2_expiry %}
-      <span class="comp-date">Expires: {{ v.compliance.soc2_expiry }}</span>
-      {% endif %}
-    </div>
-    <div class="compliance-item {% if v.compliance.iso27001 %}comp-ok{% else %}comp-fail{% endif %}">
-      <span class="comp-icon">{% if v.compliance.iso27001 %}✓{% else %}✗{% endif %}</span>
-      <span>ISO 27001</span>
-    </div>
-    <div class="compliance-item {% if not v.handles_eu_data or v.compliance.gdpr_dpa %}comp-ok{% else %}comp-fail{% endif %}">
-      <span class="comp-icon">{% if not v.handles_eu_data or v.compliance.gdpr_dpa %}✓{% else %}✗{% endif %}</span>
-      <span>GDPR DPA</span>
-      {% if v.handles_eu_data %}<span class="comp-date">Handles EU data</span>{% endif %}
-    </div>
-  </div>
-</div>
-
-<!-- Data access -->
-<div class="detail-section">
-  <h2>Data Access</h2>
-  <div class="detail-grid">
-    <div class="detail-item">
-      <span class="detail-label">Sensitivity</span>
-      <span class="badge badge-sens-{{ v.data_access.data_sensitivity.value | lower }}">{{ v.data_access.data_sensitivity.value }}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Access Type</span>
-      <span>{{ v.data_access.access_type.value.replace('_', ' ').upper() }}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Systems</span>
-      <span>{{ v.data_access.systems | join(', ') or '—' }}</span>
-    </div>
-  </div>
-</div>
-
-<!-- Contract + financial -->
-<div class="detail-section">
-  <h2>Contract &amp; Financial</h2>
-  <div class="detail-grid">
-    <div class="detail-item">
-      <span class="detail-label">Contract Start</span>
-      <span>{{ v.contract_start }}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Contract End</span>
-      <span {% if v.contract_end.isoformat() < today %}class="expired-date"{% endif %}>
-        {{ v.contract_end }}
-        {% if v.contract_end.isoformat() < today %}<span class="expired-tag">EXPIRED</span>{% endif %}
-      </span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Financial Rating</span>
-      <span>{{ v.financial_rating }}</span>
-    </div>
-    {% if v.annual_spend %}
-    <div class="detail-item">
-      <span class="detail-label">Annual Spend</span>
-      <span>${{ "{:,.0f}".format(v.annual_spend) }}</span>
+    <!-- Alerts -->
+    {% if alerts %}
+    <div class="card section-card mb-3">
+      <div class="card-header">
+        <i class="bi bi-bell-fill text-danger me-2"></i>Active Alerts ({{ alerts|length }})
+      </div>
+      <div class="card-body d-flex flex-column gap-2">
+        {% for a in alerts %}
+        <div class="alert-item alert-item-{{ a.severity | lower }}">
+          <span class="badge-risk badge-{{ a.severity | lower }} flex-shrink-0">{{ a.severity }}</span>
+          <span style="color:#334155;">{{ a.message }}</span>
+        </div>
+        {% endfor %}
+      </div>
     </div>
     {% endif %}
-  </div>
-</div>
 
-<!-- Breach history -->
-{% if v.breach_history %}
-<div class="detail-section">
-  <h2>Breach History</h2>
-  {% for b in v.breach_history %}
-  <div class="breach-row breach-sev-{{ b.severity.value | lower }}">
-    <span class="breach-date">{{ b.date }}</span>
-    <span class="breach-sev">{{ b.severity.value }}</span>
-    <span class="breach-desc">{{ b.description }}</span>
+    <!-- Recommendation -->
+    <div class="card section-card mb-3">
+      <div class="card-header"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Recommendation</div>
+      <div class="card-body">
+        <div class="rec-box rec-box-{{ sv.risk_level.value | lower }}">{{ sv.recommendation }}</div>
+      </div>
+    </div>
+
+    <!-- Risk Factors -->
+    <div class="card section-card mb-3">
+      <div class="card-header"><i class="bi bi-list-ul me-2"></i>Risk Factors</div>
+      <div class="card-body d-flex flex-column gap-2">
+        {% if sv.risk_factors and sv.risk_factors[0] != "No significant risk factors identified" %}
+          {% for f in sv.risk_factors %}
+          <div class="risk-factor-item {% if loop.index == 1 %}sev-{{ sv.severity.value | lower }}{% endif %}">
+            <i class="bi bi-dot me-1"></i>{{ f }}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-success fw-semibold"><i class="bi bi-shield-check me-2"></i>No significant risk factors identified.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Breach History -->
+    {% if v.breach_history %}
+    <div class="card section-card mb-3">
+      <div class="card-header"><i class="bi bi-lightning-charge-fill text-danger me-2"></i>Breach History</div>
+      <div class="card-body d-flex flex-column gap-2">
+        {% for b in v.breach_history %}
+        <div class="alert-item alert-item-{{ b.severity.value | lower }}">
+          <span class="badge-risk badge-{{ b.severity.value | lower }} flex-shrink-0">{{ b.severity.value }}</span>
+          <span class="text-muted" style="font-size:.78rem;white-space:nowrap;">{{ b.date }}</span>
+          <span style="color:#334155;">{{ b.description }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
   </div>
-  {% endfor %}
+
+  <!-- RIGHT COLUMN -->
+  <div class="col-lg-4">
+
+    <!-- Score gauge card -->
+    <div class="card section-card mb-3" style="background:linear-gradient(135deg,#f8fafc,#f0f4ff);">
+      <div class="card-body text-center py-4">
+        <div class="text-muted mb-1" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;">Risk Score</div>
+        <div class="display-4 fw-black" style="color:var(--risk-{% if sv.risk_level.value=='CRITICAL' %}critical{% elif sv.risk_level.value=='HIGH' %}high{% elif sv.risk_level.value=='MEDIUM' %}medium{% else %}low{% endif %});">
+          {{ sv.risk_score }}
+        </div>
+        <div class="text-muted mb-3" style="font-size:.8rem;">out of 100</div>
+        <div class="progress" style="height:10px;border-radius:8px;">
+          <div class="progress-bar {% if sv.risk_level.value=='CRITICAL' %}bg-danger{% elif sv.risk_level.value=='HIGH' %}bg-warning{% elif sv.risk_level.value=='MEDIUM' %}bg-warning{% else %}bg-success{% endif %}"
+               style="width:{{ sv.risk_score }}%;border-radius:8px;" role="progressbar"></div>
+        </div>
+        <div class="mt-3">
+          <span class="badge-risk badge-{{ sv.risk_level.value | lower }} fs-6 px-3 py-2">{{ sv.risk_level.value }}</span>
+        </div>
+        <div class="text-muted mt-2" style="font-size:.8rem;">{{ sv.anomaly_type.value.replace('_', ' ') }}</div>
+      </div>
+    </div>
+
+    <!-- Compliance Status -->
+    <div class="card section-card mb-3">
+      <div class="card-header"><i class="bi bi-patch-check-fill text-success me-2"></i>Compliance</div>
+      <div class="card-body d-flex flex-column gap-2">
+        <div class="comp-item {% if v.compliance.soc2_type2 %}comp-ok{% else %}comp-fail{% endif %} d-flex justify-content-between align-items-start">
+          <div>
+            <div class="fw-semibold" style="font-size:.85rem;">SOC 2 Type II</div>
+            {% if v.compliance.soc2_expiry %}
+            <div class="text-muted" style="font-size:.72rem;">Expires {{ v.compliance.soc2_expiry }}</div>
+            {% endif %}
+          </div>
+          <i class="bi {% if v.compliance.soc2_type2 %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} fs-5"></i>
+        </div>
+        <div class="comp-item {% if v.compliance.iso27001 %}comp-ok{% else %}comp-fail{% endif %} d-flex justify-content-between align-items-center">
+          <div class="fw-semibold" style="font-size:.85rem;">ISO 27001</div>
+          <i class="bi {% if v.compliance.iso27001 %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} fs-5"></i>
+        </div>
+        <div class="comp-item {% if not v.handles_eu_data or v.compliance.gdpr_dpa %}comp-ok{% else %}comp-fail{% endif %} d-flex justify-content-between align-items-start">
+          <div>
+            <div class="fw-semibold" style="font-size:.85rem;">GDPR DPA</div>
+            {% if v.handles_eu_data %}<div class="text-muted" style="font-size:.72rem;">Handles EU data</div>{% endif %}
+          </div>
+          <i class="bi {% if not v.handles_eu_data or v.compliance.gdpr_dpa %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} fs-5"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Access -->
+    <div class="card section-card mb-3">
+      <div class="card-header"><i class="bi bi-database-fill-lock me-2"></i>Data Access</div>
+      <div class="card-body">
+        <table class="table table-sm mb-0" style="font-size:.85rem;">
+          <tr>
+            <td class="text-muted border-0 pb-2" style="width:45%;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;">Sensitivity</td>
+            <td class="border-0 pb-2">
+              <span class="badge-risk badge-{{ v.data_access.data_sensitivity.value | lower }}">{{ v.data_access.data_sensitivity.value }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;">Access Type</td>
+            <td class="fw-semibold">{{ v.data_access.access_type.value.replace('_',' ').upper() }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;">Systems</td>
+            <td style="word-break:break-word;">{{ v.data_access.systems | join(', ') or '—' }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Contract & Financial -->
+    <div class="card section-card mb-3">
+      <div class="card-header"><i class="bi bi-file-earmark-text me-2"></i>Contract &amp; Financial</div>
+      <div class="card-body">
+        <table class="table table-sm mb-0" style="font-size:.85rem;">
+          <tr>
+            <td class="text-muted border-0 pb-2" style="width:45%;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;">Start</td>
+            <td class="border-0 pb-2">{{ v.contract_start }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;">End</td>
+            <td class="{% if v.contract_end.isoformat() < today %}text-danger fw-semibold{% endif %}">
+              {{ v.contract_end }}
+              {% if v.contract_end.isoformat() < today %}<span class="expired-tag ms-1">EXPIRED</span>{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;">Rating</td>
+            <td class="fw-bold">{{ v.financial_rating }}</td>
+          </tr>
+          {% if v.annual_spend %}
+          <tr>
+            <td class="text-muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;">Annual Spend</td>
+            <td class="fw-semibold">${{ "{:,.0f}".format(v.annual_spend) }}</td>
+          </tr>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+
+  </div>
 </div>
-{% endif %}
 {% endblock %}
