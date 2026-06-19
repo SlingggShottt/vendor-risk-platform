@@ -429,3 +429,13 @@ VND-9007,PerfectScore Vendor,Security,2025-01-01,2028-01-01,LOW,read_only,Monito
 VND-9008,MaxRisk Everything LLC,Managed Services,2019-01-01,2026-03-21,HIGH,read_write,Database_Primary|Payment_Gateway|Identity_Provider,True,2026-05-20,False,False,1,2026-04-20,CRITICAL,Full database dump exfiltrated; ransom paid,D,1200000.0,False,True
 VND-9009,EUHandler NoDPA Ltd,Payment Processor,2024-01-01,2027-01-01,LOW,read_only,Payment_Gateway,True,2027-01-01,True,False,0,,,,A,,False,True
 VND-9010,AmbiguousMiddleGround Co,Software,2023-01-01,2026-12-31,MEDIUM,read_write,Ticketing_System|CRM,True,2026-08-03,False,True,1,2024-12-18,LOW,"Minor config exposure, no confirmed data exfiltration",B-,,False,False
+VND-9011,RepeatOffender Corp,Managed Services,2021-06-01,2027-06-01,LOW,read_only,Monitoring_Tools,True,2027-01-01,False,False,3,2026-05-05,LOW,"Minor misconfiguration, self-reported",B,,False,False
+VND-9012,JustExpiredYesterday Inc,Integration,2022-01-01,2026-06-18,MEDIUM,read_write,ERP|FileServer_Corporate,True,2027-01-01,True,True,0,,,,A,,False,False
+VND-9013,DoubleCritical Ltd,Security,2023-01-01,2027-01-01,HIGH,read_write,Identity_Provider|Database_Primary,False,,False,False,1,2026-05-20,CRITICAL,Nation-state attack; customer PII exfiltrated,D,,True,True
+VND-9014,NoActiveAccess Corp,Consulting,2024-01-01,2027-01-01,HIGH,none,,True,2027-06-01,True,True,0,,,,A,,False,False
+VND-9015,LongContract ExpiredCert,DevOps Tooling,2023-01-01,2030-01-01,MEDIUM,read_write,CI_CD_Pipeline|S3_Buckets,True,2025-06-19,False,False,0,,,,B+,,False,False
+VND-9016,BrokeButClean LLC,Analytics,2025-01-01,2028-01-01,LOW,read_only,Analytics_DB,True,2028-06-01,True,True,0,,,,D,,False,False
+VND-9017,JustOutsideCritical Co,Cloud Infrastructure,2022-06-01,2027-06-01,HIGH,read_write,Database_Primary,True,2027-01-01,True,True,1,2025-05-19,HIGH,Internal DB dump accessed by unauthorized third party,B,,False,False
+VND-9018,EUDataNoCerts Processing,Payment Processor,2024-01-01,2027-01-01,HIGH,read_write,Payment_Gateway|Audit_Logs,False,,False,True,0,,,,B,,False,True
+VND-9019,RecentBreachLowSens Ltd,Marketing Technology,2023-06-01,2026-12-31,LOW,read_only,Email_Platform,True,2027-01-01,False,False,1,2025-07-19,MEDIUM,"Email list exposed, no PII or financial data",B+,,False,False
+VND-9020,MaxWeightedScore Corp,HR Technology,2019-01-01,2025-02-04,HIGH,read_write,HR_System|Identity_Provider|Database_Primary,False,,False,False,0,,,,D,,False,True

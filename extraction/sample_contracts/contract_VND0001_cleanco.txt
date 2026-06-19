@@ -1,0 +1,42 @@
+ANALYTICS SERVICES AGREEMENT
+
+Vendor:   CleanCo Analytics Ltd.
+Client:   Acme Enterprises Ltd.
+Ref:      ASA-2024-0001
+Effective: January 1, 2024
+Expires:   January 1, 2027
+
+1. SERVICES
+CleanCo Analytics Ltd. provides business intelligence dashboards and reporting services.
+Access is limited to read-only queries against the Client's Analytics_DB environment.
+No write, delete, or administrative privileges are granted.
+
+2. DATA ACCESS
+- Systems: Analytics_DB
+- Access type: READ ONLY
+- Data sensitivity: LOW (aggregated, anonymised reporting data — no PII, no financial records)
+
+3. COMPLIANCE STATUS
+The Vendor confirms the following as of the Effective Date:
+  a) SOC 2 Type II certification: VALID. Issued January 1, 2024; valid through January 1, 2027.
+  b) ISO/IEC 27001 certification: VALID. Certified by Bureau Veritas.
+  c) GDPR Data Processing Agreement: NOT REQUIRED. The Vendor does not process personal data
+     of EU data subjects under this Agreement. All data is anonymised at source before
+     transmission to Vendor's analytics platform.
+  d) Regulatory investigations: None. No pending or active regulatory actions.
+
+4. FINANCIAL STANDING
+Moody's equivalent rating: A (prime). Annual contract value: USD 48,000.
+
+5. BREACH NOTIFICATION
+Vendor shall notify Client within 48 hours of any confirmed or suspected security incident
+affecting Client data. Vendor undergoes annual SOC 2 Type II audits and quarterly
+internal penetration tests.
+
+6. TERM AND RENEWAL
+Automatically renews for successive one-year terms unless either party provides 90 days'
+written notice of non-renewal prior to the end of the then-current term.
+
+Signed:
+Acme Enterprises Ltd. _______________    CleanCo Analytics Ltd. _______________
+Date: January 1, 2024                    Date: January 1, 2024
