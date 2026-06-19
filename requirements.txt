@@ -7,5 +7,4 @@ pandas
 scikit-learn
 python-multipart
 python-dotenv
-
-# Add new deps below as needed during the hackathon — note who added what in memory.md
+anthropic>=0.111.0
