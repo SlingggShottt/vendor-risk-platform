@@ -249,7 +249,7 @@ EDGE_CASE_VENDORS: list[Vendor] = [
     ),
 
     # EC-10: Genuinely ambiguous — old breach (18mo), medium sensitivity, expiring cert (45 days),
-    # B- rating. Should land in MEDIUM. Tests that weighted scoring doesn't over-fire.
+    # B- rating. Should land in LOW/MEDIUM. Tests that weighted scoring doesn't over-fire.
     Vendor(
         vendor_id="VND-9010",
         name="AmbiguousMiddleGround Co",
@@ -275,6 +275,233 @@ EDGE_CASE_VENDORS: list[Vendor] = [
         financial_rating="B-",
         under_investigation=False,
         handles_eu_data=False,
+    ),
+
+    # EC-11: Multiple breaches — two historical (>12mo), one very recent but LOW sensitivity.
+    # Recent breach does NOT hit CRITICAL floor (sensitivity is LOW). Tests multi-breach handling
+    # and that the scorer picks the most recent breach date, not the worst.
+    Vendor(
+        vendor_id="VND-9011",
+        name="RepeatOffender Corp",
+        category="Managed Services",
+        contract_start=date(2021, 6, 1),
+        contract_end=date(2027, 6, 1),
+        data_access=DataAccess(
+            systems=["Monitoring_Tools"],
+            data_sensitivity=DataSensitivity.LOW,
+            access_type=AccessType.READ_ONLY,
+        ),
+        compliance=Compliance(soc2_type2=True, soc2_expiry=date(2027, 1, 1), iso27001=False, gdpr_dpa=False),
+        breach_history=[
+            BreachEvent(date=date(2022, 3, 10), severity=Severity.LOW, description="Phishing campaign, no data loss"),
+            BreachEvent(date=date(2024, 8, 5), severity=Severity.MEDIUM, description="API key leaked in public repo"),
+            BreachEvent(date=TODAY - timedelta(days=45), severity=Severity.LOW, description="Minor misconfiguration, self-reported"),
+        ],
+        financial_rating="B",
+        under_investigation=False,
+        handles_eu_data=False,
+    ),
+
+    # EC-12: Contract expired exactly yesterday — sharpest orphaned-access boundary.
+    Vendor(
+        vendor_id="VND-9012",
+        name="JustExpiredYesterday Inc",
+        category="Integration",
+        contract_start=date(2022, 1, 1),
+        contract_end=TODAY - timedelta(days=1),  # expired yesterday
+        data_access=DataAccess(
+            systems=["ERP", "FileServer_Corporate"],
+            data_sensitivity=DataSensitivity.MEDIUM,
+            access_type=AccessType.READ_WRITE,
+        ),
+        compliance=Compliance(soc2_type2=True, soc2_expiry=date(2027, 1, 1), iso27001=True, gdpr_dpa=True),
+        breach_history=[],
+        financial_rating="A",
+        under_investigation=False,
+        handles_eu_data=False,
+    ),
+
+    # EC-13: Under investigation AND recently breached with HIGH access.
+    # Both hard floors apply independently — scorer must handle the double-trigger and still
+    # output CRITICAL (not crash or double-count).
+    Vendor(
+        vendor_id="VND-9013",
+        name="DoubleCritical Ltd",
+        category="Security",
+        contract_start=date(2023, 1, 1),
+        contract_end=date(2027, 1, 1),
+        data_access=DataAccess(
+            systems=["Identity_Provider", "Database_Primary"],
+            data_sensitivity=DataSensitivity.HIGH,
+            access_type=AccessType.READ_WRITE,
+        ),
+        compliance=Compliance(soc2_type2=False, iso27001=False, gdpr_dpa=False),
+        breach_history=[BreachEvent(
+            date=TODAY - timedelta(days=30),
+            severity=Severity.CRITICAL,
+            description="Nation-state attack; customer PII exfiltrated",
+        )],
+        financial_rating="D",
+        under_investigation=True,  # also under investigation — both floors triggered
+        handles_eu_data=True,
+    ),
+
+    # EC-14: HIGH sensitivity, NO systems listed — access_type=none, empty systems list.
+    # Represents a vendor with theoretical HIGH data access level but currently no active
+    # system connections. Should score lower than an equivalent vendor with active systems.
+    Vendor(
+        vendor_id="VND-9014",
+        name="NoActiveAccess Corp",
+        category="Consulting",
+        contract_start=date(2024, 1, 1),
+        contract_end=date(2027, 1, 1),
+        data_access=DataAccess(
+            systems=[],  # no active systems
+            data_sensitivity=DataSensitivity.HIGH,
+            access_type=AccessType.NONE,
+        ),
+        compliance=Compliance(soc2_type2=True, soc2_expiry=date(2027, 6, 1), iso27001=True, gdpr_dpa=True),
+        breach_history=[],
+        financial_rating="A",
+        under_investigation=False,
+        handles_eu_data=False,
+    ),
+
+    # EC-15: Contract far in the future but SOC2 already expired long ago (1 year).
+    # Decouples cert status from contract status — scorer must apply cert penalty independently.
+    Vendor(
+        vendor_id="VND-9015",
+        name="LongContract ExpiredCert",
+        category="DevOps Tooling",
+        contract_start=date(2023, 1, 1),
+        contract_end=date(2030, 1, 1),  # valid contract until 2030
+        data_access=DataAccess(
+            systems=["CI_CD_Pipeline", "S3_Buckets"],
+            data_sensitivity=DataSensitivity.MEDIUM,
+            access_type=AccessType.READ_WRITE,
+        ),
+        compliance=Compliance(
+            soc2_type2=True,
+            soc2_expiry=TODAY - timedelta(days=365),  # expired a full year ago
+            iso27001=False,
+            gdpr_dpa=False,
+        ),
+        breach_history=[],
+        financial_rating="B+",
+        under_investigation=False,
+        handles_eu_data=False,
+    ),
+
+    # EC-16: Financial rating D but everything else is exemplary — low sensitivity read-only,
+    # all certs valid, no breach, active contract. Tests that D rating alone doesn't over-trigger
+    # and that financial risk is weighted correctly (10%) without drowning other factors.
+    Vendor(
+        vendor_id="VND-9016",
+        name="BrokeButClean LLC",
+        category="Analytics",
+        contract_start=date(2025, 1, 1),
+        contract_end=date(2028, 1, 1),
+        data_access=DataAccess(
+            systems=["Analytics_DB"],
+            data_sensitivity=DataSensitivity.LOW,
+            access_type=AccessType.READ_ONLY,
+        ),
+        compliance=Compliance(soc2_type2=True, soc2_expiry=date(2028, 6, 1), iso27001=True, gdpr_dpa=True),
+        breach_history=[],
+        financial_rating="D",  # terrible rating, but only 10% of score
+        under_investigation=False,
+        handles_eu_data=False,
+    ),
+
+    # EC-17: Breach exactly 13 months ago with HIGH access — just outside the 12-month CRITICAL
+    # floor. Should NOT trigger the hard floor; decayed weighted score should land in MEDIUM/HIGH.
+    Vendor(
+        vendor_id="VND-9017",
+        name="JustOutsideCritical Co",
+        category="Cloud Infrastructure",
+        contract_start=date(2022, 6, 1),
+        contract_end=date(2027, 6, 1),
+        data_access=DataAccess(
+            systems=["Database_Primary"],
+            data_sensitivity=DataSensitivity.HIGH,
+            access_type=AccessType.READ_WRITE,
+        ),
+        compliance=Compliance(soc2_type2=True, soc2_expiry=date(2027, 1, 1), iso27001=True, gdpr_dpa=True),
+        breach_history=[BreachEvent(
+            date=TODAY - timedelta(days=396),  # ~13 months ago — just outside CRITICAL floor
+            severity=Severity.HIGH,
+            description="Internal DB dump accessed by unauthorized third party",
+        )],
+        financial_rating="B",
+        under_investigation=False,
+        handles_eu_data=False,
+    ),
+
+    # EC-18: EU data handler with valid GDPR DPA but missing both SOC2 and ISO27001 entirely.
+    # Tests that DPA presence doesn't compensate for missing certs — two independent penalties.
+    Vendor(
+        vendor_id="VND-9018",
+        name="EUDataNoCerts Processing",
+        category="Payment Processor",
+        contract_start=date(2024, 1, 1),
+        contract_end=date(2027, 1, 1),
+        data_access=DataAccess(
+            systems=["Payment_Gateway", "Audit_Logs"],
+            data_sensitivity=DataSensitivity.HIGH,
+            access_type=AccessType.READ_WRITE,
+        ),
+        compliance=Compliance(soc2_type2=False, soc2_expiry=None, iso27001=False, gdpr_dpa=True),
+        breach_history=[],
+        financial_rating="B",
+        under_investigation=False,
+        handles_eu_data=True,
+    ),
+
+    # EC-19: Breach 11 months ago (inside 12-month window) but LOW sensitivity access.
+    # Tests that the CRITICAL floor only triggers on HIGH sensitivity — LOW sensitivity with
+    # recent breach should score HIGH/MEDIUM via weighted path, not CRITICAL.
+    Vendor(
+        vendor_id="VND-9019",
+        name="RecentBreachLowSens Ltd",
+        category="Marketing Technology",
+        contract_start=date(2023, 6, 1),
+        contract_end=date(2026, 12, 31),
+        data_access=DataAccess(
+            systems=["Email_Platform"],
+            data_sensitivity=DataSensitivity.LOW,  # LOW sensitivity — floor should NOT trigger
+            access_type=AccessType.READ_ONLY,
+        ),
+        compliance=Compliance(soc2_type2=True, soc2_expiry=date(2027, 1, 1), iso27001=False, gdpr_dpa=False),
+        breach_history=[BreachEvent(
+            date=TODAY - timedelta(days=335),  # ~11 months ago — inside window, but LOW sensitivity
+            severity=Severity.MEDIUM,
+            description="Email list exposed, no PII or financial data",
+        )],
+        financial_rating="B+",
+        under_investigation=False,
+        handles_eu_data=False,
+    ),
+
+    # EC-20: Perfectly awful on every weighted factor but no CRITICAL hard floor.
+    # Missing SOC2 + missing ISO + orphaned contract + D rating + EU no DPA + READ_WRITE HIGH.
+    # Max weighted score without breach = cert(25)+contract(15)+financial(10)+scope(10)+dpa(5) = 65.
+    # Should score exactly 65 → HIGH via weighted path. Verifies CRITICAL requires breach or investigation.
+    Vendor(
+        vendor_id="VND-9020",
+        name="MaxWeightedScore Corp",
+        category="HR Technology",
+        contract_start=date(2019, 1, 1),
+        contract_end=TODAY - timedelta(days=500),  # contract expired ~17 months ago
+        data_access=DataAccess(
+            systems=["HR_System", "Identity_Provider", "Database_Primary"],
+            data_sensitivity=DataSensitivity.HIGH,
+            access_type=AccessType.READ_WRITE,
+        ),
+        compliance=Compliance(soc2_type2=False, soc2_expiry=None, iso27001=False, gdpr_dpa=False),
+        breach_history=[],  # no breach, so no CRITICAL hard floor — tests weighted-path CRITICAL
+        financial_rating="D",
+        under_investigation=False,
+        handles_eu_data=True,
     ),
 ]
 

@@ -429,3 +429,13 @@ VND-9007,False,NONE,LOW,,Score=0.0 → LOW. Breach: none. Certs: OK. Contract ex
 VND-9008,True,BREACHED_VENDOR_HIGH_ACCESS,CRITICAL,,Breach 2.0 months ago with HIGH data sensitivity — hard-floor CRITICAL.
 VND-9009,False,NONE,LOW,,Score=5.0 → LOW. Breach: none. Certs: OK. Contract expired: False. Rating: A.
 VND-9010,False,NONE,LOW,SOC2_TYPE2_EXPIRING_SOON,Score=31.5 → LOW. Breach: 18.0mo ago. Certs: ['SOC2_TYPE2_EXPIRING_SOON']. Contract expired: False. Rating: B-.
+VND-9011,False,NONE,LOW,,Score=19.6 → LOW. Breach: 1.5mo ago. Certs: OK. Contract expired: False. Rating: B.
+VND-9012,False,NONE,LOW,CONTRACT_EXPIRED_ACTIVE_ACCESS,Score=18.0 → LOW. Breach: none. Certs: ['CONTRACT_EXPIRED_ACTIVE_ACCESS']. Contract expired: True. Rating: A.
+VND-9013,True,VENDOR_UNDER_INVESTIGATION,CRITICAL,,Vendor is flagged under_investigation — hard-floor CRITICAL.
+VND-9014,False,NONE,LOW,,Score=0.0 → LOW. Breach: none. Certs: OK. Contract expired: False. Rating: A.
+VND-9015,False,NONE,LOW,SOC2_TYPE2_EXPIRED,Score=32.0 → LOW. Breach: none. Certs: ['SOC2_TYPE2_EXPIRED']. Contract expired: False. Rating: B+.
+VND-9016,False,NONE,LOW,,Score=10.0 → LOW. Breach: none. Certs: OK. Contract expired: False. Rating: D.
+VND-9017,False,NONE,LOW,,Score=34.4 → LOW. Breach: 13.0mo ago. Certs: OK. Contract expired: False. Rating: B.
+VND-9018,False,NONE,LOW,SOC2_TYPE2_MISSING,Score=37.0 → LOW. Breach: none. Certs: ['SOC2_TYPE2_MISSING']. Contract expired: False. Rating: B.
+VND-9019,False,NONE,LOW,,Score=16.3 → LOW. Breach: 11.0mo ago. Certs: OK. Contract expired: False. Rating: B+.
+VND-9020,True,ELEVATED_RISK_VENDOR,HIGH,SOC2_TYPE2_MISSING|CONTRACT_EXPIRED_ACTIVE_ACCESS,"Score=65.0 → HIGH. Breach: none. Certs: ['SOC2_TYPE2_MISSING', 'CONTRACT_EXPIRED_ACTIVE_ACCESS']. Contract expired: True. Rating: D."

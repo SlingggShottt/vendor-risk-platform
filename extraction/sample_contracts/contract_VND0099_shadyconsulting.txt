@@ -1,0 +1,45 @@
+CONSULTING SERVICES AGREEMENT
+
+Parties:
+  Consultant: ShadyConsulting LLC ("Consultant")
+  Client:     Acme Enterprises Ltd. ("Client")
+
+Contract ID:  CSA-2025-0099
+Start Date:   January 1, 2025
+End Date:     December 31, 2026
+
+SCOPE
+Consultant provides HR transformation advisory services. In connection with the engagement,
+Consultant is granted temporary read-write access to the Client's HR_System for the purpose
+of conducting workforce data audits and compensation benchmarking.
+
+DATA ACCESS DETAILS
+- System(s) accessed: HR_System
+- Access level: read-write
+- Data sensitivity: MEDIUM (employee records, compensation data — internal, not public)
+- Handling of EU employee data: NOT APPLICABLE under this agreement.
+
+COMPLIANCE REPRESENTATIONS
+As of January 1, 2025, Consultant confirms:
+  i.   SOC 2 Type II: NOT HELD. Consultant is a boutique firm (12 FTEs) and does not
+       currently maintain SOC 2 certification.
+  ii.  ISO/IEC 27001: NOT HELD.
+  iii. GDPR DPA: NOT EXECUTED (not required for this engagement scope).
+  iv.  Regulatory / investigation status: No pending investigations known to Consultant
+       at the time of signing.
+
+IMPORTANT NOTICE (appended by Client Legal, Q2 2025):
+Client has been informed by external counsel that ShadyConsulting LLC is subject to an
+active SEC investigation relating to alleged improper disclosure of client confidential
+information from a prior engagement. This matter is material to the risk profile of
+this vendor. Vendor has been flagged UNDER INVESTIGATION pending resolution.
+Access privileges are under review by Client Security team (Ticket: SEC-7741).
+
+FINANCIAL INFORMATION
+Credit standing: C (speculative). Annual contract value: USD 120,000.
+
+GOVERNING LAW
+Delaware, USA.
+
+Signatures (original January 1, 2025):
+[Client]                             [Consultant]
