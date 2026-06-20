@@ -87,6 +87,44 @@ def _monthly_summary_text(
     return subject, "\n".join(lines)
 
 
+def _eod_digest_text(alerts: list[Alert], today: date) -> tuple[str, str]:
+    """Return (subject, body) for the 5pm EOD digest of alerts raised today."""
+    critical = [a for a in alerts if a.severity == "CRITICAL"]
+    high     = [a for a in alerts if a.severity == "HIGH"]
+    others   = [a for a in alerts if a.severity not in ("CRITICAL", "HIGH")]
+
+    subject = (
+        f"[Vendor Risk] EOD Digest — {len(alerts)} new alert(s) today ({today.isoformat()})"
+    )
+
+    lines = [
+        "VENDOR RISK — END-OF-DAY ALERT DIGEST",
+        f"Date: {today.isoformat()}   |   New alerts raised today: {len(alerts)}",
+        "=" * 60,
+        "",
+    ]
+
+    def _render(alert_list: list[Alert], header: str) -> None:
+        if not alert_list:
+            return
+        lines.append(header)
+        for a in alert_list:
+            lines.append(f"  [{a.vendor_id}] {a.vendor_name}  (added {a.triggered_at.strftime('%H:%M UTC')})")
+            lines.append(f"  Type    : {a.alert_type}")
+            lines.append(f"  Message : {a.message}")
+            lines.append("")
+
+    _render(critical, "CRITICAL ALERTS")
+    _render(high,     "HIGH ALERTS")
+    _render(others,   "OTHER ALERTS")
+
+    lines += [
+        "—",
+        "Vendor Risk Platform — automated EOD digest. Contact security team for action items.",
+    ]
+    return subject, "\n".join(lines)
+
+
 def _expiry_alert_text(alerts: list[Alert], today: date) -> tuple[str, str]:
     """Return (subject, body) for a batch of expiry/breach alerts."""
     critical = [a for a in alerts if a.severity == "CRITICAL"]
@@ -130,6 +168,7 @@ def _expiry_alert_text(alerts: list[Alert], today: date) -> tuple[str, str]:
 class EmailBackend(Protocol):
     def send_monthly_summary(self, scored: list[ScoredVendor], today: date | None) -> None: ...
     def send_expiry_alerts(self, alerts: list[Alert], today: date | None) -> None: ...
+    def send_eod_digest(self, alerts: list[Alert], today: date | None) -> None: ...
 
 
 # ── Console backend (always available, never blocks) ─────────────────────────
@@ -156,6 +195,18 @@ class ConsoleBackend:
             print("[emailer] No alerts to send.", flush=True)
             return
         subject, body = _expiry_alert_text(alerts, today)
+        self._print(subject, body)
+
+    def send_eod_digest(
+        self,
+        alerts: list[Alert],
+        today: date | None = None,
+    ) -> None:
+        today = today or date.today()
+        if not alerts:
+            print("[emailer] EOD digest: no new alerts today.", flush=True)
+            return
+        subject, body = _eod_digest_text(alerts, today)
         self._print(subject, body)
 
     def _print(self, subject: str, body: str) -> None:
@@ -224,6 +275,17 @@ class SMTPBackend:
         if not alerts:
             return
         subject, body = _expiry_alert_text(alerts, today)
+        self._send(subject, body)
+
+    def send_eod_digest(
+        self,
+        alerts: list[Alert],
+        today: date | None = None,
+    ) -> None:
+        today = today or date.today()
+        if not alerts:
+            return
+        subject, body = _eod_digest_text(alerts, today)
         self._send(subject, body)
 
 
