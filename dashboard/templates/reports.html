@@ -10,9 +10,27 @@
     <h1 class="fw-bold fs-3 mb-0">Portfolio Risk Report</h1>
     <div class="text-muted" style="font-size:.85rem;">Full vendor portfolio overview and compliance summary</div>
   </div>
-  <a href="/api/reports/csv" class="btn btn-primary">
-    <i class="bi bi-download me-2"></i>Download CSV
-  </a>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="/api/reports/csv" class="btn btn-primary">
+      <i class="bi bi-download me-2"></i>Download CSV
+    </a>
+    <button class="btn btn-outline-primary" id="btnMonthly" onclick="sendAlert('monthly')">
+      <i class="bi bi-envelope me-2"></i>Monthly Summary Email
+    </button>
+    <button class="btn btn-outline-danger" id="btnExpiry" onclick="sendAlert('expiry')">
+      <i class="bi bi-bell me-2"></i>Send Expiry Alerts
+    </button>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index:9999;">
+  <div id="alertToast" class="toast align-items-center border-0 text-white" role="alert" aria-live="assertive">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Email sent.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
 </div>
 
 <div id="reportLoading" class="text-center py-5 text-muted">
@@ -215,6 +233,28 @@ async function loadReport() {
 
   document.getElementById('reportLoading').style.display = 'none';
   document.getElementById('reportContent').style.display = 'block';
+}
+
+async function sendAlert(type) {
+  const endpoint = type === 'monthly' ? '/api/alerts/send-monthly' : '/api/alerts/send-expiry';
+  const btn = document.getElementById(type === 'monthly' ? 'btnMonthly' : 'btnExpiry');
+  btn.disabled = true;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending…';
+  try {
+    const resp = await fetch(endpoint, { method: 'POST' });
+    const data = await resp.json();
+    const toast = document.getElementById('alertToast');
+    document.getElementById('toastMsg').textContent = data.message || 'Done.';
+    toast.classList.remove('bg-success', 'bg-danger');
+    toast.classList.add(resp.ok ? 'bg-success' : 'bg-danger');
+    new bootstrap.Toast(toast, { delay: 5000 }).show();
+  } catch (e) {
+    alert('Request failed: ' + e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
 }
 
 loadReport();

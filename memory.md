@@ -28,3 +28,5 @@ Don't edit or delete past entries, even if a decision is later reversed — appe
 - `[H30+] [Both] End-to-end pipeline smoke-tested: eval/evaluate.py → 100% precision+recall (440 vendors); uvicorn startup → 440 vendors loaded; all API routes 200; seed_db.py → 440 rows SQLite. Platform is feature-complete.`
 - `[H30+] [D] README.md created. docs/data_methodology.md + docs/scoring_architecture.md both written. All graded documentation deliverables complete.`
 - `[H30+] [D] requirements.txt: added anthropic>=0.111.0. anthropic SDK installed in .venv.`
+- `[H40+] [D] Switched contract extraction AI from Anthropic (claude-opus-4-8) to Google Gemini (gemini-2.0-flash) — free API key available for demo. Env var changed from ANTHROPIC_API_KEY to GEMINI_API_KEY. Package: google-generativeai. extract_contract.py rewritten.`
+- `[H40+] [D] Email alerts wired up: added POST /api/alerts/send-monthly and POST /api/alerts/send-expiry endpoints in api/routes/alerts.py. emailer.py (Jatin) already written; endpoints just call get_emailer(). UI buttons added to /reports page. .env.example created with all required vars.`

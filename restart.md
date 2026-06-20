@@ -20,7 +20,7 @@ uvicorn api.main:app --reload --port 8000
 - `eval/evaluate.py` → **100% precision + recall on all 440 vendors** (CRITICAL, HIGH, MEDIUM, LOW)
 - `data/seed_db.py` → inserts 440 vendors into SQLite cleanly
 - All API routes return 200; dashboard pages fully functional with Bootstrap 5 UI
-- Contract extraction page at `/extract` works in demo mode; needs `ANTHROPIC_API_KEY` for live AI mode
+- Contract extraction page at `/extract` works in demo mode; needs `GEMINI_API_KEY` for live AI mode (switched from Anthropic to Gemini free tier — `gemini-2.0-flash`)
 
 ### Pages
 | URL | What it does |
@@ -51,7 +51,8 @@ uvicorn api.main:app --reload --port 8000
 - Rule-based scoring: no ML; all risk_factors strings are auditor-readable
 - Hard floors: breach ≤12mo + HIGH sensitivity → CRITICAL; under_investigation → CRITICAL
 - Bootstrap 5.3 + Bootstrap Icons via CDN; no build step
-- Anthropic SDK (`claude-opus-4-8`) for contract extraction; demo mode when no API key
+- Google Gemini (`gemini-2.0-flash`, free tier) for contract extraction; set `GEMINI_API_KEY` in `.env`; demo mode when key absent
+- Email alerts: set `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `ALERT_EMAIL_TO` in `.env`; triggers via `POST /api/alerts/send-monthly` or `POST /api/alerts/send-expiry`; falls back to console log if unconfigured
 
 ### What's left
 - **Presentation slides** (human task — reuse PRD §1-2 as spine)

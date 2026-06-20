@@ -127,9 +127,9 @@ def extract_contract(req: ExtractRequest):
             "scored": scored.model_dump(mode="json"),
         }
     except EnvironmentError as e:
-        live_error = f"ANTHROPIC_API_KEY not set ({e})"
+        live_error = f"GEMINI_API_KEY not set ({e})"
     except ImportError:
-        live_error = "anthropic package not installed"
+        live_error = "google-generativeai package not installed"
     except Exception as e:
         live_error = f"Extraction failed: {e}"
 
