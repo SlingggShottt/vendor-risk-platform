@@ -23,3 +23,8 @@ Don't edit or delete past entries, even if a decision is later reversed — appe
 - `[Stretch] [J] Built contract extraction endpoint (POST /api/extract) + dashboard Extract page (/extract). Live mode calls extraction/extract_contract.py when ANTHROPIC_API_KEY is set; demo mode parses vendor ref ID from contract text and returns fixture/store data. anthropic SDK installed.`
 - `[Stretch] [J] Sample contract vendor IDs (VND-0001/0099/0200/0285/0420) are NOT in vendor_registry.csv — they exist only as fixtures in common/schema.py::FIXTURE_VENDORS. Demo fallback checks store first, then FIXTURE_VENDORS.`
 - `[Stretch] [J] docs/scoring_architecture.md created — covers scoring rationale (hard floors, weights, eval results), all API endpoints + data shapes, UI page map, and monitoring/alerting. Required graded deliverable per PRD §2.`
+- `[H30+] [D] data/seed_db.py rewritten to match Jatin's actual api/db.py exports (create_tables/SessionLocal/VendorRow). Old stub imported non-existent symbols. Tested: inserts 440 rows clean.`
+- `[H30+] [D] Full UI redesign: Bootstrap 5.3 + Bootstrap Icons added via CDN. All 4 dashboard pages rebuilt (vendors, vendor_detail, reports, extract). No build step — CDN only. style.css cleared; all CSS in base.html <style> block.`
+- `[H30+] [Both] End-to-end pipeline smoke-tested: eval/evaluate.py → 100% precision+recall (440 vendors); uvicorn startup → 440 vendors loaded; all API routes 200; seed_db.py → 440 rows SQLite. Platform is feature-complete.`
+- `[H30+] [D] README.md created. docs/data_methodology.md + docs/scoring_architecture.md both written. All graded documentation deliverables complete.`
+- `[H30+] [D] requirements.txt: added anthropic>=0.111.0. anthropic SDK installed in .venv.`
