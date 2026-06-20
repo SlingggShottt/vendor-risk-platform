@@ -6,8 +6,17 @@
 <div class="page-header">
   <h1>Portfolio Risk Report</h1>
   <span class="subtext">As of {{ today }}</span>
-  <a href="/api/reports/csv" class="btn btn-primary export-btn">⬇ Download CSV</a>
-  <a href="/api/reports/pdf" class="btn btn-secondary export-btn">⬇ Download PDF</a>
+  <div class="export-actions">
+    <a href="/api/reports/csv" class="btn btn-secondary export-btn">⬇ CSV</a>
+    <a href="/api/reports/pdf" class="btn btn-secondary export-btn">⬇ PDF</a>
+    <a href="/api/reports/bulk-export" class="btn btn-secondary export-btn">⬇ XLSX</a>
+    <a href="/api/reports/compliance-export" class="btn btn-secondary export-btn">⬇ Compliance JSON</a>
+  </div>
+  {% if slack_connected %}
+  <span class="slack-badge slack-ok">Slack ✓ connected</span>
+  {% else %}
+  <span class="slack-badge slack-off">Slack ⚠ not configured</span>
+  {% endif %}
 </div>
 
 <!-- Report cards populated by JS -->

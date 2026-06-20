@@ -243,3 +243,15 @@ a:hover { text-decoration: underline; }
 
 /* ── Sparkline section ────────────────────────────────────────────────────── */
 .sparkline-section canvas { max-height: 120px; }
+
+/* ── Slack status badge ───────────────────────────────────────────────────── */
+.slack-badge {
+  display: inline-block; padding: 4px 10px; border-radius: 12px;
+  font-size: 0.78rem; font-weight: 600; margin-left: 12px; vertical-align: middle;
+}
+.slack-ok  { background: #c6f6d5; color: #276749; }
+.slack-off { background: #fed7d7; color: #9b2c2c; }
+
+/* ── Export actions row ───────────────────────────────────────────────────── */
+.export-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.export-actions .btn { font-size: 0.82rem; padding: 5px 11px; }

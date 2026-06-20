@@ -34,25 +34,74 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from data.normalize import normalize_csv_row
 from scoring.risk_engine import score_vendor
 from monitoring.alerts import check_alerts
+from monitoring.audit_logger import AuditLogger
 from api.routes.vendors import router as vendors_router
 from api.routes.reports import router as reports_router
 from api.routes.extract import router as extract_router
 from api.routes.alerts import router as alerts_router
 from api.routes.bulk import router as bulk_router
+from api.routes.audit import router as audit_router
+from api.routes.jobs import router as jobs_router
 from monitoring.scheduler import start_scheduler
 
 _REGISTRY_CSV = Path(__file__).parent.parent / "data" / "vendor_registry.csv"
 _TEMPLATES_DIR = Path(__file__).parent.parent / "dashboard" / "templates"
 _STATIC_DIR    = Path(__file__).parent.parent / "dashboard" / "static"
 
-app = FastAPI(title="Vendor Risk Platform", version="1.0.0")
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.middleware import SlowAPIMiddleware
+    from slowapi.errors import RateLimitExceeded
+    _limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
+    _rate_limiting_enabled = True
+except ImportError:
+    _rate_limiting_enabled = False
+    _limiter = None
+
+app = FastAPI(
+    title="Vendor Risk Platform",
+    version="2.0.0",
+    description="Enterprise vendor/third-party risk management platform with audit trail, explainable scoring, and predictive alerts.",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+)
+
+# ── CORS ──────────────────────────────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost", "http://localhost:8000", "https://vendor-risk-platform.onrender.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ── Rate limiting middleware ───────────────────────────────────────────────────
+if _rate_limiting_enabled:
+    app.state.limiter = _limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
+
+# ── Security headers middleware ───────────────────────────────────────────────
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
@@ -62,6 +111,8 @@ app.include_router(reports_router)
 app.include_router(extract_router)
 app.include_router(alerts_router)
 app.include_router(bulk_router)
+app.include_router(audit_router)
+app.include_router(jobs_router)
 
 
 # ── Startup: load + score all vendors ────────────────────────────────────────
@@ -87,7 +138,17 @@ def startup_event() -> None:
 
     app.state.store = store
     app.state.today = today
-    app.state.today_alerts = []  # accumulates alerts from vendors added today
+    app.state.today_alerts = []
+    app.state.audit_logger = AuditLogger()
+    app.state.audit_logger.log_event(
+        actor="system",
+        action="startup",
+        resource_type="platform",
+        resource_id="vendor_registry",
+        old_state={},
+        new_state={"vendor_count": len(store), "date": today.isoformat()},
+        reason="platform startup",
+    )
     print(f"[startup] Loaded {len(store)} vendors (today={today})", flush=True)
     start_scheduler(app)
 
@@ -137,8 +198,10 @@ def vendor_detail_page(request: Request, vendor_id: str):
 
 @app.get("/reports", response_class=HTMLResponse)
 def reports_page(request: Request):
+    from monitoring.emailer import slack_configured
     return templates.TemplateResponse(request, "reports.html", {
         "today": app.state.today.isoformat(),
+        "slack_connected": slack_configured(),
     })
 
 
