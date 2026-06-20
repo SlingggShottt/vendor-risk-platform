@@ -7,4 +7,5 @@ pandas
 scikit-learn
 python-multipart
 python-dotenv
-google-genai>=2.9.0
+groq>=1.4.0
+resend>=2.0.0

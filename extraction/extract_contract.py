@@ -2,7 +2,7 @@
 """
 extraction/extract_contract.py — LLM-assisted vendor contract field extractor.
 
-Uses Google Gemini (gemini-2.0-flash, free tier) with JSON-mode output to extract
+Uses Groq (llama-3.3-70b-versatile, free tier) with JSON-mode output to extract
 structured vendor fields from plaintext contract documents.
 
 Usage (single file):
@@ -15,7 +15,7 @@ Usage (round-trip validation — extract then normalize):
     python extraction/extract_contract.py --validate <path/to/contract.txt>
 
 Environment:
-    GEMINI_API_KEY  — required (free key at https://aistudio.google.com/apikey)
+    GROQ_API_KEY  — required (free key at https://console.groq.com, no credit card)
 """
 
 from __future__ import annotations
@@ -26,95 +26,55 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from google import genai
-from google.genai import types as genai_types
+from groq import Groq
 from pydantic import BaseModel, Field
 
 
 # ---------------------------------------------------------------------------
-# Structured output schema — Gemini fills every field as JSON
+# Structured output schema
 # ---------------------------------------------------------------------------
 
 class ContractExtraction(BaseModel):
-    vendor_id: Optional[str] = Field(
-        None,
-        description=(
-            "Vendor ID in VND-NNNN format. Derive from the contract reference number "
-            "(e.g. MSA-2023-0285 → VND-0285, CSA-2025-0099 → VND-0099). "
-            "Null only if no numeric ID present."
-        ),
-    )
-    vendor_name: str = Field(description="Legal name of the vendor/contractor company.")
-    category: str = Field(
-        description="Short vendor category e.g. 'Backup & DR', 'Payment Processing', 'Consulting', 'Analytics'."
-    )
-    contract_start: Optional[str] = Field(
-        None, description="Contract effective/start date in ISO 8601 format YYYY-MM-DD. Null if absent."
-    )
-    contract_end: Optional[str] = Field(
-        None, description="Contract expiry/end date in ISO 8601 format YYYY-MM-DD. Null if absent."
-    )
-    systems: list[str] = Field(
-        default_factory=list,
-        description="List of system names the vendor accesses e.g. ['Database_Primary', 'HR_System'].",
-    )
-    data_sensitivity: str = Field(
-        description="Exactly one of: LOW, MEDIUM, HIGH. LOW=anonymised/no PII. MEDIUM=internal records. HIGH=PII/financial/payment data."
-    )
-    access_type: str = Field(
-        description="Exactly one of: READ_ONLY, READ_WRITE, NONE. Map 'read-write'/'rw'/'write' → READ_WRITE; 'read-only'/'read'/'ro' → READ_ONLY."
-    )
-    soc2_type2: bool = Field(
-        description="True only if vendor currently holds a valid SOC 2 Type II cert. 'NOT HELD' or expired → false."
-    )
-    soc2_expiry: Optional[str] = Field(
-        None, description="SOC 2 Type II expiry date YYYY-MM-DD, or null."
-    )
-    iso27001: bool = Field(
-        description="True only if vendor currently holds a valid ISO/IEC 27001 cert. 'NOT HELD' → false."
-    )
-    gdpr_dpa: bool = Field(
-        description="True ONLY if GDPR DPA is confirmed SIGNED/EXECUTED. 'Pending', 'not executed', 'not required' → false."
-    )
-    handles_eu_data: bool = Field(
-        description="True if vendor processes personal data of EU data subjects. 'NOT APPLICABLE' or US-only → false."
-    )
-    financial_rating: str = Field(
-        description="Credit/financial rating letter grade: A, A-, B, C, C-, or D. Extract letter grade only."
-    )
-    annual_spend: Optional[float] = Field(
-        None,
-        description="Annual contract value in USD as a plain number. If EUR with USD equivalent given, use the USD figure. Null if not stated.",
-    )
-    under_investigation: bool = Field(
-        description="True if vendor is flagged UNDER INVESTIGATION — includes active regulatory/legal/security-review flags."
-    )
+    vendor_id: Optional[str] = Field(None)
+    vendor_name: str
+    category: str
+    contract_start: Optional[str] = Field(None)
+    contract_end: Optional[str] = Field(None)
+    systems: list[str] = Field(default_factory=list)
+    data_sensitivity: str
+    access_type: str
+    soc2_type2: bool
+    soc2_expiry: Optional[str] = Field(None)
+    iso27001: bool
+    gdpr_dpa: bool
+    handles_eu_data: bool
+    financial_rating: str
+    annual_spend: Optional[float] = Field(None)
+    under_investigation: bool
 
 
 # ---------------------------------------------------------------------------
 # Prompt
 # ---------------------------------------------------------------------------
 
-_SYSTEM_PROMPT = """You are a precision contract analyst. Extract the specified fields from the vendor contract below.
+_SYSTEM_PROMPT = """You are a precision contract analyst. Extract vendor fields from the contract and return ONLY a valid JSON object — no explanation, no markdown, no preamble.
 
-Return ONLY a valid JSON object with these exact keys. No explanation, no preamble.
-
-Key rules:
-- All dates MUST be ISO 8601 (YYYY-MM-DD). Parse written dates like "1 March 2024" → "2024-03-01".
-- vendor_id: derive from the contract reference number by extracting the 4-digit vendor segment.
-  E.g. MSA-2023-0285 → "VND-0285", CSA-2025-0099 → "VND-0099", ASA-2024-0001 → "VND-0001". Zero-pad to 4 digits.
-- gdpr_dpa = true ONLY when DPA is confirmed SIGNED/EXECUTED. "Pending", "not executed", "not required", "open action item" → false.
-- soc2_type2 / iso27001 = true only when explicitly VALID/HELD. Otherwise false.
-- under_investigation = true for ANY of: "UNDER INVESTIGATION", "active investigation", "SEC investigation", internal security review flagging the vendor.
-- financial_rating: extract the raw letter (A, A-, B, C, C-, D) only.
-- annual_spend: USD number only; if EUR given with USD approximation, use the USD figure.
-- handles_eu_data: "NOT APPLICABLE" or US-only context → false.
-
-Required JSON keys:
-vendor_id, vendor_name, category, contract_start, contract_end, systems (array),
-data_sensitivity, access_type, soc2_type2 (bool), soc2_expiry, iso27001 (bool),
-gdpr_dpa (bool), handles_eu_data (bool), financial_rating, annual_spend, under_investigation (bool)
-"""
+Required JSON keys and rules:
+- vendor_id: derive from the contract reference number's 4-digit segment (MSA-2023-0285 → "VND-0285"). Null if absent.
+- vendor_name: legal name of the vendor company
+- category: short category e.g. "Backup & DR", "Payment Processing", "Consulting"
+- contract_start / contract_end: ISO 8601 dates YYYY-MM-DD, null if absent
+- systems: array of system names the vendor accesses
+- data_sensitivity: exactly one of LOW / MEDIUM / HIGH
+- access_type: exactly one of READ_ONLY / READ_WRITE / NONE
+- soc2_type2: true only if vendor holds a VALID SOC 2 Type II cert (false if NOT HELD or expired)
+- soc2_expiry: expiry date YYYY-MM-DD or null
+- iso27001: true only if vendor holds a VALID ISO 27001 cert
+- gdpr_dpa: true ONLY if DPA is confirmed SIGNED/EXECUTED ("Pending" / "not executed" → false)
+- handles_eu_data: true if vendor processes EU personal data ("NOT APPLICABLE" → false)
+- financial_rating: letter grade only — A, A-, B, C, C-, or D
+- annual_spend: USD number only (null if not stated)
+- under_investigation: true if vendor is flagged UNDER INVESTIGATION or active investigation"""
 
 
 # ---------------------------------------------------------------------------
@@ -123,27 +83,29 @@ gdpr_dpa (bool), handles_eu_data (bool), financial_rating, annual_spend, under_i
 
 def extract_from_contract(contract_text: str) -> dict:
     """
-    Call Gemini and return a dict passable to normalize_raw_vendor().
+    Call Groq and return a dict passable to normalize_raw_vendor().
 
     Raises:
-        EnvironmentError: if GEMINI_API_KEY is not set.
-        Exception: on any API-level failure.
+        EnvironmentError: if GROQ_API_KEY is not set.
+        Exception: on any API or parsing failure.
     """
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
-        raise EnvironmentError("GEMINI_API_KEY environment variable is not set")
+        raise EnvironmentError("GROQ_API_KEY environment variable is not set")
 
-    client = genai.Client(api_key=api_key)
+    client = Groq(api_key=api_key)
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=f"{_SYSTEM_PROMPT}\n\nExtract all fields from this vendor contract:\n\n{contract_text}",
-        config=genai_types.GenerateContentConfig(
-            response_mime_type="application/json",
-        ),
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": f"Extract all fields from this vendor contract:\n\n{contract_text}"},
+        ],
+        temperature=0,
     )
 
-    raw_json = json.loads(response.text)
+    raw_json = json.loads(response.choices[0].message.content)
     extraction = ContractExtraction(**raw_json)
 
     return {
