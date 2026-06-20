@@ -11,7 +11,7 @@ in-memory list is sufficient and matches the jatin.md spec.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -65,8 +65,10 @@ class AuditLogger:
         date_to: Optional[str] = None,
         actor: Optional[str] = None,
         action: Optional[str] = None,
+        resource_type: Optional[str] = None,
         vendor_id: Optional[str] = None,
         limit: int = 100,
+        offset: int = 0,
     ) -> list[dict]:
         results = self._events[:]
 
@@ -78,12 +80,14 @@ class AuditLogger:
             results = [e for e in results if actor.lower() in e.actor.lower()]
         if action:
             results = [e for e in results if action.lower() in e.action.lower()]
+        if resource_type:
+            results = [e for e in results if e.resource_type == resource_type]
         if vendor_id:
             results = [e for e in results if e.resource_id == vendor_id]
 
-        # Return most-recent first, capped at limit
-        results = results[-limit:]
-        return [_to_dict(e) for e in reversed(results)]
+        # Most-recent first, then paginate
+        results.reverse()
+        return [_to_dict(e) for e in results[offset: offset + limit]]
 
     def event_count(self) -> int:
         return len(self._events)

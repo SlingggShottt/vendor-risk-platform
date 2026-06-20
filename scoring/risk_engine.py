@@ -160,6 +160,60 @@ def _classify(
     return RiskLevel.LOW, AnomalyType.NONE, Severity.LOW
 
 
+def explain_vendor_score(vendor: Vendor, today: date | None = None) -> dict:
+    """
+    Return a full rule-by-rule breakdown for a single vendor.
+    Used by GET /api/vendors/{id}/risk-explainer.
+    """
+    if today is None:
+        today = date.today()
+
+    hard_floors = []
+
+    inv_hit, inv_desc = floor_under_investigation(vendor)
+    if inv_hit:
+        hard_floors.append({"floor": "under_investigation", "description": inv_desc})
+
+    breach_floor_hit, breach_floor_desc = floor_breach_high_access(vendor, today)
+    if breach_floor_hit:
+        hard_floors.append({"floor": "breach_high_access", "description": breach_floor_desc})
+
+    rule_results = {
+        "breach":    check_breach_recency(vendor, today),
+        "cert":      check_certification_status(vendor, today),
+        "contract":  check_contract_status(vendor, today),
+        "financial": check_financial_rating(vendor),
+        "access":    check_data_access_scope(vendor),
+        "gdpr":      check_gdpr_dpa(vendor),
+    }
+
+    contributing_factors = []
+    for rule_name, result in rule_results.items():
+        weight = WEIGHTS[rule_name]
+        contribution = round(weight * result.raw_score, 2)
+        contributing_factors.append({
+            "rule_name": rule_name,
+            "weight_pct": weight,
+            "raw_score": round(result.raw_score, 3),
+            "contribution": contribution,
+            "triggered": result.triggered,
+            "descriptions": result.descriptions,
+        })
+
+    sv = score_vendor(vendor, today)
+
+    return {
+        "vendor_id": vendor.vendor_id,
+        "risk_score": sv.risk_score,
+        "risk_level": sv.risk_level.value,
+        "anomaly_type": sv.anomaly_type.value,
+        "hard_floors_triggered": hard_floors,
+        "contributing_factors": contributing_factors,
+        "recommendation": sv.recommendation,
+        "remediation_actions": sv.risk_factors,
+    }
+
+
 def score_vendors(vendors: list[Vendor], today: date | None = None) -> list[ScoredVendor]:
     """Batch-score a list of vendors."""
     if today is None:

@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from common.schema import RiskLevel, ScoredVendor, Vendor
 from data.normalize import normalize_raw_vendor
-from scoring.risk_engine import score_vendor
+from scoring.risk_engine import score_vendor, explain_vendor_score
 from monitoring.alerts import check_alerts
 
 router = APIRouter(prefix="/api/vendors", tags=["vendors"])

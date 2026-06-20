@@ -3,7 +3,8 @@ api/routes/audit.py — Compliance audit trail endpoints.
 
 GET /api/audit-log
   Returns timestamped events for every state change in the platform.
-  Supports filtering by date range, actor, action type, and vendor ID.
+  Supports filtering by date range, actor, action type, resource type, and vendor ID.
+  Pagination via limit and offset.
 """
 
 from __future__ import annotations
@@ -20,14 +21,20 @@ def _get_audit_logger():
     return app.state.audit_logger
 
 
-@router.get("", summary="Fetch compliance audit log", description="Returns timestamped audit events for every state change (score updates, bulk remediations, exports). Filter by date range, actor, action, or vendor.")
+@router.get(
+    "",
+    summary="Fetch compliance audit log",
+    description="Returns timestamped audit events for every state change (score updates, bulk remediations, exports). Filter by date range, actor, action, resource type, or vendor.",
+)
 def get_audit_log(
     date_from: Optional[str] = Query(None, description="ISO datetime lower bound, e.g. 2026-06-01T00:00:00"),
     date_to: Optional[str] = Query(None, description="ISO datetime upper bound, e.g. 2026-06-30T23:59:59"),
     actor: Optional[str] = Query(None, description="Filter by actor (substring match)"),
     action: Optional[str] = Query(None, description="Filter by action type (substring match)"),
+    resource_type: Optional[str] = Query(None, description="Filter by resource type (vendor, report, platform, …)"),
     vendor_id: Optional[str] = Query(None, description="Filter to a specific vendor ID"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum events to return (most recent first)"),
+    offset: int = Query(0, ge=0, description="Pagination offset"),
 ):
     audit_logger = _get_audit_logger()
     events = audit_logger.get_events(
@@ -35,8 +42,10 @@ def get_audit_log(
         date_to=date_to,
         actor=actor,
         action=action,
+        resource_type=resource_type,
         vendor_id=vendor_id,
         limit=limit,
+        offset=offset,
     )
     return {
         "total_returned": len(events),
