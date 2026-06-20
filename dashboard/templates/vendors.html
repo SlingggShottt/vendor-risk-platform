@@ -6,6 +6,7 @@
 <div class="page-header">
   <h1>Vendor Risk Dashboard</h1>
   <span class="subtext">As of {{ today }} &nbsp;·&nbsp; {{ total_vendors }} vendors tracked</span>
+  <button onclick="document.getElementById('uploadModal').style.display='flex'" class="btn btn-secondary upload-btn">⬆ Upload CSV</button>
 </div>
 
 <!-- Portfolio stats bar -->
@@ -37,6 +38,20 @@
   <div class="chart-card">
     <h3>Risk Level Distribution</h3>
     <canvas id="riskChart" height="80"></canvas>
+  </div>
+</div>
+
+<!-- Upload modal -->
+<div id="uploadModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <h2>Upload Vendor CSV</h2>
+    <p class="modal-hint">CSV must follow the standard vendor registry format (same columns as <code>vendor_registry.csv</code>).</p>
+    <input type="file" id="csvFileInput" accept=".csv" class="file-input" />
+    <div id="uploadStatus" class="upload-status"></div>
+    <div class="modal-actions">
+      <button onclick="submitUpload()" class="btn btn-primary">Upload &amp; Score</button>
+      <button onclick="closeUploadModal()" class="btn btn-secondary">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -211,5 +226,34 @@
 
   // Initial load
   refresh();
+
+  // ── Bulk upload modal ─────────────────────────────────────────────────────
+  function closeUploadModal() {
+    document.getElementById('uploadModal').style.display = 'none';
+    document.getElementById('uploadStatus').textContent = '';
+    document.getElementById('csvFileInput').value = '';
+  }
+
+  async function submitUpload() {
+    const fileInput = document.getElementById('csvFileInput');
+    const statusEl = document.getElementById('uploadStatus');
+    if (!fileInput.files.length) { statusEl.textContent = 'Please select a CSV file.'; return; }
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    statusEl.textContent = 'Uploading…';
+    try {
+      const resp = await fetch('/api/vendors/bulk-upload', { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (!resp.ok) { statusEl.textContent = 'Error: ' + (data.detail || resp.statusText); return; }
+      statusEl.textContent = `Imported ${data.uploaded} vendor(s). Refreshing list…`;
+      setTimeout(() => { closeUploadModal(); refresh(); }, 1200);
+    } catch (e) {
+      statusEl.textContent = 'Upload failed: ' + e.message;
+    }
+  }
+
+  document.getElementById('uploadModal').addEventListener('click', function(e) {
+    if (e.target === this) closeUploadModal();
+  });
 </script>
 {% endblock %}

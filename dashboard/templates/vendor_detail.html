@@ -28,6 +28,12 @@
   {% endif %}
 </div>
 
+<!-- Score trend sparkline -->
+<div class="detail-section sparkline-section">
+  <h2>6-Month Risk Score Trend</h2>
+  <canvas id="sparklineChart" height="60"></canvas>
+</div>
+
 <!-- Alerts panel -->
 {% if alerts %}
 <div class="detail-section">
@@ -146,4 +152,39 @@
   {% endfor %}
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(async () => {
+  const resp = await fetch('/api/vendors/{{ v.vendor_id }}/history');
+  if (!resp.ok) return;
+  const d = await resp.json();
+  const level = '{{ sv.risk_level.value }}';
+  const colorMap = { CRITICAL: '#e53e3e', HIGH: '#dd6b20', MEDIUM: '#d69e2e', LOW: '#38a169' };
+  const color = colorMap[level] || '#718096';
+  new Chart(document.getElementById('sparklineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: d.labels,
+      datasets: [{
+        data: d.scores,
+        borderColor: color,
+        backgroundColor: color + '22',
+        borderWidth: 2,
+        pointRadius: 3,
+        fill: true,
+        tension: 0.35,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 100, ticks: { stepSize: 25 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+})();
+</script>
 {% endblock %}
