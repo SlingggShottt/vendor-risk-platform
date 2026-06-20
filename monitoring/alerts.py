@@ -13,8 +13,8 @@ Usage:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, field
+from datetime import date, datetime
 
 import sys
 from pathlib import Path
@@ -31,6 +31,7 @@ class Alert:
     message: str
     severity: str     # "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
     days_until: int | None  # negative = already past
+    triggered_at: datetime = field(default_factory=datetime.utcnow)
 
 
 ALERT_CERT_EXPIRED       = "CERT_EXPIRED"
