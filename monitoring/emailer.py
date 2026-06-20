@@ -289,18 +289,137 @@ class SMTPBackend:
         self._send(subject, body)
 
 
+# ── Slack backend ─────────────────────────────────────────────────────────────
+
+class SlackBackend:
+    """Posts rich alert messages to a Slack incoming webhook.
+    Set SLACK_WEBHOOK_URL in .env to activate.
+    Gracefully falls back to ConsoleBackend if requests is not installed or webhook fails.
+    """
+
+    def __init__(self, webhook_url: str) -> None:
+        self.webhook_url = webhook_url
+        self._console = ConsoleBackend()
+
+    def _post(self, payload: dict) -> None:
+        try:
+            import requests
+            resp = requests.post(self.webhook_url, json=payload, timeout=5)
+            resp.raise_for_status()
+            print("[emailer/slack] Message posted to Slack.", flush=True)
+        except Exception as exc:
+            print(f"[emailer/slack] Webhook failed ({exc}); falling back to console.", file=sys.stderr)
+            self._console._print(
+                str(payload.get("text", "Vendor Risk Alert")),
+                str(payload.get("blocks", "")),
+            )
+
+    def send_monthly_summary(
+        self,
+        scored: list[ScoredVendor],
+        today: date | None = None,
+    ) -> None:
+        today = today or date.today()
+        counts = {lvl: 0 for lvl in ("CRITICAL", "HIGH", "MEDIUM", "LOW")}
+        for sv in scored:
+            counts[sv.risk_level.value] = counts.get(sv.risk_level.value, 0) + 1
+
+        payload = {
+            "text": f"Vendor Risk Monthly Summary — {today.strftime('%B %Y')}",
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": f"Vendor Risk Monthly Summary — {today.strftime('%B %Y')}"},
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {"type": "mrkdwn", "text": f"*Total Vendors:* {len(scored)}"},
+                        {"type": "mrkdwn", "text": f"*CRITICAL:* {counts['CRITICAL']}"},
+                        {"type": "mrkdwn", "text": f"*HIGH:* {counts['HIGH']}"},
+                        {"type": "mrkdwn", "text": f"*MEDIUM:* {counts['MEDIUM']}"},
+                        {"type": "mrkdwn", "text": f"*LOW:* {counts['LOW']}"},
+                    ],
+                },
+                {"type": "divider"},
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "_Generated automatically by Vendor Risk Platform. Contact security team for action items._",
+                    },
+                },
+            ],
+        }
+        self._post(payload)
+
+    def send_expiry_alerts(
+        self,
+        alerts: list[Alert],
+        today: date | None = None,
+    ) -> None:
+        today = today or date.today()
+        if not alerts:
+            return
+
+        critical = [a for a in alerts if a.severity == "CRITICAL"]
+        high = [a for a in alerts if a.severity == "HIGH"]
+
+        alert_lines = []
+        for a in (critical + high)[:10]:
+            alert_lines.append(f"• *[{a.vendor_id}] {a.vendor_name}* — {a.message}")
+
+        payload = {
+            "text": f"Vendor Risk ALERT: {len(critical)} CRITICAL, {len(high)} HIGH alerts — {today.isoformat()}",
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": f"Vendor Risk Alerts — {today.isoformat()}"},
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": (
+                            f":red_circle: *CRITICAL:* {len(critical)}   "
+                            f":large_orange_circle: *HIGH:* {len(high)}   "
+                            f"*Total:* {len(alerts)}"
+                        ),
+                    },
+                },
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "\n".join(alert_lines) or "_No critical/high alerts_"},
+                },
+            ],
+        }
+        self._post(payload)
+
+    def send_eod_digest(
+        self,
+        alerts: list[Alert],
+        today: date | None = None,
+    ) -> None:
+        self.send_expiry_alerts(alerts, today)
+
+
 # ── Factory ───────────────────────────────────────────────────────────────────
 
-def get_emailer() -> ConsoleBackend | SMTPBackend:
+def get_emailer() -> SlackBackend | SMTPBackend | ConsoleBackend:
     """
-    Return the appropriate email backend.
-    Uses SMTP if SMTP_HOST, SMTP_USER, SMTP_PASS are all set in environment.
-    Falls back to ConsoleBackend (prints to stdout) if any credential is missing.
+    Return the best available notification backend.
+    Priority: Slack (if SLACK_WEBHOOK_URL set) > SMTP (if full creds set) > Console.
     """
-    host     = os.getenv("SMTP_HOST", "")
-    port_str = os.getenv("SMTP_PORT", "587")
-    user     = os.getenv("SMTP_USER", "")
-    password = os.getenv("SMTP_PASS", "")
+    # Priority 1: Slack
+    slack_url = os.getenv("SLACK_WEBHOOK_URL", "")
+    if slack_url:
+        return SlackBackend(slack_url)
+
+    # Priority 2: SMTP
+    host      = os.getenv("SMTP_HOST", "")
+    port_str  = os.getenv("SMTP_PORT", "587")
+    user      = os.getenv("SMTP_USER", "")
+    password  = os.getenv("SMTP_PASS", "")
     from_addr = os.getenv("ALERT_EMAIL_FROM", user)
     to_addr   = os.getenv("ALERT_EMAIL_TO", "")
 
@@ -315,7 +434,12 @@ def get_emailer() -> ConsoleBackend | SMTPBackend:
                 from_addr=from_addr,
                 to_addr=to_addr,
             )
-        except Exception as e:
-            print(f"[emailer] SMTP setup failed ({e}), falling back to console.", file=sys.stderr)
+        except Exception as exc:
+            print(f"[emailer] SMTP setup failed ({exc}), falling back to console.", file=sys.stderr)
 
     return ConsoleBackend()
+
+
+def slack_configured() -> bool:
+    """Return True if a Slack webhook URL is set in the environment."""
+    return bool(os.getenv("SLACK_WEBHOOK_URL", ""))
