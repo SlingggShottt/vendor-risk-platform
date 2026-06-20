@@ -3,9 +3,7 @@
 > Enterprise-grade vendor risk scoring, monitoring, and compliance reporting — built in 48 hours.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-vendor--risk--platform.onrender.com-blue?style=flat-square)](https://vendor-risk-platform.onrender.com)
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=flat-square&logo=python)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Eval](https://img.shields.io/badge/CRITICAL%20Recall-100%25-brightgreen?style=flat-square)]()
+
 
 ---
 
@@ -61,7 +59,7 @@ Copy `.env.example` to `.env` and fill in credentials for email/Slack alerts (al
 | **Expiry Alerts** | Cert and contract expiry alerts at 30/60/90-day windows. Fires via email, Slack, or console. |
 | **Contract Extraction** | LLM-assisted PDF/text contract extraction via Claude API → auto-populates vendor fields. |
 
-### Enterprise Sprint (Société Générale Focus)
+### Enterprise Sprint
 | Capability | Detail |
 |---|---|
 | **Compliance Audit Trail** | Append-only log of every state change (startup, bulk upload, remediation, export). Filterable by date, actor, action, and vendor. |
