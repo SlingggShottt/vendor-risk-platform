@@ -30,6 +30,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -41,6 +44,7 @@ from monitoring.alerts import check_alerts
 from api.routes.vendors import router as vendors_router
 from api.routes.reports import router as reports_router
 from api.routes.extract import router as extract_router
+from api.routes.alerts import router as alerts_router
 
 _REGISTRY_CSV = Path(__file__).parent.parent / "data" / "vendor_registry.csv"
 _TEMPLATES_DIR = Path(__file__).parent.parent / "dashboard" / "templates"
@@ -54,6 +58,7 @@ app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 app.include_router(vendors_router)
 app.include_router(reports_router)
 app.include_router(extract_router)
+app.include_router(alerts_router)
 
 
 # ── Startup: load + score all vendors ────────────────────────────────────────
