@@ -1,6 +1,6 @@
 # Vendor & Third-Party Risk Management Platform
 
-A deterministic, explainable vendor risk scoring platform built for a 48-hour hackathon. Tracks vendor certifications, contract status, breach history, and data access scope — scores each vendor against a rubric-based engine with 100% CRITICAL/HIGH recall — and surfaces results via a live dashboard, portfolio reports, and alert emails.
+A deterministic, explainable vendor risk scoring platform built for a 48-hour hackathon. Deployed at https://vendor-risk-platform.onrender.com Tracks vendor certifications, contract status, breach history, and data access scope — scores each vendor against a rubric-based engine with 100% CRITICAL/HIGH recall — and surfaces results via a live dashboard, portfolio reports, and alert emails.
 
 ## Quick start
 
