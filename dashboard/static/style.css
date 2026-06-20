@@ -11,7 +11,8 @@ a:hover { text-decoration: underline; }
   background: #1a202c; color: #fff; padding: 0 24px; height: 56px;
   position: sticky; top: 0; z-index: 100;
 }
-.nav-brand { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
+.nav-brand { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; color: #fff; text-decoration: none; }
+.nav-brand:hover { text-decoration: none; opacity: 0.85; }
 .nav-links { display: flex; align-items: center; gap: 20px; }
 .nav-links a { color: #a0aec0; font-size: 0.9rem; }
 .nav-links a.active, .nav-links a:hover { color: #fff; }
