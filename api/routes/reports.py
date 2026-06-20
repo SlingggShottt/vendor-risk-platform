@@ -338,3 +338,221 @@ def export_pdf():
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.get("/compliance-export", summary="Compliance export: vendor summary + audit log")
+def compliance_export(format: str = "json"):
+    """
+    Export full vendor compliance summary plus recent audit log.
+    format=json (default) returns structured JSON.
+    format=csv returns a flat CSV of all vendors.
+    Includes: vendor_id, name, risk_score, risk_level, soc2, iso, gdpr_dpa,
+    contract_end, latest_breach_date.
+    """
+    store = _get_store()
+    entries = list(store.values())
+    today = date.today()
+
+    rows = []
+    for e in entries:
+        v: Vendor = e["vendor"]
+        sv: ScoredVendor = e["scored"]
+        latest_breach = (
+            max(b.date for b in v.breach_history).isoformat()
+            if v.breach_history else None
+        )
+        rows.append({
+            "vendor_id": v.vendor_id,
+            "name": v.name,
+            "category": v.category,
+            "risk_score": sv.risk_score,
+            "risk_level": sv.risk_level.value,
+            "soc2_type2": v.compliance.soc2_type2,
+            "soc2_expiry": v.compliance.soc2_expiry.isoformat() if v.compliance.soc2_expiry else None,
+            "iso27001": v.compliance.iso27001,
+            "gdpr_dpa": v.compliance.gdpr_dpa,
+            "contract_end": v.contract_end.isoformat(),
+            "under_investigation": v.under_investigation,
+            "latest_breach_date": latest_breach,
+        })
+
+    # Pull audit log (last 100 events)
+    audit_events: list[dict] = []
+    try:
+        from api.main import app
+        audit_events = app.state.audit_logger.get_events(limit=100)
+    except Exception:
+        pass
+
+    if format.lower() == "csv":
+        output = io.StringIO()
+        fieldnames = [
+            "vendor_id", "name", "category", "risk_score", "risk_level",
+            "soc2_type2", "soc2_expiry", "iso27001", "gdpr_dpa",
+            "contract_end", "under_investigation", "latest_breach_date",
+        ]
+        writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+        output.seek(0)
+        filename = f"compliance_export_{today.isoformat()}.csv"
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    # Log this export event
+    try:
+        from api.main import app
+        app.state.audit_logger.log_event(
+            actor="system",
+            action="compliance_export",
+            resource_type="report",
+            resource_id="compliance",
+            old_state={},
+            new_state={"vendor_count": len(rows), "format": format},
+            reason="compliance export request",
+        )
+    except Exception:
+        pass
+
+    return {
+        "generated_at": today.isoformat(),
+        "total_vendors": len(rows),
+        "vendors": rows,
+        "audit_log": audit_events,
+    }
+
+
+@router.get("/bulk-export", summary="Bulk XLSX export of all vendors")
+def bulk_export_xlsx():
+    """Stream an XLSX file with all scored vendors.
+    Includes compliance summary stats on a second sheet.
+    Uses openpyxl.
+    """
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+    except ImportError:
+        return Response(
+            content=b"openpyxl not installed. Run: pip install openpyxl",
+            status_code=503,
+            media_type="text/plain",
+        )
+
+    store = _get_store()
+    entries = sorted(
+        store.values(), key=lambda e: e["scored"].risk_score, reverse=True
+    )
+    today = date.today()
+
+    wb = openpyxl.Workbook()
+
+    # ── Sheet 1: All Vendors ──────────────────────────────────────────────────
+    ws = wb.active
+    ws.title = "Vendor Risk"
+
+    headers = [
+        "Vendor ID", "Name", "Category", "Risk Score", "Risk Level",
+        "Anomaly Type", "SOC2", "ISO27001", "GDPR DPA",
+        "Contract End", "Financial Rating", "Under Investigation",
+        "Breach Count", "Top Risk Factor",
+    ]
+    LEVEL_FILL = {
+        "CRITICAL": "C53030",
+        "HIGH":     "C05621",
+        "MEDIUM":   "975A16",
+        "LOW":      "276749",
+    }
+
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill("solid", fgColor="2D3748")
+
+    for col_idx, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_idx, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center")
+
+    for row_idx, e in enumerate(entries, 2):
+        v: Vendor = e["vendor"]
+        sv: ScoredVendor = e["scored"]
+        level = sv.risk_level.value
+        row_data = [
+            v.vendor_id, v.name, v.category,
+            sv.risk_score, level, sv.anomaly_type.value,
+            v.compliance.soc2_type2, v.compliance.iso27001, v.compliance.gdpr_dpa,
+            v.contract_end.isoformat(), v.financial_rating, v.under_investigation,
+            len(v.breach_history),
+            sv.risk_factors[0][:80] if sv.risk_factors else "",
+        ]
+        for col_idx, val in enumerate(row_data, 1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=val)
+            if col_idx == 5 and level in LEVEL_FILL:  # Risk Level column
+                cell.fill = PatternFill("solid", fgColor=LEVEL_FILL[level])
+                cell.font = Font(color="FFFFFF", bold=True)
+
+    # Auto-width columns
+    for col in ws.columns:
+        max_len = max((len(str(c.value or "")) for c in col), default=0)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 3, 50)
+
+    # ── Sheet 2: Compliance Summary ───────────────────────────────────────────
+    ws2 = wb.create_sheet("Compliance Summary")
+    vendors = [e["vendor"] for e in entries]
+    total = len(vendors)
+
+    n_soc2 = sum(1 for v in vendors if v.compliance.soc2_type2
+                 and (not v.compliance.soc2_expiry or v.compliance.soc2_expiry >= today))
+    n_iso  = sum(1 for v in vendors if v.compliance.iso27001)
+    n_gdpr = sum(1 for v in vendors if not v.handles_eu_data or v.compliance.gdpr_dpa)
+    level_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+    for e in entries:
+        level_counts[e["scored"].risk_level.value] += 1
+
+    summary_rows = [
+        ("Report Date", today.isoformat()),
+        ("Total Vendors", total),
+        ("", ""),
+        ("Risk Distribution", ""),
+        ("  CRITICAL", level_counts["CRITICAL"]),
+        ("  HIGH", level_counts["HIGH"]),
+        ("  MEDIUM", level_counts["MEDIUM"]),
+        ("  LOW", level_counts["LOW"]),
+        ("", ""),
+        ("Compliance Coverage", ""),
+        ("  SOC 2 Type II", f"{round(100*n_soc2/total) if total else 0}%"),
+        ("  ISO 27001", f"{round(100*n_iso/total) if total else 0}%"),
+        ("  GDPR DPA (where required)", f"{round(100*n_gdpr/total) if total else 0}%"),
+    ]
+    for r_idx, (label, value) in enumerate(summary_rows, 1):
+        ws2.cell(row=r_idx, column=1, value=label).font = Font(bold=bool(label and not label.startswith(" ")))
+        ws2.cell(row=r_idx, column=2, value=value)
+    ws2.column_dimensions["A"].width = 32
+    ws2.column_dimensions["B"].width = 20
+
+    # Log the export
+    try:
+        from api.main import app
+        app.state.audit_logger.log_event(
+            actor="system",
+            action="bulk_export",
+            resource_type="report",
+            resource_id="xlsx",
+            old_state={},
+            new_state={"vendor_count": total, "format": "xlsx"},
+            reason="bulk XLSX export",
+        )
+    except Exception:
+        pass
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    filename = f"vendor_risk_bulk_export_{today.isoformat()}.xlsx"
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )

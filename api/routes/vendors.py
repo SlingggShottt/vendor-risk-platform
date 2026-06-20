@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from common.schema import ScoredVendor, Vendor
+from common.schema import RiskLevel, ScoredVendor, Vendor
 
 router = APIRouter(prefix="/api/vendors", tags=["vendors"])
 
@@ -128,36 +128,137 @@ def get_vendor(vendor_id: str):
     }
 
 
-@router.get("/{vendor_id}/history")
+@router.get("/{vendor_id}/history", summary="6-month score history with trend analysis")
 def vendor_score_history(vendor_id: str):
-    """Return 6 deterministic monthly score data points for a sparkline chart.
-    Seeded by vendor_id hash so the same vendor always produces the same trend.
-    Final point is always the live risk_score."""
+    """Return 6 deterministic monthly score data points + linear regression trend.
+
+    Historical points are seeded by vendor_id hash (consistent across restarts).
+    Final point is always the live risk_score. Adds trend_direction and
+    projected_risk_level_in_3mo via numpy linear regression.
+    """
     store = _get_store()
     entry = store.get(vendor_id)
     if not entry:
         raise HTTPException(status_code=404, detail=f"Vendor {vendor_id!r} not found")
 
-    current_score = entry["scored"].risk_score
+    current_score: float = entry["scored"].risk_score
     rng = random.Random(hash(vendor_id))
 
-    # Generate 5 historical points with ±15 variation around current, clamped 0–100
-    history = []
+    history: list[float] = []
     base = current_score + rng.uniform(-10, 10)
     for _ in range(5):
         base = max(0.0, min(100.0, base + rng.uniform(-15, 15)))
         history.append(round(base, 1))
-    history.append(current_score)  # final point is always live score
+    history.append(current_score)
 
     today = date.today()
-    labels = []
+    labels: list[str] = []
     for i in range(5, -1, -1):
         month = today.month - i
         year = today.year + (month - 1) // 12
         month = ((month - 1) % 12) + 1
         labels.append(date(year, month, 1).strftime("%b %Y"))
 
-    return {"vendor_id": vendor_id, "labels": labels, "scores": history}
+    # ── Linear regression for trend + 3-month projection ─────────────────────
+    try:
+        import numpy as np
+        x = np.arange(len(history), dtype=float)
+        coeffs = np.polyfit(x, history, 1)
+        slope = float(coeffs[0])
+        projected_score = float(np.clip(np.polyval(coeffs, len(history) + 2), 0, 100))
+    except Exception:
+        slope = 0.0
+        projected_score = current_score
+
+    if slope > 1.5:
+        trend_direction = "up"
+    elif slope < -1.5:
+        trend_direction = "down"
+    else:
+        trend_direction = "stable"
+
+    projected_score = round(projected_score, 1)
+    projected_level = _score_to_level(projected_score)
+
+    # Build the data points (6 historical + 1 projected)
+    today_label = today.strftime("%b %Y")
+    month3 = date(today.year + (today.month + 2) // 13,
+                  (today.month + 2) % 12 or 12,
+                  1).strftime("%b %Y")
+
+    data_points = [
+        {"month": labels[i], "score": history[i], "projected": False}
+        for i in range(len(labels))
+    ]
+    data_points.append({"month": month3, "score": projected_score, "projected": True})
+
+    # Emit a trending-CRITICAL alert if warranted
+    trend_alerts = []
+    if trend_direction == "up" and projected_level in ("HIGH", "CRITICAL"):
+        trend_alerts.append({
+            "severity": "HIGH",
+            "type": "RISK_TRENDING_CRITICAL",
+            "description": (
+                f"Risk score trending upward (slope +{slope:.1f}/month); "
+                f"projected to reach {projected_level} by {month3}"
+            ),
+        })
+
+    return {
+        "vendor_id": vendor_id,
+        "labels": labels,
+        "scores": history,
+        "trend_direction": trend_direction,
+        "projected_score_3mo": projected_score,
+        "projected_risk_level_in_3mo": projected_level,
+        "data_points": data_points,
+        "trend_alerts": trend_alerts,
+    }
+
+
+@router.get("/{vendor_id}/risk-explainer", summary="Rule-by-rule risk score breakdown")
+def vendor_risk_explainer(vendor_id: str):
+    """Return structured rule-by-rule breakdown of a vendor's risk score.
+
+    Each contributing_factor includes: rule_name, weight_pct, impact level,
+    contribution_pts, and a human-readable description. Also includes
+    specific remediation_actions and the audit trail note.
+    """
+    store = _get_store()
+    entry = store.get(vendor_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail=f"Vendor {vendor_id!r} not found")
+
+    from scoring.explainer import explain_risk
+
+    # Pull last audit note if the audit logger is available
+    last_audit_note: Optional[str] = None
+    try:
+        from api.main import app
+        events = app.state.audit_logger.get_events(vendor_id=vendor_id, limit=1)
+        if events:
+            e = events[0]
+            last_audit_note = f"Last updated by {e['actor']} on {e['timestamp'][:10]} ({e['action']})"
+    except Exception:
+        pass
+
+    explanation = explain_risk(
+        vendor=entry["vendor"],
+        scored=entry["scored"],
+        today=date.today(),
+        last_audit_note=last_audit_note,
+    )
+    return explanation
+
+
+def _score_to_level(score: float) -> str:
+    if score >= 80:
+        return "CRITICAL"
+    if score >= 65:
+        return "HIGH"
+    if score >= 40:
+        return "MEDIUM"
+    return "LOW"
 
 
 def _vendor_summary(entry: dict) -> dict:
