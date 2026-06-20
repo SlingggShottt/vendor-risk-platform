@@ -35,3 +35,23 @@ Full detail in `backlog.md` under "Divyansh" — work through it top to bottom, 
 
 ## When you're done with core
 Check `backlog.md` — if Jatin's checkpoint (H16) hasn't happened yet, use spare time polishing edge case variety based on what would actually stress-test a risk engine, rather than jumping straight to the PDF extraction stretch goal. More/better edge cases are higher value than a half-built stretch feature.
+
+## Upgrade Sprint tasks (your lane)
+
+### 1. PDF contract extraction
+Add PDF support to the existing extraction pipeline — do NOT rewrite it, just add a pre-processing step.
+
+- Create `extraction/parse_pdf.py` with a single function `extract_text_from_pdf(path: str | Path) -> str` using `pdfplumber`. Install: `pip install pdfplumber`.
+- In `extraction/extract_contract.py`, update `extract_from_contract()` to also accept a file path: if a string ends in `.pdf`, call `parse_pdf.extract_text_from_pdf()` first, then pass the resulting text to Groq as normal. The existing contract text path stays unchanged.
+- Coordinate with Jatin: he updates `POST /api/extract` to accept `multipart/form-data` with an optional `file` field. You just need your extraction function to handle both text and PDF path inputs.
+
+### 2. Bulk CSV upload — parsing layer
+Write the data parsing function that the bulk upload API endpoint will call.
+
+- Create `data/bulk_ingest.py` with `ingest_csv_bytes(raw_bytes: bytes) -> list[Vendor]`. It should:
+  - Parse the bytes as a CSV (use `csv.DictReader` on `io.StringIO(raw_bytes.decode())`)
+  - Run each row through `normalize_csv_row(row)` from `data/normalize.py`
+  - Collect errors per-row without crashing (return partial results + error list)
+  - Return `(vendors: list[Vendor], errors: list[dict])` tuple
+- Jatin wires this into `POST /api/vendors/bulk-upload` — you just need to export the function cleanly.
+- Add `requirements.txt` entry: `pdfplumber>=0.11.0`

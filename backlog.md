@@ -55,3 +55,22 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 
 ### Docs contribution
 - [x] Write the "scoring algorithm rationale" and "API/UI architecture" sections for the documentation deliverable → `docs/scoring_architecture.md`
+
+## Upgrade Sprint (post-deployment)
+
+### Divyansh — PDF + Bulk Ingest
+- [ ] `extraction/parse_pdf.py`: PDF → text using pdfplumber; expose as `extract_text_from_pdf(path) -> str`
+- [ ] Update `extraction/extract_contract.py`: detect if input is a file path ending in `.pdf`, call `parse_pdf.py` first, then send text to Groq as normal
+- [ ] Update `POST /api/extract` in `api/routes/extract.py`: accept `multipart/form-data` with optional `file` field (PDF upload) alongside existing `contract_text` field
+- [ ] Update `/extract` page (coordinate with Jatin): add file upload input alongside the textarea
+- [ ] `data/bulk_ingest.py`: parse an uploaded CSV of vendors, run each row through `normalize_csv_row()`, return list of `Vendor` objects ready to score
+- [ ] New API endpoint `POST /api/vendors/bulk-upload` (Jatin wires it, Divyansh writes the parsing function it calls)
+
+### Jatin — Monitoring, Charts, PDF Report, Bulk Upload endpoint
+- [ ] `monitoring/scheduler.py`: APScheduler job that runs daily at 08:00, calls `check_alerts()` on all store vendors, sends email via `get_emailer()` if any CRITICAL/HIGH alerts found — auto-monitoring, no manual button press needed
+- [ ] Wire scheduler into `api/main.py` startup (start in background thread)
+- [ ] `api/routes/vendors.py`: add `GET /api/vendors/{id}/history` — returns 6-point mock score history (seed deterministically from vendor_id hash so it's consistent across reloads)
+- [ ] `dashboard/templates/vendor_detail.html`: add sparkline chart (Chart.js line) showing 6-month score trend in the vendor detail hero section
+- [ ] `api/routes/reports.py`: add `GET /api/reports/pdf` — generate PDF portfolio report using WeasyPrint or ReportLab; full scored vendor table + compliance stats + red-flag section
+- [ ] Add "Download PDF Report" button in `dashboard/templates/reports.html` next to existing Download CSV
+- [ ] `POST /api/vendors/bulk-upload`: accepts CSV file upload, calls Divyansh's `bulk_ingest.py`, scores each vendor, returns JSON array of scored results; also adds them to the in-memory store so dashboard reflects them immediately
