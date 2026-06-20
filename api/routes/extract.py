@@ -1,10 +1,11 @@
 """
 api/routes/extract.py — Contract extraction endpoints.
 
-POST /api/extract
-  Accepts {"contract_text": "..."}, calls Divyansh's extract_from_contract() when
-  ANTHROPIC_API_KEY is set, otherwise falls back to demo mode (registry store lookup
-  by vendor ref ID parsed from the contract text).
+POST /api/extract  (multipart/form-data)
+  Fields (at least one required):
+    contract_text  — raw contract text
+    file           — PDF or .txt file upload
+  Falls back to demo mode when GROQ_API_KEY is not set.
 
 GET /api/sample-contracts
   Lists available sample contract files with display names.
@@ -15,15 +16,16 @@ GET /api/sample-contracts/{name}
 
 from __future__ import annotations
 
+import os
 import re
 import sys
+import tempfile
 from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from data.normalize import normalize_raw_vendor
 from scoring.risk_engine import score_vendor
@@ -62,10 +64,6 @@ _SAMPLES = [
 ]
 
 
-class ExtractRequest(BaseModel):
-    contract_text: str
-
-
 def _get_store() -> dict:
     from api.main import app
     return app.state.store
@@ -77,11 +75,9 @@ def _get_today() -> date:
 
 
 def _parse_vendor_id(text: str) -> str | None:
-    """Parse a VND-NNNN vendor ID from contract text."""
     m = re.search(r'\bVND-(\d{4})\b', text, re.IGNORECASE)
     if m:
         return f"VND-{m.group(1)}"
-    # Contract reference numbers like ASA-2024-0001, MSA-2023-0285, VSA-2024-0420
     m = re.search(r'\b[A-Z]{2,4}-\d{4}-(\d{4})\b', text)
     if m:
         return f"VND-{m.group(1)}"
@@ -105,15 +101,45 @@ def get_sample_contract(name: str):
 
 
 @router.post("/api/extract")
-def extract_contract(req: ExtractRequest):
-    contract_text = req.contract_text.strip()
-    if not contract_text:
-        raise HTTPException(status_code=422, detail="contract_text is required")
+async def extract_contract(
+    contract_text: str = Form(default=None),
+    file: UploadFile = File(default=None),
+):
+    # ── Resolve input: file takes priority over pasted text ──────────────────
+    source_name: str | None = None
 
+    if file is not None and file.filename:
+        raw_bytes = await file.read()
+        suffix = Path(file.filename).suffix.lower()
+        source_name = file.filename
+
+        if suffix == ".pdf":
+            # Write to a temp file so pdfplumber can open it
+            tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+            try:
+                tmp.write(raw_bytes)
+                tmp.flush()
+                tmp.close()
+                from extraction.parse_pdf import extract_text_from_pdf
+                contract_text = extract_text_from_pdf(tmp.name)
+            except Exception as e:
+                raise HTTPException(status_code=422, detail=f"PDF extraction failed: {e}")
+            finally:
+                os.unlink(tmp.name)
+        else:
+            contract_text = raw_bytes.decode("utf-8", errors="replace")
+
+    if not contract_text or not contract_text.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Provide contract_text (form field) or upload a PDF / text file.",
+        )
+
+    contract_text = contract_text.strip()
     today = _get_today()
     live_error: str | None = None
 
-    # ── Attempt live AI extraction ─────────────────────────────────────────────
+    # ── Attempt live Groq extraction ──────────────────────────────────────────
     try:
         from extraction.extract_contract import extract_from_contract
         raw = extract_from_contract(contract_text)
@@ -121,28 +147,27 @@ def extract_contract(req: ExtractRequest):
         scored = score_vendor(vendor, today)
         return {
             "mode": "live",
+            "source": source_name,
             "message": None,
             "extracted": raw,
             "vendor": vendor.model_dump(mode="json"),
             "scored": scored.model_dump(mode="json"),
         }
     except EnvironmentError as e:
-        live_error = f"ANTHROPIC_API_KEY not set ({e})"
+        live_error = f"GROQ_API_KEY not set ({e})"
     except ImportError:
-        live_error = "anthropic package not installed"
+        live_error = "groq package not installed"
     except Exception as e:
         live_error = f"Extraction failed: {e}"
 
-    # ── Demo fallback: look up parsed vendor ID in store or fixtures ──────────
+    # ── Demo fallback: look up vendor ID from contract text ───────────────────
     vendor_id = _parse_vendor_id(contract_text)
     if vendor_id:
-        # 1. Check in-memory store (generated registry vendors)
         entry = _get_store().get(vendor_id)
         if entry:
             v = entry["vendor"]
             sv = entry["scored"]
         else:
-            # 2. Fall back to fixture vendors (the 5 sample contracts use VND-000X IDs)
             fixture = next((f for f in FIXTURE_VENDORS if f.vendor_id == vendor_id), None)
             if fixture:
                 v = fixture
@@ -171,6 +196,7 @@ def extract_contract(req: ExtractRequest):
             }
             return {
                 "mode": "demo",
+                "source": source_name,
                 "message": (
                     f"Demo mode ({live_error}). "
                     f"Showing pre-scored fixture data for {vendor_id}."
@@ -184,6 +210,6 @@ def extract_contract(req: ExtractRequest):
         status_code=503,
         detail=(
             f"Cannot extract: {live_error}. "
-            "No recognisable vendor reference found in the contract text for demo fallback."
+            "No recognisable vendor reference found in the contract for demo fallback."
         ),
     )

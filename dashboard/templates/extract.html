@@ -4,35 +4,66 @@
 
 {% block content %}
 <div class="page-header">
+  <span class="badge" style="background:#e9d8fd;color:#553c9a;border:1px solid #d6bcfa;font-size:0.72rem;letter-spacing:.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;">AI-POWERED</span>
   <h1>Contract Extraction</h1>
-  <span class="subtext">Paste a vendor contract to extract fields and compute a risk score</span>
+  <span class="subtext">Paste a vendor contract — AI extracts fields and computes a live risk score</span>
 </div>
 
 <div class="extract-layout">
 
   <!-- ── Input panel ─────────────────────────────────────────────────────── -->
   <div class="extract-panel">
+
+    <!-- Sample selector -->
     <div class="detail-section">
-      <h2>Load Sample Contract</h2>
+      <h2><i class="bi bi-file-earmark-text"></i> Load Sample Contract</h2>
       <select id="sampleSelect" class="filter-select" style="width:100%;">
-        <option value="">— select a sample —</option>
+        <option value="">— select a sample contract —</option>
       </select>
+      <div style="font-size:0.78rem;color:#718096;margin-top:6px;">
+        <i class="bi bi-info-circle"></i> Samples cover LOW, MEDIUM, HIGH risk scenarios, expired contracts, and investigation flags.
+      </div>
     </div>
 
-    <div class="detail-section" style="margin-top:12px;">
-      <h2>Contract Text</h2>
+    <!-- PDF / file upload -->
+    <div class="detail-section" style="margin-top:14px;">
+      <h2><i class="bi bi-upload"></i> Upload Contract File</h2>
+      <label id="uploadLabel" for="fileInput" style="
+        display:flex; align-items:center; gap:10px; cursor:pointer;
+        border:2px dashed #cbd5e0; border-radius:10px; padding:16px 18px;
+        background:#f7f8fa; transition:border-color .2s, background .2s;">
+        <i class="bi bi-file-earmark-arrow-up" style="font-size:1.5rem;color:#667eea;"></i>
+        <span id="uploadLabelText" style="color:#4a5568;font-size:0.9rem;">
+          Click to upload a <strong>PDF</strong> or <strong>.txt</strong> contract file
+        </span>
+      </label>
+      <input type="file" id="fileInput" accept=".pdf,.txt" style="display:none;">
+      <div id="fileChosen" style="display:none; margin-top:8px; padding:8px 12px;
+           background:#f0fff4; border:1px solid #9ae6b4; border-radius:8px;
+           font-size:0.85rem; color:#276749; display:none; align-items:center; gap:8px;">
+        <i class="bi bi-file-earmark-check"></i>
+        <span id="fileChosenName"></span>
+        <button onclick="clearFile()" style="margin-left:auto;background:none;border:none;color:#c53030;cursor:pointer;font-size:1rem;">✕</button>
+      </div>
+    </div>
+
+    <!-- Contract text -->
+    <div class="detail-section" style="margin-top:14px;">
+      <h2><i class="bi bi-card-text"></i> Contract Text</h2>
       <textarea
         id="contractText"
-        rows="22"
-        placeholder="Paste vendor contract text here, or load a sample above…"
+        rows="14"
+        placeholder="Paste vendor contract text here, or load a sample / upload a file above…"
         style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px;
                font-family:monospace; font-size:0.82rem; resize:vertical; outline:none;
-               background:#f7f8fa; color:#2d3748;"
+               background:#f7f8fa; color:#2d3748; box-sizing:border-box;"
       ></textarea>
-      <button id="analyzeBtn" class="export-btn" style="margin-top:12px; width:100%; font-size:1rem; padding:10px;">
-        Analyze Contract ↗
+
+      <button id="analyzeBtn" class="export-btn" style="margin-top:12px; width:100%; font-size:1rem; padding:11px; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <i class="bi bi-cpu"></i> Analyze Contract
       </button>
       <div id="loadingMsg" style="display:none; text-align:center; margin-top:10px; color:#718096; font-size:0.9rem;">
+        <span class="spinner-border spinner-border-sm" role="status"></span>
         Extracting fields…
       </div>
     </div>
@@ -45,6 +76,11 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <h2 style="margin-bottom:0;">Extraction Result</h2>
         <span id="modeTag" class="badge" style="font-size:0.8rem;"></span>
+      </div>
+
+      <!-- Source file name (if uploaded) -->
+      <div id="sourceTag" style="display:none; margin-bottom:12px; font-size:0.82rem; color:#718096;">
+        <i class="bi bi-file-earmark"></i> <span id="sourceTagName"></span>
       </div>
 
       <!-- Risk banner -->
@@ -85,6 +121,15 @@
     </div>
   </div>
 
+  <!-- Empty state -->
+  <div id="emptyState" class="extract-panel" style="display:flex; align-items:center; justify-content:center;">
+    <div style="text-align:center; color:#a0aec0; padding:40px 20px;">
+      <i class="bi bi-file-earmark-text" style="font-size:3rem; display:block; margin-bottom:12px;"></i>
+      No contract analyzed yet<br>
+      <span style="font-size:0.82rem;">Load a sample, upload a file, or paste text — then click Analyze</span>
+    </div>
+  </div>
+
 </div>
 
 <!-- Error -->
@@ -96,6 +141,52 @@
 
 {% block scripts %}
 <script>
+// ── File upload handling ────────────────────────────────────────────────────
+const fileInput = document.getElementById('fileInput');
+const uploadLabel = document.getElementById('uploadLabel');
+const fileChosen = document.getElementById('fileChosen');
+const fileChosenName = document.getElementById('fileChosenName');
+
+uploadLabel.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadLabel.style.borderColor = '#667eea';
+  uploadLabel.style.background = '#ebf4ff';
+});
+uploadLabel.addEventListener('dragleave', () => {
+  uploadLabel.style.borderColor = '#cbd5e0';
+  uploadLabel.style.background = '#f7f8fa';
+});
+uploadLabel.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadLabel.style.borderColor = '#cbd5e0';
+  uploadLabel.style.background = '#f7f8fa';
+  if (e.dataTransfer.files.length) {
+    fileInput.files = e.dataTransfer.files;
+    onFileSelected();
+  }
+});
+
+fileInput.addEventListener('change', onFileSelected);
+
+function onFileSelected() {
+  const f = fileInput.files[0];
+  if (!f) return;
+  fileChosenName.textContent = f.name + '  (' + (f.size / 1024).toFixed(1) + ' KB)';
+  fileChosen.style.display = 'flex';
+  document.getElementById('uploadLabelText').innerHTML =
+    '<strong>' + f.name + '</strong> selected — click Analyze to extract';
+  // Clear textarea so it doesn't compete
+  document.getElementById('contractText').value = '';
+}
+
+function clearFile() {
+  fileInput.value = '';
+  fileChosen.style.display = 'none';
+  document.getElementById('uploadLabelText').innerHTML =
+    'Click to upload a <strong>PDF</strong> or <strong>.txt</strong> contract file';
+}
+
+// ── Sample loader ───────────────────────────────────────────────────────────
 async function loadSamples() {
   try {
     const res = await fetch('/api/sample-contracts');
@@ -115,6 +206,7 @@ async function loadSamples() {
 document.getElementById('sampleSelect').addEventListener('change', async function () {
   const filename = this.value;
   if (!filename) return;
+  clearFile();
   try {
     const res = await fetch('/api/sample-contracts/' + encodeURIComponent(filename));
     const data = await res.json();
@@ -124,21 +216,32 @@ document.getElementById('sampleSelect').addEventListener('change', async functio
   }
 });
 
+// ── Analyze ─────────────────────────────────────────────────────────────────
 document.getElementById('analyzeBtn').addEventListener('click', async function () {
+  const file = fileInput.files[0];
   const text = document.getElementById('contractText').value.trim();
-  if (!text) { alert('Paste or select a contract first.'); return; }
+
+  if (!file && !text) {
+    alert('Upload a file or paste contract text first.');
+    return;
+  }
 
   this.disabled = true;
   document.getElementById('loadingMsg').style.display = 'block';
   document.getElementById('resultPanel').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'none';
   document.getElementById('errorPanel').style.display = 'none';
 
+  // Use FormData so we can send either a file or text (or both)
+  const form = new FormData();
+  if (file) {
+    form.append('file', file);
+  } else {
+    form.append('contract_text', text);
+  }
+
   try {
-    const res = await fetch('/api/extract', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contract_text: text }),
-    });
+    const res = await fetch('/api/extract', { method: 'POST', body: form });
 
     document.getElementById('loadingMsg').style.display = 'none';
     document.getElementById('analyzeBtn').disabled = false;
@@ -147,6 +250,7 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
       const err = await res.json().catch(() => ({}));
       document.getElementById('errorPanel').textContent = 'Error: ' + (err.detail || res.statusText);
       document.getElementById('errorPanel').style.display = 'block';
+      document.getElementById('emptyState').style.display = 'flex';
       return;
     }
 
@@ -156,9 +260,11 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
     document.getElementById('analyzeBtn').disabled = false;
     document.getElementById('errorPanel').textContent = 'Request failed: ' + e;
     document.getElementById('errorPanel').style.display = 'block';
+    document.getElementById('emptyState').style.display = 'flex';
   }
 });
 
+// ── Render result ────────────────────────────────────────────────────────────
 const RISK_COLORS = {
   CRITICAL: { bg: '#fff5f5', color: '#c53030', border: '#e53e3e' },
   HIGH:     { bg: '#fffaf0', color: '#c05621', border: '#dd6b20' },
@@ -167,18 +273,27 @@ const RISK_COLORS = {
 };
 
 function renderResult(data) {
-  const { scored, extracted, mode, message } = data;
+  const { scored, extracted, mode, message, source } = data;
   const level = scored.risk_level;
   const rc = RISK_COLORS[level] || RISK_COLORS.LOW;
+
+  // Source file tag
+  const sourceTag = document.getElementById('sourceTag');
+  if (source) {
+    document.getElementById('sourceTagName').textContent = source;
+    sourceTag.style.display = 'block';
+  } else {
+    sourceTag.style.display = 'none';
+  }
 
   // Mode badge
   const modeTag = document.getElementById('modeTag');
   if (mode === 'live') {
     modeTag.textContent = 'Live AI Extraction';
-    modeTag.style.cssText = 'background:#f0fff4;color:#276749;border:1px solid #9ae6b4;';
+    modeTag.style.cssText = 'background:#f0fff4;color:#276749;border:1px solid #9ae6b4;padding:3px 10px;border-radius:20px;';
   } else {
     modeTag.textContent = 'Demo Mode';
-    modeTag.style.cssText = 'background:#fffff0;color:#975a16;border:1px solid #f6e05e;';
+    modeTag.style.cssText = 'background:#fffff0;color:#975a16;border:1px solid #f6e05e;padding:3px 10px;border-radius:20px;';
   }
 
   // Risk banner
@@ -193,21 +308,21 @@ function renderResult(data) {
   const tbody = document.querySelector('#extractedTable tbody');
   tbody.innerHTML = '';
   const fields = [
-    ['Vendor ID',        extracted.vendor_id],
-    ['Vendor Name',      extracted.vendor_name],
-    ['Category',         extracted.category],
-    ['Contract Start',   extracted.contract_start],
-    ['Contract End',     extracted.contract_end],
-    ['Systems',          Array.isArray(extracted.systems) ? extracted.systems.join(', ') : (extracted.systems || '—')],
-    ['Data Sensitivity', extracted.data_sensitivity],
-    ['Access Type',      (extracted.access_type || '').replace(/_/g, ' ')],
-    ['SOC 2 Type II',    extracted.soc2_type2  ? '✓ Yes' : '✗ No'],
-    ['SOC 2 Expiry',     extracted.soc2_expiry || '—'],
-    ['ISO 27001',        extracted.iso27001    ? '✓ Yes' : '✗ No'],
-    ['GDPR DPA',         extracted.gdpr_dpa    ? '✓ Yes' : '✗ No'],
-    ['Handles EU Data',  extracted.handles_eu_data ? 'Yes' : 'No'],
-    ['Financial Rating', extracted.financial_rating],
-    ['Annual Spend',     extracted.annual_spend ? '$' + Number(extracted.annual_spend).toLocaleString() : '—'],
+    ['Vendor ID',           extracted.vendor_id],
+    ['Vendor Name',         extracted.vendor_name],
+    ['Category',            extracted.category],
+    ['Contract Start',      extracted.contract_start],
+    ['Contract End',        extracted.contract_end],
+    ['Systems',             Array.isArray(extracted.systems) ? extracted.systems.join(', ') : (extracted.systems || '—')],
+    ['Data Sensitivity',    extracted.data_sensitivity],
+    ['Access Type',         (extracted.access_type || '').replace(/_/g, ' ')],
+    ['SOC 2 Type II',       extracted.soc2_type2  ? '✓ Yes' : '✗ No'],
+    ['SOC 2 Expiry',        extracted.soc2_expiry || '—'],
+    ['ISO 27001',           extracted.iso27001    ? '✓ Yes' : '✗ No'],
+    ['GDPR DPA',            extracted.gdpr_dpa    ? '✓ Yes' : '✗ No'],
+    ['Handles EU Data',     extracted.handles_eu_data ? 'Yes' : 'No'],
+    ['Financial Rating',    extracted.financial_rating],
+    ['Annual Spend',        extracted.annual_spend ? '$' + Number(extracted.annual_spend).toLocaleString() : '—'],
     ['Under Investigation', extracted.under_investigation ? '⚠ Yes' : 'No'],
   ];
   fields.forEach(([label, value]) => {

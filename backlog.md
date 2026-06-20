@@ -61,8 +61,8 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 ### Divyansh — PDF + Bulk Ingest
 - [x] `extraction/parse_pdf.py`: PDF → text using pdfplumber; expose as `extract_text_from_pdf(path) -> str`
 - [x] Update `extraction/extract_contract.py`: detect if input is a file path ending in `.pdf`, call `parse_pdf.py` first, then send text to Groq as normal
-- [ ] Update `POST /api/extract` in `api/routes/extract.py`: accept `multipart/form-data` with optional `file` field (PDF upload) alongside existing `contract_text` field
-- [ ] Update `/extract` page (coordinate with Jatin): add file upload input alongside the textarea
+- [x] Update `POST /api/extract` in `api/routes/extract.py`: accept `multipart/form-data` with optional `file` field (PDF upload) alongside existing `contract_text` field
+- [x] Update `/extract` page (coordinate with Jatin): add file upload input alongside the textarea
 - [x] `data/bulk_ingest.py`: parse an uploaded CSV of vendors, run each row through `normalize_csv_row()`, return list of `Vendor` objects ready to score
 - [ ] New API endpoint `POST /api/vendors/bulk-upload` (Jatin wires it, Divyansh writes the parsing function it calls)
 
