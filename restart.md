@@ -55,9 +55,9 @@ ALERT_EMAIL_TO=you@email.com
 ## Upgrade sprint — what's next
 
 **Divyansh** (extraction/, data/):
-- [ ] `extraction/parse_pdf.py` — PDF → text via pdfplumber
-- [ ] Update `extraction/extract_contract.py` to accept PDF path input
-- [ ] `data/bulk_ingest.py` — CSV bytes → list[Vendor] with per-row error handling
+- [x] `extraction/parse_pdf.py` — PDF → text via pdfplumber (done)
+- [x] Update `extraction/extract_contract.py` to accept PDF path input (Groq rewrite done)
+- [x] `data/bulk_ingest.py` — CSV bytes → list[Vendor] with per-row error handling (done)
 
 **Jatin** (monitoring/, api/, dashboard/):
 - [ ] `monitoring/scheduler.py` — APScheduler daily auto-alert job

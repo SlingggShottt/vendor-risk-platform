@@ -2,21 +2,21 @@
 """
 extraction/extract_contract.py — LLM-assisted vendor contract field extractor.
 
-Reads a plaintext contract file, sends it to Claude (claude-opus-4-8) with
-structured output enforcement, and returns a dict compatible with
-normalize_raw_vendor() from data/normalize.py.
+Uses Groq (llama-3.3-70b-versatile, free tier) with JSON-mode output to extract
+structured vendor fields from plaintext or PDF contract documents.
 
-Usage (single file):
+Usage (single file — .txt or .pdf):
     python extraction/extract_contract.py <path/to/contract.txt>
+    python extraction/extract_contract.py <path/to/contract.pdf>
 
-Usage (batch — all files in a directory):
+Usage (batch — all .txt and .pdf files in a directory):
     python extraction/extract_contract.py --batch extraction/sample_contracts/
 
 Usage (round-trip validation — extract then normalize):
-    python extraction/extract_contract.py --validate <path/to/contract.txt>
+    python extraction/extract_contract.py --validate <path/to/contract.txt|.pdf>
 
 Environment:
-    ANTHROPIC_API_KEY  — required
+    GROQ_API_KEY  — required (free key at https://console.groq.com, no credit card)
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-import anthropic
+from groq import Groq
 from pydantic import BaseModel, Field
 
 
@@ -36,119 +36,58 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 class ContractExtraction(BaseModel):
-    """Fields Claude extracts from a vendor contract."""
-
-    vendor_id: Optional[str] = Field(
-        None,
-        description=(
-            "Vendor ID in VND-NNNN format. Derive from the contract reference number "
-            "(e.g. MSA-2023-0285 → VND-0285, CSA-2025-0099 → VND-0099). "
-            "Use null only if no numeric ID is present in the document."
-        ),
-    )
-    vendor_name: str = Field(
-        description="Legal name of the vendor/contractor company."
-    )
-    category: str = Field(
-        description=(
-            "Short vendor category, e.g. 'Backup & DR', 'Payment Processing', "
-            "'Consulting', 'Analytics', 'IT Integration', 'SaaS'."
-        )
-    )
-    contract_start: Optional[str] = Field(
-        None,
-        description="Contract effective / start date in ISO 8601 format YYYY-MM-DD. Null if absent.",
-    )
-    contract_end: Optional[str] = Field(
-        None,
-        description="Contract expiry / end date in ISO 8601 format YYYY-MM-DD. Null if absent.",
-    )
-    systems: list[str] = Field(
-        default_factory=list,
-        description="List of system names the vendor accesses (e.g. ['Database_Primary', 'HR_System']).",
-    )
-    data_sensitivity: str = Field(
-        description=(
-            "Data sensitivity level — exactly one of: LOW, MEDIUM, HIGH. "
-            "LOW=anonymised/aggregated/no PII. MEDIUM=internal/employee records. "
-            "HIGH=PII/financial/payment/cardholder data."
-        )
-    )
-    access_type: str = Field(
-        description=(
-            "Access level — exactly one of: READ_ONLY, READ_WRITE, NONE. "
-            "Map 'read-write', 'rw', 'write' → READ_WRITE; "
-            "'read-only', 'read', 'ro' → READ_ONLY."
-        )
-    )
-    soc2_type2: bool = Field(
-        description="True only if vendor currently holds a valid SOC 2 Type II cert. 'NOT HELD' or expired → false."
-    )
-    soc2_expiry: Optional[str] = Field(
-        None,
-        description="SOC 2 Type II expiry date in ISO 8601 format YYYY-MM-DD, or null.",
-    )
-    iso27001: bool = Field(
-        description="True only if vendor currently holds a valid ISO/IEC 27001 cert. 'NOT HELD' → false."
-    )
-    gdpr_dpa: bool = Field(
-        description=(
-            "True ONLY if a GDPR Data Processing Agreement is confirmed as executed/signed. "
-            "'Not executed', 'pending', 'open action item', 'NOT APPLICABLE' → false."
-        )
-    )
-    handles_eu_data: bool = Field(
-        description=(
-            "True if vendor processes personal data of EU data subjects. "
-            "Infer from governing law, EU operations mention, or explicit DPA references. "
-            "'NOT APPLICABLE' or US-only context → false."
-        )
-    )
-    financial_rating: str = Field(
-        description=(
-            "Credit/financial rating letter grade: A, A-, B, C, C-, or D. "
-            "Extract the letter grade; ignore descriptors like 'prime' or 'speculative'."
-        )
-    )
-    annual_spend: Optional[float] = Field(
-        None,
-        description=(
-            "Annual contract value in USD as a plain number (no currency symbol). "
-            "If stated in EUR with a USD equivalent, use the USD equivalent. "
-            "Null if not stated."
-        ),
-    )
-    under_investigation: bool = Field(
-        description=(
-            "True if vendor is flagged UNDER INVESTIGATION — includes active regulatory "
-            "investigations, SEC/legal matters, or internal security review flags."
-        )
-    )
+    vendor_id: Optional[str] = Field(None)
+    vendor_name: str
+    category: str
+    contract_start: Optional[str] = Field(None)
+    contract_end: Optional[str] = Field(None)
+    systems: list[str] = Field(default_factory=list)
+    data_sensitivity: str
+    access_type: str
+    soc2_type2: bool
+    soc2_expiry: Optional[str] = Field(None)
+    iso27001: bool
+    gdpr_dpa: bool
+    handles_eu_data: bool
+    financial_rating: str
+    annual_spend: Optional[float] = Field(None)
+    under_investigation: bool
 
 
 # ---------------------------------------------------------------------------
 # Prompt
 # ---------------------------------------------------------------------------
 
-_SYSTEM_PROMPT = """\
-You are a precision contract analyst. Extract the specified fields from vendor
-contracts exactly as instructed. Return only valid JSON matching the schema —
-no preamble, no explanation.
+_SYSTEM_PROMPT = """You are a precision contract analyst. Extract vendor fields from the contract and return ONLY a valid JSON object — no explanation, no markdown, no preamble.
 
-Key rules:
-- All dates MUST be ISO 8601 (YYYY-MM-DD). Parse written dates like "1 March 2024" → "2024-03-01".
-- vendor_id: derive from the contract reference number by extracting the 4-digit vendor segment.
-  E.g. MSA-2023-0285 → "VND-0285", CSA-2025-0099 → "VND-0099", ASA-2024-0001 → "VND-0001".
-  Always zero-pad to 4 digits.
-- gdpr_dpa = true ONLY when the DPA is confirmed SIGNED/EXECUTED. "Pending", "not executed",
-  "not required", "open action item" all → false.
-- soc2_type2 / iso27001 = true only when explicitly stated as VALID/HELD. Otherwise false.
-- under_investigation = true for ANY of: "UNDER INVESTIGATION", "active investigation",
-  "SEC investigation", or internal security review flagging the vendor at elevated risk.
-- financial_rating: extract the raw letter (A, A-, B, C, C-, D) only.
-- annual_spend: USD number only; if EUR is given with a USD approximation, use the USD figure.
-- handles_eu_data: infer from explicit EU data handling statements; "NOT APPLICABLE" → false.
-"""
+Required JSON keys and rules:
+- vendor_id: derive from the contract reference number's 4-digit segment (MSA-2023-0285 → "VND-0285"). Null if absent.
+- vendor_name: legal name of the vendor company
+- category: short category e.g. "Backup & DR", "Payment Processing", "Consulting"
+- contract_start / contract_end: ISO 8601 dates YYYY-MM-DD, null if absent
+- systems: array of system names the vendor accesses
+- data_sensitivity: exactly one of LOW / MEDIUM / HIGH
+- access_type: exactly one of READ_ONLY / READ_WRITE / NONE
+- soc2_type2: true only if vendor holds a VALID SOC 2 Type II cert (false if NOT HELD or expired)
+- soc2_expiry: expiry date YYYY-MM-DD or null
+- iso27001: true only if vendor holds a VALID ISO 27001 cert
+- gdpr_dpa: true ONLY if DPA is confirmed SIGNED/EXECUTED ("Pending" / "not executed" → false)
+- handles_eu_data: true if vendor processes EU personal data ("NOT APPLICABLE" → false)
+- financial_rating: letter grade only — A, A-, B, C, C-, or D
+- annual_spend: USD number only (null if not stated)
+- under_investigation: true if vendor is flagged UNDER INVESTIGATION or active investigation"""
+
+
+# ---------------------------------------------------------------------------
+# PDF support
+# ---------------------------------------------------------------------------
+
+def _read_contract(path: Path) -> str:
+    """Read contract text from a .txt or .pdf file."""
+    if path.suffix.lower() == ".pdf":
+        from extraction.parse_pdf import extract_text_from_pdf
+        return extract_text_from_pdf(path)
+    return path.read_text(encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -157,50 +96,50 @@ Key rules:
 
 def extract_from_contract(contract_text: str) -> dict:
     """
-    Call Claude and return a dict passable to normalize_raw_vendor().
+    Call Groq and return a dict passable to normalize_raw_vendor().
+
+    Args:
+        contract_text: Raw contract text (already extracted from PDF if needed).
 
     Raises:
-        EnvironmentError: if ANTHROPIC_API_KEY is not set.
-        anthropic.APIError: on any API-level failure.
+        EnvironmentError: if GROQ_API_KEY is not set.
+        Exception: on any API or parsing failure.
     """
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
-        raise EnvironmentError("ANTHROPIC_API_KEY environment variable is not set")
+        raise EnvironmentError("GROQ_API_KEY environment variable is not set")
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = Groq(api_key=api_key)
 
-    response = client.messages.parse(
-        model="claude-opus-4-8",
-        max_tokens=2048,
-        thinking={"type": "adaptive"},
-        system=_SYSTEM_PROMPT,
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        response_format={"type": "json_object"},
         messages=[
-            {
-                "role": "user",
-                "content": f"Extract all fields from this vendor contract:\n\n{contract_text}",
-            }
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": f"Extract all fields from this vendor contract:\n\n{contract_text}"},
         ],
-        output_format=ContractExtraction,
+        temperature=0,
     )
 
-    extraction: ContractExtraction = response.parsed
+    raw_json = json.loads(response.choices[0].message.content)
+    extraction = ContractExtraction(**raw_json)
 
     return {
-        "vendor_id": extraction.vendor_id,
-        "vendor_name": extraction.vendor_name,   # aliased → name by normalize.py
-        "category": extraction.category,
-        "contract_start": extraction.contract_start,
-        "contract_end": extraction.contract_end,
-        "systems": "|".join(extraction.systems),  # normalize.py handles pipe-sep strings
-        "data_sensitivity": extraction.data_sensitivity,
-        "access_type": extraction.access_type,
-        "soc2_type2": extraction.soc2_type2,
-        "soc2_expiry": extraction.soc2_expiry,
-        "iso27001": extraction.iso27001,
-        "gdpr_dpa": extraction.gdpr_dpa,
-        "handles_eu_data": extraction.handles_eu_data,
-        "financial_rating": extraction.financial_rating,
-        "annual_spend": extraction.annual_spend,  # canonical field name in schema.py
+        "vendor_id":           extraction.vendor_id,
+        "vendor_name":         extraction.vendor_name,
+        "category":            extraction.category,
+        "contract_start":      extraction.contract_start,
+        "contract_end":        extraction.contract_end,
+        "systems":             "|".join(extraction.systems),
+        "data_sensitivity":    extraction.data_sensitivity,
+        "access_type":         extraction.access_type,
+        "soc2_type2":          extraction.soc2_type2,
+        "soc2_expiry":         extraction.soc2_expiry,
+        "iso27001":            extraction.iso27001,
+        "gdpr_dpa":            extraction.gdpr_dpa,
+        "handles_eu_data":     extraction.handles_eu_data,
+        "financial_rating":    extraction.financial_rating,
+        "annual_spend":        extraction.annual_spend,
         "under_investigation": extraction.under_investigation,
     }
 
@@ -210,41 +149,34 @@ def extract_from_contract(contract_text: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def _validate(contract_path: Path) -> None:
-    """Extract then run through normalize_raw_vendor for round-trip validation."""
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from data.normalize import normalize_raw_vendor  # noqa: PLC0415
+    from data.normalize import normalize_raw_vendor
 
-    text = contract_path.read_text(encoding="utf-8")
+    text = _read_contract(contract_path)
     raw = extract_from_contract(text)
     print(f"\n=== Extracted raw dict from {contract_path.name} ===")
     print(json.dumps(raw, indent=2, default=str))
-
     vendor = normalize_raw_vendor(raw)
-    print(f"\n=== Normalized Vendor object ===")
+    print(f"\n=== Normalized Vendor ===")
     print(json.dumps(vendor.model_dump(mode="json"), indent=2))
 
 
 def _batch(directory: Path) -> None:
-    """Process every *.txt file in directory, print JSON array of raw dicts."""
-    files = sorted(directory.glob("*.txt"))
+    files = sorted(list(directory.glob("*.txt")) + list(directory.glob("*.pdf")))
     if not files:
-        print(f"No .txt files found in {directory}", file=sys.stderr)
+        print(f"No .txt or .pdf files found in {directory}", file=sys.stderr)
         sys.exit(1)
-
     results = []
     for f in files:
         print(f"  Extracting {f.name} ...", file=sys.stderr)
-        text = f.read_text(encoding="utf-8")
-        raw = extract_from_contract(text)
+        raw = extract_from_contract(_read_contract(f))
         raw["_source_file"] = f.name
         results.append(raw)
-
     print(json.dumps(results, indent=2, default=str))
 
 
 def main() -> None:
     args = sys.argv[1:]
-
     if not args:
         print(__doc__, file=sys.stderr)
         sys.exit(1)
@@ -258,20 +190,18 @@ def main() -> None:
 
     if args[0] == "--validate":
         if len(args) < 2:
-            print("Usage: extract_contract.py --validate <file.txt>", file=sys.stderr)
+            print("Usage: extract_contract.py --validate <file.txt|.pdf>", file=sys.stderr)
             sys.exit(1)
         _validate(Path(args[1]))
         return
 
-    # Default: single file, print raw dict
     contract_path = Path(args[0])
     if not contract_path.exists():
         print(f"Error: file not found: {contract_path}", file=sys.stderr)
         sys.exit(1)
 
-    text = contract_path.read_text(encoding="utf-8")
-    result = extract_from_contract(text)
-    print(json.dumps(result, indent=2, default=str))
+    print(json.dumps(extract_from_contract(_read_contract(contract_path)),
+                     indent=2, default=str))
 
 
 if __name__ == "__main__":
