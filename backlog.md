@@ -34,6 +34,11 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 ### Docs contribution
 - [x] Write the "data generation methodology + edge cases" section (`docs/data_methodology.md`)
 
+### Enterprise Sprint — Data Layer
+- [x] Update `common/schema.py`: add `AuditLog` + `ComplianceSummary` models
+- [x] `data/compliance_export.py`: format vendor compliance data for export (CSV, JSON)
+- [x] `data/audit_helper.py`: structured audit event builder
+
 ## Jatin — Scoring, Monitoring, API, Dashboard
 
 ### Core
@@ -42,75 +47,31 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 - [x] `scoring/recommend.py`: generates the `recommendation` string from risk_level + top risk_factors
 - [x] Engine runs clean against H0 fixtures, producing sane output (manual eyeball check before touching real data)
 - [x] `eval/evaluate.py`: precision/recall overall + CRITICAL/HIGH-specific recall, against `vendor_labels.csv`
-- [x] Tune rubric weights if CRITICAL recall is below ~95% — no tuning needed, achieved 100% precision + recall on all 430 vendors on first run
-- [x] `monitoring/alerts.py`: cert expiry (30/60/90 day windows), contract expiry + active access check, breach-recency flag
-- [x] `monitoring/emailer.py`: monthly summary email + expiry alert email, swappable backend (real SMTP if creds available, console/log fallback otherwise — must not block other work on missing credentials)
-- [x] `api/db.py`: SQLAlchemy models + engine (agreed shape from H0)
-- [x] `api/main.py` + `api/routes/vendors.py`: list/filter/get vendor + score
-- [x] `api/routes/reports.py`: portfolio report endpoint (mirrors the brief's report format: risk summary, red-flag vendors, compliance stats) + CSV export endpoint
-- [x] `dashboard/`: vendor list (sortable/filterable), alert indicators, risk-level bar chart (Chart.js), "is vendor X compliant" search/lookup, export-to-CSV button
+- [x] Tune rubric weights — CRITICAL recall 1.000, HIGH recall 1.000 (100% after boundary fix)
+- [x] `monitoring/alerts.py`: cert expiry (30/60/90 day windows), contract expiry + active access check, breach-recency flag; `triggered_at` datetime on each alert
+- [x] `monitoring/emailer.py`: monthly summary + expiry alert + EOD digest emails; swappable SMTP/console backend
+- [x] `monitoring/scheduler.py`: daily 08:00 UTC alert check + 17:00 IST EOD digest; wired into startup
+- [x] `api/db.py`: SQLAlchemy models + engine
+- [x] `api/main.py` + `api/routes/vendors.py`: list/filter/sort/get + `POST /api/vendors` (add vendor, immediate alert email)
+- [x] `api/routes/reports.py`: portfolio report + CSV export + PDF export + compliance-export (JSON/CSV)
+- [x] `api/routes/audit.py`: `GET /api/audit-log` with date/actor/action/vendor filters
+- [x] `api/routes/bulk.py`: `POST /api/vendors/bulk-upload` CSV ingestion
+- [x] `dashboard/`: vendor list (sortable/filterable), vendor detail, reports, contract extraction, add-vendor form
 
-### Stretch
-- [ ] Postgres swap (only if SQLite is somehow insufficient — unlikely)
+### Enterprise Sprint — Scoring & API
+- [x] `scoring/risk_engine.py`: `explain_vendor_score()` — rule-by-rule contribution breakdown
+- [x] `GET /api/vendors/{id}/risk-explainer` — weight, raw_score, contribution, descriptions per rule
+- [x] `GET /api/reports/compliance-export?format=json|csv` — portfolio compliance summary + per-vendor rows
+- [x] `monitoring/audit_logger.py`: in-memory audit log with `log_event()` + `query_log()` helpers
+- [x] `GET /api/audit-log` — filterable audit trail (actor, action, resource_type, vendor_id, date range)
+- [x] FastAPI auto-generates OpenAPI schema at `/openapi.json`; Swagger UI at `/docs` — nav link added
+- [x] Rate limiting: 100 req/min per IP via `slowapi`
+- [x] CORS: restricted to localhost + onrender.com
+- [x] Security headers: `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`
 
-### Docs contribution
-- [x] Write the "scoring algorithm rationale" and "API/UI architecture" sections for the documentation deliverable → `docs/scoring_architecture.md`
-
-## Upgrade Sprint (post-deployment)
-
-### Divyansh — PDF + Bulk Ingest
-- [x] `extraction/parse_pdf.py`: PDF → text using pdfplumber; expose as `extract_text_from_pdf(path) -> str`
-- [x] Update `extraction/extract_contract.py`: detect if input is a file path ending in `.pdf`, call `parse_pdf.py` first, then send text to Groq as normal
-- [x] Update `POST /api/extract` in `api/routes/extract.py`: accept `multipart/form-data` with optional `file` field (PDF upload) alongside existing `contract_text` field
-- [x] Update `/extract` page (coordinate with Jatin): add file upload input alongside the textarea
-- [x] `data/bulk_ingest.py`: parse an uploaded CSV of vendors, run each row through `normalize_csv_row()`, return list of `Vendor` objects ready to score
-- [ ] New API endpoint `POST /api/vendors/bulk-upload` (Jatin wires it, Divyansh writes the parsing function it calls)
-
-### Jatin — Monitoring, Charts, PDF Report, Bulk Upload endpoint
-- [ ] `monitoring/scheduler.py`: APScheduler job that runs daily at 08:00, calls `check_alerts()` on all store vendors, sends email via `get_emailer()` if any CRITICAL/HIGH alerts found — auto-monitoring, no manual button press needed
-- [ ] Wire scheduler into `api/main.py` startup (start in background thread)
-- [ ] `api/routes/vendors.py`: add `GET /api/vendors/{id}/history` — returns 6-point mock score history (seed deterministically from vendor_id hash so it's consistent across reloads)
-- [ ] `dashboard/templates/vendor_detail.html`: add sparkline chart (Chart.js line) showing 6-month score trend in the vendor detail hero section
-- [ ] `api/routes/reports.py`: add `GET /api/reports/pdf` — generate PDF portfolio report using WeasyPrint or ReportLab; full scored vendor table + compliance stats + red-flag section
-- [ ] Add "Download PDF Report" button in `dashboard/templates/reports.html` next to existing Download CSV
-- [ ] `POST /api/vendors/bulk-upload`: accepts CSV file upload, calls Divyansh's `bulk_ingest.py`, scores each vendor, returns JSON array of scored results; also adds them to the in-memory store so dashboard reflects them immediately
-
-## Enterprise Sprint (Société Générale focus — SG placement differentiation)
-
-**Why**: SG is a tier-1 bank with strict compliance/audit requirements. These features demonstrate enterprise thinking and are table-stakes for fintech platforms.
-
-### Divyansh — Data Layer & Schema Support
-
-1. **Compliance Export Infrastructure**
-   - [ ] Update `common/schema.py`: add `AuditLog` model (id, timestamp, actor, action, resource_type, resource_id, old_state, new_state, reason)
-   - [ ] `data/compliance_export.py` (new): functions to format vendor compliance data for export (CSV, JSON, XLSX-ready dicts)
-   - [ ] `data/audit_helper.py` (new): structured audit event builder (standardize event creation across the app)
-
-### Jatin — API, Scoring, & Monitoring (all 7 features)
-
-**PRIORITY 1 — Audit + Explainability (SG's #1 ask: "why is this vendor CRITICAL?")**
-- [ ] `monitoring/audit_logger.py` (new): in-memory audit log (structure as DB-backed for production)
-- [ ] `api/routes/audit.py` (new): `GET /api/audit-log?date_from=...&date_to=...&actor=...&action=...&vendor_id=...`
-- [ ] `scoring/explainer.py` (new): breaks down risk_score into rule-by-rule contributions
-- [ ] `api/routes/vendors.py`: add `GET /api/vendors/{id}/risk-explainer` → `{ risk_score, risk_level, contributing_factors: [{rule_name, weight, impact, description}], remediation_actions: [...] }`
-- [ ] `api/routes/reports.py`: add `GET /api/reports/compliance-export?format=csv|json` → vendor compliance summary + audit events
-
-**PRIORITY 2 — Trends + OpenAPI (SG needs integration capability + visibility)**
-- [ ] `api/routes/vendors.py`: enhance `GET /api/vendors/{id}/history` with predictive trend (linear regression on 6 points; return `trend_direction`, `projected_level_in_3mo`)
-- [ ] `api/routes/vendors.py`: add trend-up alert → if trending CRITICAL, flag in alerts
-- [ ] `api/main.py`: generate OpenAPI 3.1.0 schema at `GET /api/openapi.json`; wire Swagger UI to `/api/docs`
-- [ ] `dashboard/templates/base.html`: add "API Docs" link (routes to Swagger UI)
-
-**PRIORITY 3 — Security + Bulk Ops (table-stakes)**
-- [ ] `api/main.py`: add rate limiting (100 req/min per IP via `slowapi`)
-- [ ] `api/main.py`: CORS: restrict to `["http://localhost", "https://vendor-risk-platform.onrender.com"]`
-- [ ] `api/main.py`: security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`)
-- [ ] `api/routes/bulk.py` (new): `POST /api/vendors/bulk-remediate { vendor_ids, action, reason }` → updates all, logs audit
-- [ ] `api/routes/jobs.py` (new): async job tracking (`POST /api/jobs/bulk-export`, `GET /api/jobs/{id}`)
-- [ ] `api/routes/reports.py`: `GET /api/reports/bulk-export?format=xlsx` → stream XLSX file
-
-**PRIORITY 4 — Slack Integration (ops teams live in Slack)**
-- [ ] `monitoring/emailer.py`: add Slack backend (posts to webhook with rich formatting)
-- [ ] Env var: `SLACK_WEBHOOK_URL`
-- [ ] `api/routes/alerts.py`: integrate Slack into `POST /api/alerts/send-expiry` and `/send-monthly`
-- [ ] Dashboard: show "Slack ✓" status badge on `/reports` if webhook configured
+### Stretch (decided not to build — scope/time tradeoff)
+- [ ] Postgres swap (CSV-first confirmed sufficient)
+- [ ] `POST /api/vendors/bulk-remediate` — update multiple vendors + audit log
+- [ ] `GET /api/reports/bulk-export?format=xlsx` — XLSX streaming
+- [ ] Slack backend for emailer
+- [ ] Predictive score trend (linear regression on history points)

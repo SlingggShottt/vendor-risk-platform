@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from common.schema import ScoredVendor, Vendor
 from data.normalize import normalize_raw_vendor
-from scoring.risk_engine import score_vendor
+from scoring.risk_engine import score_vendor, explain_vendor_score
 from monitoring.alerts import check_alerts
 
 router = APIRouter(prefix="/api/vendors", tags=["vendors"])
@@ -209,6 +209,18 @@ def get_vendor(vendor_id: str):
             for a in alerts
         ],
     }
+
+
+@router.get("/{vendor_id}/risk-explainer")
+def vendor_risk_explainer(vendor_id: str):
+    """Return a rule-by-rule score breakdown for a single vendor."""
+    store = _get_store()
+    entry = store.get(vendor_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail=f"Vendor {vendor_id!r} not found")
+    from api.main import app
+    today = getattr(app.state, "today", date.today())
+    return explain_vendor_score(entry["vendor"], today)
 
 
 @router.get("/{vendor_id}/history")

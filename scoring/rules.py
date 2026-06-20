@@ -63,7 +63,9 @@ def floor_breach_high_access(vendor: Vendor, today: date) -> tuple[bool, str]:
         return False, ""
     most_recent = max(b.date for b in vendor.breach_history)
     months_ago = (today - most_recent).days / 30.44
-    if months_ago <= 12 and vendor.data_access.data_sensitivity == DataSensitivity.HIGH:
+    # Use < 12.1 (not <= 12) to absorb the 30.44-day-per-month approximation at the
+    # exact 12-month boundary (366 days in a non-leap year = 12.025 months).
+    if months_ago < 12.1 and vendor.data_access.data_sensitivity == DataSensitivity.HIGH:
         breach = max(vendor.breach_history, key=lambda b: b.date)
         return True, (
             f"Breach {months_ago:.1f} months ago ({breach.date.strftime('%b %Y')}): "

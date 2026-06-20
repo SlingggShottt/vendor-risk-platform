@@ -24,6 +24,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from common.schema import RiskLevel, ScoredVendor, Vendor
+from data.compliance_export import build_compliance_summary, export_to_csv as _build_compliance_csv, export_to_json as _build_compliance_json, format_vendor_for_compliance_export
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -180,6 +181,39 @@ def export_csv():
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.get("/compliance-export")
+def compliance_export(format: str = "json"):
+    """
+    Export vendor compliance summary + per-vendor compliance rows.
+    ?format=json (default) or ?format=csv
+    """
+    store = _get_store()
+    entries = list(store.values())
+    today = date.today()
+
+    vendors  = [e["vendor"]  for e in entries]
+    scored   = [e["scored"]  for e in entries]
+
+    summary = build_compliance_summary(vendors, scored, today)
+    rows    = [format_vendor_for_compliance_export(v, sv) for v, sv in zip(vendors, scored)]
+    rows.sort(key=lambda r: r["risk_score"], reverse=True)
+
+    if format.lower() == "csv":
+        csv_str = _build_compliance_csv(rows)
+        filename = f"compliance_export_{today.isoformat()}.csv"
+        return Response(
+            content=csv_str,
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    return {
+        "generated_at": today.isoformat(),
+        "summary": summary.model_dump(mode="json"),
+        "vendors": rows,
+    }
 
 
 @router.get("/pdf")
