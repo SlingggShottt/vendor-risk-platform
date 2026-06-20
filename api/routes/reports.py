@@ -184,101 +184,154 @@ def export_csv():
 
 @router.get("/pdf")
 def export_pdf():
-    """Generate and download a PDF portfolio report using WeasyPrint."""
-    try:
-        from weasyprint import HTML
-    except ImportError:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=503, detail="weasyprint not installed — run: pip install weasyprint")
+    """Generate and download a PDF portfolio report using fpdf2 (pure Python, no system deps)."""
+    from fpdf import FPDF
 
     store = _get_store()
     entries = list(store.values())
     today = date.today()
+    total = len(entries)
 
     level_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
     for e in entries:
         level_counts[e["scored"].risk_level.value] += 1
 
-    red_flags = sorted(
-        [e for e in entries if e["scored"].risk_level.value in ("CRITICAL", "HIGH")],
-        key=lambda e: e["scored"].risk_score, reverse=True
-    )
-
-    total = len(entries)
     vendors = [e["vendor"] for e in entries]
     n_soc2 = sum(1 for v in vendors if v.compliance.soc2_type2
                  and (not v.compliance.soc2_expiry or v.compliance.soc2_expiry >= today))
     n_iso  = sum(1 for v in vendors if v.compliance.iso27001)
     n_gdpr = sum(1 for v in vendors if not v.handles_eu_data or v.compliance.gdpr_dpa)
 
-    LEVEL_COLOR = {"CRITICAL": "#c53030", "HIGH": "#c05621", "MEDIUM": "#975a16", "LOW": "#276749"}
+    red_flags = sorted(
+        [e for e in entries if e["scored"].risk_level.value in ("CRITICAL", "HIGH")],
+        key=lambda e: e["scored"].risk_score, reverse=True,
+    )
 
-    rows_html = ""
+    LEVEL_COLOR = {
+        "CRITICAL": (197, 48, 48),
+        "HIGH":     (192, 86, 33),
+        "MEDIUM":   (151, 90, 22),
+        "LOW":      (39, 103, 73),
+    }
+
+    pdf = FPDF()
+    pdf.set_margins(15, 15, 15)
+    pdf.add_page()
+
+    # ── Title ─────────────────────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.set_text_color(26, 32, 44)
+    pdf.cell(0, 10, "Vendor Risk Portfolio Report", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(113, 128, 150)
+    pdf.cell(0, 6, f"Generated: {today.isoformat()}    |    {total} vendors tracked",
+             new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+    pdf.set_draw_color(226, 232, 240)
+    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    pdf.ln(6)
+
+    # ── Risk Distribution ─────────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(26, 32, 44)
+    pdf.cell(0, 8, "Risk Distribution", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+
+    box_w = 42
+    for level, count in level_counts.items():
+        r, g, b = LEVEL_COLOR[level]
+        pdf.set_fill_color(r, g, b)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Helvetica", "B", 20)
+        pdf.cell(box_w, 12, str(count), align="C", fill=True)
+        pdf.set_font("Helvetica", "", 8)
+        x = pdf.get_x() - box_w
+        pdf.set_xy(x, pdf.get_y() + 12)
+        pdf.set_text_color(r, g, b)
+        pdf.cell(box_w, 5, level, align="C")
+        pdf.set_xy(pdf.get_x(), pdf.get_y() - 12)
+
+    pdf.ln(20)
+
+    # ── Compliance Coverage ───────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(26, 32, 44)
+    pdf.cell(0, 8, "Compliance Coverage", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+
+    comp_items = [
+        (f"{round(100*n_soc2/total) if total else 0}%", "SOC 2 Type II"),
+        (f"{round(100*n_iso/total) if total else 0}%",  "ISO 27001"),
+        (f"{round(100*n_gdpr/total) if total else 0}%", "GDPR DPA"),
+    ]
+    for val, label in comp_items:
+        pdf.set_fill_color(247, 248, 250)
+        pdf.set_text_color(45, 55, 72)
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(55, 10, val, align="C", fill=True)
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(113, 128, 150)
+        x = pdf.get_x() - 55
+        pdf.set_xy(x, pdf.get_y() + 10)
+        pdf.cell(55, 5, label, align="C")
+        pdf.set_xy(pdf.get_x(), pdf.get_y() - 10)
+
+    pdf.ln(18)
+
+    # ── Red-Flag Vendors table ────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(26, 32, 44)
+    pdf.cell(0, 8, f"Critical & High Risk Vendors (top {min(50, len(red_flags))})",
+             new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+
+    # Header row
+    col_w = [22, 48, 32, 20, 18, 40]
+    headers = ["ID", "Vendor", "Category", "Risk", "Score", "Top Risk Factor"]
+    pdf.set_fill_color(247, 248, 250)
+    pdf.set_text_color(113, 128, 150)
+    pdf.set_font("Helvetica", "B", 7)
+    for i, h in enumerate(headers):
+        pdf.cell(col_w[i], 7, h.upper(), border="B", fill=True)
+    pdf.ln()
+
+    pdf.set_font("Helvetica", "", 8)
     for e in red_flags[:50]:
         v, sv = e["vendor"], e["scored"]
-        color = LEVEL_COLOR.get(sv.risk_level.value, "#333")
-        rows_html += f"""
-        <tr>
-          <td>{v.vendor_id}</td>
-          <td>{v.name}</td>
-          <td>{v.category}</td>
-          <td style="color:{color}; font-weight:700">{sv.risk_level.value}</td>
-          <td>{sv.risk_score:.1f}</td>
-          <td style="font-size:10px">{sv.risk_factors[0] if sv.risk_factors else '—'}</td>
-        </tr>"""
+        r, g, b = LEVEL_COLOR.get(sv.risk_level.value, (51, 51, 51))
+        top_factor = (sv.risk_factors[0][:45] + "…") if sv.risk_factors and len(sv.risk_factors[0]) > 45 else (sv.risk_factors[0] if sv.risk_factors else "—")
 
-    html = f"""
-    <!DOCTYPE html><html><head><meta charset="UTF-8">
-    <style>
-      body {{ font-family: Arial, sans-serif; font-size: 12px; color: #1a202c; margin: 40px; }}
-      h1 {{ font-size: 20px; color: #1a202c; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }}
-      h2 {{ font-size: 14px; color: #2d3748; margin-top: 24px; }}
-      .stats {{ display: flex; gap: 24px; margin: 16px 0; }}
-      .stat {{ text-align: center; padding: 12px 20px; border-radius: 6px; }}
-      .critical {{ background: #fff5f5; color: #c53030; }}
-      .high {{ background: #fffaf0; color: #c05621; }}
-      .medium {{ background: #fffff0; color: #975a16; }}
-      .low {{ background: #f0fff4; color: #276749; }}
-      .stat-num {{ font-size: 28px; font-weight: 800; }}
-      .stat-label {{ font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }}
-      table {{ width: 100%; border-collapse: collapse; margin-top: 12px; }}
-      th {{ background: #f7f8fa; text-align: left; padding: 8px; font-size: 10px;
-            text-transform: uppercase; letter-spacing: 0.4px; color: #718096; }}
-      td {{ padding: 8px; border-top: 1px solid #edf2f7; font-size: 11px; }}
-      .compliance {{ display: flex; gap: 24px; margin: 12px 0; }}
-      .comp-item {{ padding: 10px 16px; background: #f7f8fa; border-radius: 6px; }}
-      .comp-val {{ font-size: 20px; font-weight: 700; color: #2d3748; }}
-      .comp-label {{ font-size: 10px; color: #718096; }}
-      .footer {{ margin-top: 32px; font-size: 10px; color: #a0aec0; border-top: 1px solid #e2e8f0; padding-top: 8px; }}
-    </style></head><body>
-    <h1>Vendor Risk Portfolio Report</h1>
-    <p style="color:#718096">Generated: {today.isoformat()} &nbsp;|&nbsp; {total} vendors tracked</p>
+        pdf.set_text_color(45, 55, 72)
+        pdf.cell(col_w[0], 6, v.vendor_id, border="B")
+        name = (v.name[:26] + "…") if len(v.name) > 26 else v.name
+        pdf.cell(col_w[1], 6, name, border="B")
+        cat = (v.category[:20] + "…") if len(v.category) > 20 else v.category
+        pdf.cell(col_w[2], 6, cat, border="B")
+        pdf.set_text_color(r, g, b)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.cell(col_w[3], 6, sv.risk_level.value, border="B")
+        pdf.set_text_color(45, 55, 72)
+        pdf.set_font("Helvetica", "", 8)
+        pdf.cell(col_w[4], 6, f"{sv.risk_score:.1f}", border="B")
+        pdf.set_font("Helvetica", "", 7)
+        pdf.cell(col_w[5], 6, top_factor, border="B")
+        pdf.set_font("Helvetica", "", 8)
+        pdf.ln()
 
-    <h2>Risk Distribution</h2>
-    <div class="stats">
-      <div class="stat critical"><div class="stat-num">{level_counts["CRITICAL"]}</div><div class="stat-label">Critical</div></div>
-      <div class="stat high"><div class="stat-num">{level_counts["HIGH"]}</div><div class="stat-label">High</div></div>
-      <div class="stat medium"><div class="stat-num">{level_counts["MEDIUM"]}</div><div class="stat-label">Medium</div></div>
-      <div class="stat low"><div class="stat-num">{level_counts["LOW"]}</div><div class="stat-label">Low</div></div>
-    </div>
+        if pdf.get_y() > 270:  # new page before overflow
+            pdf.add_page()
+            pdf.set_font("Helvetica", "", 8)
 
-    <h2>Compliance Coverage</h2>
-    <div class="compliance">
-      <div class="comp-item"><div class="comp-val">{round(100*n_soc2/total)}%</div><div class="comp-label">SOC 2 Type II</div></div>
-      <div class="comp-item"><div class="comp-val">{round(100*n_iso/total)}%</div><div class="comp-label">ISO 27001</div></div>
-      <div class="comp-item"><div class="comp-val">{round(100*n_gdpr/total)}%</div><div class="comp-label">GDPR DPA</div></div>
-    </div>
+    # ── Footer ────────────────────────────────────────────────────────────────
+    pdf.ln(8)
+    pdf.set_draw_color(226, 232, 240)
+    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(160, 174, 192)
+    pdf.cell(0, 5, f"Vendor Risk Platform  |  Confidential  |  {today.isoformat()}", align="C")
 
-    <h2>Critical & High Risk Vendors (top {min(50, len(red_flags))})</h2>
-    <table>
-      <thead><tr><th>ID</th><th>Vendor</th><th>Category</th><th>Risk</th><th>Score</th><th>Top Factor</th></tr></thead>
-      <tbody>{rows_html}</tbody>
-    </table>
-
-    <div class="footer">Vendor Risk Platform &nbsp;|&nbsp; Confidential &nbsp;|&nbsp; {today.isoformat()}</div>
-    </body></html>"""
-
-    pdf_bytes = HTML(string=html).write_pdf()
+    pdf_bytes = bytes(pdf.output())
     filename = f"vendor_risk_report_{today.isoformat()}.pdf"
     return Response(
         content=pdf_bytes,
