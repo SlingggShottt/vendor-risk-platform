@@ -45,6 +45,8 @@ from api.routes.vendors import router as vendors_router
 from api.routes.reports import router as reports_router
 from api.routes.extract import router as extract_router
 from api.routes.alerts import router as alerts_router
+from api.routes.bulk import router as bulk_router
+from monitoring.scheduler import start_scheduler
 
 _REGISTRY_CSV = Path(__file__).parent.parent / "data" / "vendor_registry.csv"
 _TEMPLATES_DIR = Path(__file__).parent.parent / "dashboard" / "templates"
@@ -59,6 +61,7 @@ app.include_router(vendors_router)
 app.include_router(reports_router)
 app.include_router(extract_router)
 app.include_router(alerts_router)
+app.include_router(bulk_router)
 
 
 # ── Startup: load + score all vendors ────────────────────────────────────────
@@ -85,6 +88,7 @@ def startup_event() -> None:
     app.state.store = store
     app.state.today = today
     print(f"[startup] Loaded {len(store)} vendors (today={today})", flush=True)
+    start_scheduler(app)
 
 
 # ── Dashboard HTML routes ─────────────────────────────────────────────────────

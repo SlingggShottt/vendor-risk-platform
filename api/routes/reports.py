@@ -17,7 +17,7 @@ import io
 from datetime import date
 
 from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 import sys
 from pathlib import Path
@@ -178,5 +178,110 @@ def export_csv():
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.get("/pdf")
+def export_pdf():
+    """Generate and download a PDF portfolio report using WeasyPrint."""
+    try:
+        from weasyprint import HTML
+    except ImportError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail="weasyprint not installed — run: pip install weasyprint")
+
+    store = _get_store()
+    entries = list(store.values())
+    today = date.today()
+
+    level_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+    for e in entries:
+        level_counts[e["scored"].risk_level.value] += 1
+
+    red_flags = sorted(
+        [e for e in entries if e["scored"].risk_level.value in ("CRITICAL", "HIGH")],
+        key=lambda e: e["scored"].risk_score, reverse=True
+    )
+
+    total = len(entries)
+    vendors = [e["vendor"] for e in entries]
+    n_soc2 = sum(1 for v in vendors if v.compliance.soc2_type2
+                 and (not v.compliance.soc2_expiry or v.compliance.soc2_expiry >= today))
+    n_iso  = sum(1 for v in vendors if v.compliance.iso27001)
+    n_gdpr = sum(1 for v in vendors if not v.handles_eu_data or v.compliance.gdpr_dpa)
+
+    LEVEL_COLOR = {"CRITICAL": "#c53030", "HIGH": "#c05621", "MEDIUM": "#975a16", "LOW": "#276749"}
+
+    rows_html = ""
+    for e in red_flags[:50]:
+        v, sv = e["vendor"], e["scored"]
+        color = LEVEL_COLOR.get(sv.risk_level.value, "#333")
+        rows_html += f"""
+        <tr>
+          <td>{v.vendor_id}</td>
+          <td>{v.name}</td>
+          <td>{v.category}</td>
+          <td style="color:{color}; font-weight:700">{sv.risk_level.value}</td>
+          <td>{sv.risk_score:.1f}</td>
+          <td style="font-size:10px">{sv.risk_factors[0] if sv.risk_factors else '—'}</td>
+        </tr>"""
+
+    html = f"""
+    <!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      body {{ font-family: Arial, sans-serif; font-size: 12px; color: #1a202c; margin: 40px; }}
+      h1 {{ font-size: 20px; color: #1a202c; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }}
+      h2 {{ font-size: 14px; color: #2d3748; margin-top: 24px; }}
+      .stats {{ display: flex; gap: 24px; margin: 16px 0; }}
+      .stat {{ text-align: center; padding: 12px 20px; border-radius: 6px; }}
+      .critical {{ background: #fff5f5; color: #c53030; }}
+      .high {{ background: #fffaf0; color: #c05621; }}
+      .medium {{ background: #fffff0; color: #975a16; }}
+      .low {{ background: #f0fff4; color: #276749; }}
+      .stat-num {{ font-size: 28px; font-weight: 800; }}
+      .stat-label {{ font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }}
+      table {{ width: 100%; border-collapse: collapse; margin-top: 12px; }}
+      th {{ background: #f7f8fa; text-align: left; padding: 8px; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.4px; color: #718096; }}
+      td {{ padding: 8px; border-top: 1px solid #edf2f7; font-size: 11px; }}
+      .compliance {{ display: flex; gap: 24px; margin: 12px 0; }}
+      .comp-item {{ padding: 10px 16px; background: #f7f8fa; border-radius: 6px; }}
+      .comp-val {{ font-size: 20px; font-weight: 700; color: #2d3748; }}
+      .comp-label {{ font-size: 10px; color: #718096; }}
+      .footer {{ margin-top: 32px; font-size: 10px; color: #a0aec0; border-top: 1px solid #e2e8f0; padding-top: 8px; }}
+    </style></head><body>
+    <h1>Vendor Risk Portfolio Report</h1>
+    <p style="color:#718096">Generated: {today.isoformat()} &nbsp;|&nbsp; {total} vendors tracked</p>
+
+    <h2>Risk Distribution</h2>
+    <div class="stats">
+      <div class="stat critical"><div class="stat-num">{level_counts["CRITICAL"]}</div><div class="stat-label">Critical</div></div>
+      <div class="stat high"><div class="stat-num">{level_counts["HIGH"]}</div><div class="stat-label">High</div></div>
+      <div class="stat medium"><div class="stat-num">{level_counts["MEDIUM"]}</div><div class="stat-label">Medium</div></div>
+      <div class="stat low"><div class="stat-num">{level_counts["LOW"]}</div><div class="stat-label">Low</div></div>
+    </div>
+
+    <h2>Compliance Coverage</h2>
+    <div class="compliance">
+      <div class="comp-item"><div class="comp-val">{round(100*n_soc2/total)}%</div><div class="comp-label">SOC 2 Type II</div></div>
+      <div class="comp-item"><div class="comp-val">{round(100*n_iso/total)}%</div><div class="comp-label">ISO 27001</div></div>
+      <div class="comp-item"><div class="comp-val">{round(100*n_gdpr/total)}%</div><div class="comp-label">GDPR DPA</div></div>
+    </div>
+
+    <h2>Critical & High Risk Vendors (top {min(50, len(red_flags))})</h2>
+    <table>
+      <thead><tr><th>ID</th><th>Vendor</th><th>Category</th><th>Risk</th><th>Score</th><th>Top Factor</th></tr></thead>
+      <tbody>{rows_html}</tbody>
+    </table>
+
+    <div class="footer">Vendor Risk Platform &nbsp;|&nbsp; Confidential &nbsp;|&nbsp; {today.isoformat()}</div>
+    </body></html>"""
+
+    pdf_bytes = HTML(string=html).write_pdf()
+    filename = f"vendor_risk_report_{today.isoformat()}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )

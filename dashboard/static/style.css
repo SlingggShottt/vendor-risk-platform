@@ -214,3 +214,32 @@ a:hover { text-decoration: underline; }
 .extract-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .extract-panel  { display: flex; flex-direction: column; }
 @media (max-width: 900px) { .extract-layout { grid-template-columns: 1fr; } }
+
+/* ── Buttons (generic) ────────────────────────────────────────────────────── */
+.btn { display: inline-block; padding: 8px 18px; border-radius: 8px; font-size: 0.9rem;
+       font-weight: 600; cursor: pointer; border: none; text-align: center; }
+.btn-primary  { background: #3182ce; color: #fff !important; }
+.btn-primary:hover  { background: #2b6cb0; text-decoration: none !important; }
+.btn-secondary { background: #edf2f7; color: #2d3748 !important; }
+.btn-secondary:hover { background: #e2e8f0; text-decoration: none !important; }
+.upload-btn { margin-top: 8px; }
+
+/* ── Upload modal ─────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center; z-index: 500;
+}
+.modal-box {
+  background: #fff; border-radius: 12px; padding: 32px; width: 480px; max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.modal-box h2 { font-size: 1.2rem; margin-bottom: 10px; }
+.modal-hint { font-size: 0.85rem; color: #718096; margin-bottom: 18px; }
+.modal-hint code { font-size: 0.8rem; background: #f7f8fa; padding: 2px 5px; border-radius: 4px; }
+.file-input { width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;
+              font-size: 0.9rem; margin-bottom: 14px; }
+.upload-status { font-size: 0.85rem; color: #718096; margin-bottom: 12px; min-height: 20px; }
+.modal-actions { display: flex; gap: 10px; }
+
+/* ── Sparkline section ────────────────────────────────────────────────────── */
+.sparkline-section canvas { max-height: 120px; }

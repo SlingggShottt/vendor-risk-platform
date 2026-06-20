@@ -4,6 +4,8 @@ api/routes/vendors.py — Vendor list, filter, and single-vendor detail endpoint
 
 from __future__ import annotations
 
+import random
+from datetime import date
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 
@@ -11,7 +13,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from common.schema import RiskLevel, ScoredVendor, Vendor
+from common.schema import ScoredVendor, Vendor
 
 router = APIRouter(prefix="/api/vendors", tags=["vendors"])
 
@@ -124,6 +126,38 @@ def get_vendor(vendor_id: str):
             for a in alerts
         ],
     }
+
+
+@router.get("/{vendor_id}/history")
+def vendor_score_history(vendor_id: str):
+    """Return 6 deterministic monthly score data points for a sparkline chart.
+    Seeded by vendor_id hash so the same vendor always produces the same trend.
+    Final point is always the live risk_score."""
+    store = _get_store()
+    entry = store.get(vendor_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail=f"Vendor {vendor_id!r} not found")
+
+    current_score = entry["scored"].risk_score
+    rng = random.Random(hash(vendor_id))
+
+    # Generate 5 historical points with ±15 variation around current, clamped 0–100
+    history = []
+    base = current_score + rng.uniform(-10, 10)
+    for _ in range(5):
+        base = max(0.0, min(100.0, base + rng.uniform(-15, 15)))
+        history.append(round(base, 1))
+    history.append(current_score)  # final point is always live score
+
+    today = date.today()
+    labels = []
+    for i in range(5, -1, -1):
+        month = today.month - i
+        year = today.year + (month - 1) // 12
+        month = ((month - 1) % 12) + 1
+        labels.append(date(year, month, 1).strftime("%b %Y"))
+
+    return {"vendor_id": vendor_id, "labels": labels, "scores": history}
 
 
 def _vendor_summary(entry: dict) -> dict:
