@@ -2,7 +2,7 @@
 
 > Enterprise-grade vendor risk scoring, monitoring, and compliance reporting — built in 48 hours.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-vendor--risk--platform.onrender.com-blue?style=flat-square)](https://vendor-risk-platform.onrender.com)
+**Live Demo:** https://vendor-risk-platform.onrender.com
 
 
 ---
