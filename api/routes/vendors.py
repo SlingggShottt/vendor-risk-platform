@@ -6,14 +6,17 @@ from __future__ import annotations
 
 import random
 from datetime import date
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, Body, HTTPException, Query
+from typing import Any, Optional
 
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from common.schema import RiskLevel, ScoredVendor, Vendor
+from data.normalize import normalize_raw_vendor
+from scoring.risk_engine import score_vendor
+from monitoring.alerts import check_alerts
 
 router = APIRouter(prefix="/api/vendors", tags=["vendors"])
 
@@ -22,6 +25,22 @@ def _get_store():
     """Import app state lazily to avoid circular import."""
     from api.main import app
     return app.state.store
+
+
+def _get_app():
+    from api.main import app
+    return app
+
+
+def _next_vendor_id(store: dict) -> str:
+    nums = []
+    for vid in store:
+        if vid.startswith("VND-"):
+            try:
+                nums.append(int(vid[4:]))
+            except ValueError:
+                pass
+    return f"VND-{max(nums, default=0) + 1:04d}"
 
 
 @router.get("")
@@ -71,6 +90,70 @@ def list_vendors(
         "offset": offset,
         "limit": limit,
         "vendors": [_vendor_summary(r) for r in page],
+    }
+
+
+@router.post("")
+def add_vendor(payload: dict[str, Any] = Body(...)):
+    """
+    Add a new vendor: normalize → score → check alerts → store.
+    Fires an immediate email if any alerts are triggered.
+    Also accumulates alerts in app.state.today_alerts for the 5pm EOD digest.
+    """
+    app = _get_app()
+    store = app.state.store
+    today = getattr(app.state, "today", date.today())
+
+    # Auto-generate vendor_id if not provided
+    raw = dict(payload)
+    if not raw.get("vendor_id", "").strip():
+        raw["vendor_id"] = _next_vendor_id(store)
+
+    vendor_id = raw["vendor_id"]
+    if vendor_id in store:
+        raise HTTPException(status_code=409, detail=f"Vendor {vendor_id!r} already exists")
+
+    try:
+        vendor = normalize_raw_vendor(raw)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    scored = score_vendor(vendor, today)
+    alerts = check_alerts(vendor, today)
+
+    store[vendor_id] = {"vendor": vendor, "scored": scored, "alerts": alerts}
+
+    # Accumulate for EOD digest
+    today_alerts: list = getattr(app.state, "today_alerts", [])
+    today_alerts.extend(alerts)
+    app.state.today_alerts = today_alerts
+
+    # Immediate email if any alerts
+    if alerts:
+        try:
+            from monitoring.emailer import get_emailer
+            get_emailer().send_expiry_alerts(alerts, today)
+        except Exception as e:
+            print(f"[add_vendor] Email failed: {e}", flush=True)
+
+    return {
+        "vendor_id": vendor_id,
+        "name": vendor.name,
+        "risk_score": scored.risk_score,
+        "risk_level": scored.risk_level.value,
+        "anomaly_type": scored.anomaly_type.value,
+        "risk_factors": scored.risk_factors,
+        "recommendation": scored.recommendation,
+        "alerts": [
+            {
+                "alert_type": a.alert_type,
+                "message": a.message,
+                "severity": a.severity,
+                "days_until": a.days_until,
+            }
+            for a in alerts
+        ],
+        "email_sent": bool(alerts),
     }
 
 

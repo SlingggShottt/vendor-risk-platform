@@ -40,6 +40,21 @@ def _run_daily_alerts(app) -> None:
         logger.error("[scheduler] Daily job failed: %s", e)
 
 
+def _run_eod_digest(app) -> None:
+    """Send a digest of all alerts raised today (from newly added vendors), then clear the list."""
+    try:
+        from monitoring.emailer import get_emailer
+        from datetime import date
+
+        today_alerts = getattr(app.state, "today_alerts", [])
+        emailer = get_emailer()
+        emailer.send_eod_digest(today_alerts, date.today())
+        app.state.today_alerts = []
+        logger.info("[scheduler] EOD digest sent for %d alert(s)", len(today_alerts))
+    except Exception as e:
+        logger.error("[scheduler] EOD digest job failed: %s", e)
+
+
 def start_scheduler(app) -> BackgroundScheduler:
     scheduler = BackgroundScheduler(daemon=True)
     scheduler.add_job(
@@ -50,6 +65,14 @@ def start_scheduler(app) -> BackgroundScheduler:
         name="Daily vendor alert check",
         replace_existing=True,
     )
+    scheduler.add_job(
+        _run_eod_digest,
+        trigger=CronTrigger(hour=11, minute=30, timezone="UTC"),  # 5:00 PM IST
+        args=[app],
+        id="eod_digest",
+        name="EOD new-vendor alert digest",
+        replace_existing=True,
+    )
     scheduler.start()
-    logger.info("[scheduler] Started — daily alerts job at 08:00 UTC")
+    logger.info("[scheduler] Started — daily alerts at 08:00 UTC, EOD digest at 11:30 UTC (17:00 IST)")
     return scheduler

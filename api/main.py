@@ -87,6 +87,7 @@ def startup_event() -> None:
 
     app.state.store = store
     app.state.today = today
+    app.state.today_alerts = []  # accumulates alerts from vendors added today
     print(f"[startup] Loaded {len(store)} vendors (today={today})", flush=True)
     start_scheduler(app)
 
@@ -144,5 +145,12 @@ def reports_page(request: Request):
 @app.get("/extract", response_class=HTMLResponse)
 def extract_page(request: Request):
     return templates.TemplateResponse(request, "extract.html", {
+        "today": app.state.today.isoformat(),
+    })
+
+
+@app.get("/add-vendor", response_class=HTMLResponse)
+def add_vendor_page(request: Request):
+    return templates.TemplateResponse(request, "add_vendor.html", {
         "today": app.state.today.isoformat(),
     })

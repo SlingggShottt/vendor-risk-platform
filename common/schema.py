@@ -11,7 +11,7 @@ without waiting on Divyansh's real generator.
 """
 
 from __future__ import annotations
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -242,3 +242,29 @@ FIXTURE_VENDORS: list[Vendor] = [
         handles_eu_data=False,
     ),
 ]
+
+# ---------- Enterprise Sprint: Audit & Compliance Models ----------
+
+class AuditLog(BaseModel):
+    """Immutable audit trail entry. Created by monitoring/audit_logger.py."""
+    id: str  # unique ID per event (UUID or timestamp-based)
+    timestamp: datetime
+    actor: str  # username or "system"
+    action: str  # "score_updated", "bulk_remediate", "vendor_created", "compliance_export", etc.
+    resource_type: str  # "vendor", "alert", "report", etc.
+    resource_id: str  # vendor_id or other resource identifier
+    old_state: Optional[dict] = None  # previous values (for diffs), as JSON-serializable dict
+    new_state: Optional[dict] = None  # new values
+    reason: Optional[str] = None  # why the change (from bulk-remediate request, manual update, etc.)
+
+
+class ComplianceSummary(BaseModel):
+    """Portfolio-level compliance statistics. Computed on-demand by reporting endpoints."""
+    total_vendors: int
+    soc2_coverage_pct: float  # % of vendors with valid SOC2 Type II
+    iso27001_coverage_pct: float  # % with valid ISO 27001
+    gdpr_compliance_pct: float  # % compliant (no EU data OR has DPA)
+    soc2_expiring_60d: int  # count of vendors with SOC2 expiring within 60 days
+    orphaned_access_count: int  # count with expired contract + active data_access
+    under_investigation_count: int  # count flagged for investigation
+    recently_breached_count: int  # count breached within 12 months
