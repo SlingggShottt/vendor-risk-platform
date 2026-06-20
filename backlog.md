@@ -74,3 +74,43 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 - [ ] `api/routes/reports.py`: add `GET /api/reports/pdf` — generate PDF portfolio report using WeasyPrint or ReportLab; full scored vendor table + compliance stats + red-flag section
 - [ ] Add "Download PDF Report" button in `dashboard/templates/reports.html` next to existing Download CSV
 - [ ] `POST /api/vendors/bulk-upload`: accepts CSV file upload, calls Divyansh's `bulk_ingest.py`, scores each vendor, returns JSON array of scored results; also adds them to the in-memory store so dashboard reflects them immediately
+
+## Enterprise Sprint (Société Générale focus — SG placement differentiation)
+
+**Why**: SG is a tier-1 bank with strict compliance/audit requirements. These features demonstrate enterprise thinking and are table-stakes for fintech platforms.
+
+### Divyansh — Data Layer & Schema Support
+
+1. **Compliance Export Infrastructure**
+   - [ ] Update `common/schema.py`: add `AuditLog` model (id, timestamp, actor, action, resource_type, resource_id, old_state, new_state, reason)
+   - [ ] `data/compliance_export.py` (new): functions to format vendor compliance data for export (CSV, JSON, XLSX-ready dicts)
+   - [ ] `data/audit_helper.py` (new): structured audit event builder (standardize event creation across the app)
+
+### Jatin — API, Scoring, & Monitoring (all 7 features)
+
+**PRIORITY 1 — Audit + Explainability (SG's #1 ask: "why is this vendor CRITICAL?")**
+- [ ] `monitoring/audit_logger.py` (new): in-memory audit log (structure as DB-backed for production)
+- [ ] `api/routes/audit.py` (new): `GET /api/audit-log?date_from=...&date_to=...&actor=...&action=...&vendor_id=...`
+- [ ] `scoring/explainer.py` (new): breaks down risk_score into rule-by-rule contributions
+- [ ] `api/routes/vendors.py`: add `GET /api/vendors/{id}/risk-explainer` → `{ risk_score, risk_level, contributing_factors: [{rule_name, weight, impact, description}], remediation_actions: [...] }`
+- [ ] `api/routes/reports.py`: add `GET /api/reports/compliance-export?format=csv|json` → vendor compliance summary + audit events
+
+**PRIORITY 2 — Trends + OpenAPI (SG needs integration capability + visibility)**
+- [ ] `api/routes/vendors.py`: enhance `GET /api/vendors/{id}/history` with predictive trend (linear regression on 6 points; return `trend_direction`, `projected_level_in_3mo`)
+- [ ] `api/routes/vendors.py`: add trend-up alert → if trending CRITICAL, flag in alerts
+- [ ] `api/main.py`: generate OpenAPI 3.1.0 schema at `GET /api/openapi.json`; wire Swagger UI to `/api/docs`
+- [ ] `dashboard/templates/base.html`: add "API Docs" link (routes to Swagger UI)
+
+**PRIORITY 3 — Security + Bulk Ops (table-stakes)**
+- [ ] `api/main.py`: add rate limiting (100 req/min per IP via `slowapi`)
+- [ ] `api/main.py`: CORS: restrict to `["http://localhost", "https://vendor-risk-platform.onrender.com"]`
+- [ ] `api/main.py`: security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`)
+- [ ] `api/routes/bulk.py` (new): `POST /api/vendors/bulk-remediate { vendor_ids, action, reason }` → updates all, logs audit
+- [ ] `api/routes/jobs.py` (new): async job tracking (`POST /api/jobs/bulk-export`, `GET /api/jobs/{id}`)
+- [ ] `api/routes/reports.py`: `GET /api/reports/bulk-export?format=xlsx` → stream XLSX file
+
+**PRIORITY 4 — Slack Integration (ops teams live in Slack)**
+- [ ] `monitoring/emailer.py`: add Slack backend (posts to webhook with rich formatting)
+- [ ] Env var: `SLACK_WEBHOOK_URL`
+- [ ] `api/routes/alerts.py`: integrate Slack into `POST /api/alerts/send-expiry` and `/send-monthly`
+- [ ] Dashboard: show "Slack ✓" status badge on `/reports` if webhook configured

@@ -71,3 +71,194 @@ Wire Divyansh's `bulk_ingest.py` into an API endpoint.
 - Add `POST /api/vendors/bulk-upload` in a new file `api/routes/bulk.py`. Accept `UploadFile` via `python-multipart`. Call `bulk_ingest.ingest_csv_bytes(await file.read())`. Score each returned vendor with `score_vendor()`, add to `app.state.store`, return scored results as JSON.
 - Register the router in `api/main.py`.
 - Add an "Upload Vendor CSV" button to the dashboard home page (`dashboard/templates/vendors.html`) with a simple file input modal..
+
+## Enterprise Sprint tasks (your lane) — Société Générale focus
+
+**Why SG cares about these**: SG is a tier-1 bank with audit/compliance as core business. These features show you understand enterprise risk platforms and are table-stakes for financial services deployments.
+
+### PRIORITY 1: Audit Trail + Risk Explainability (SG's #1 ask)
+
+**1. Compliance Audit Logging**
+- Create `monitoring/audit_logger.py`:
+  - `AuditLogger` singleton class with in-memory list (append-only)
+  - Methods: `log_event(actor, action, resource_type, resource_id, old_state, new_state, reason)` → creates timestamped entry
+  - `get_events(date_from=None, date_to=None, actor=None, action=None, vendor_id=None)` → filters and returns
+  - Example: `audit_logger.log_event("system", "score_updated", "vendor", "VND-0001", {"risk_score": 65}, {"risk_score": 72}, "bulk_remediate")`
+- Integrate into startup: initialize in `api/main.py` as `app.state.audit_logger`
+- Populate on every state change:
+  - `POST /api/vendors/bulk-remediate` logs each vendor change
+  - `POST /api/vendors/bulk-upload` logs each added vendor
+  - Bulk export also logs "compliance_export" event with count
+
+**2. Risk Explainer (tie-breaker for SG's risk committees)**
+- Create `scoring/explainer.py` (new module):
+  - `explain_risk(vendor: Vendor, scored: ScoredVendor) -> dict`:
+    ```python
+    {
+      "risk_score": 78.5,
+      "risk_level": "HIGH",
+      "contributing_factors": [
+        {
+          "rule_name": "Recent breach (Jan 2024)",
+          "weight_pct": 30,
+          "impact": "CRITICAL",
+          "description": "Unencrypted data exposed; vendor has HIGH-sensitivity access"
+        },
+        {
+          "rule_name": "Missing GDPR DPA",
+          "weight_pct": 5,
+          "impact": "MEDIUM",
+          "description": "No DPA on file despite processing EU personal data"
+        },
+      ],
+      "remediation_actions": [
+        "Require incident report + remediation plan by 2026-02-28",
+        "Request updated DPA by 2026-01-31"
+      ],
+      "eval_passed": true  # all rules passed validation
+    }
+    ```
+  - Call this from `scoring/risk_engine.py` when computing `ScoredVendor` (add `explainer: dict` field)
+  
+- Add `GET /api/vendors/{id}/risk-explainer` endpoint in `api/routes/vendors.py`:
+  - Returns the explainer dict for a specific vendor
+  - Include audit trail snippet: "Last updated by system on 2026-06-20 (bulk_remediate)"
+
+**3. Compliance Export Endpoint**
+- Add `GET /api/reports/compliance-export?format=csv|json` in `api/routes/reports.py`:
+  - Returns vendor compliance summary (all 440 vendors with: vendor_id, name, risk_score, risk_level, soc2, iso, gdpr_dpa, contract_end, latest_breach_date)
+  - Plus audit log (last 100 events with actor, action, timestamp)
+  - Jatin calls Divyansh's `data/compliance_export.py` functions for formatting
+
+### PRIORITY 2: Trends + Predictive Alert + OpenAPI
+
+**4. Vendor Risk Trends with Prediction**
+- Enhance `GET /api/vendors/{id}/history` to add trend analysis:
+  - Keep the 6 historical points
+  - Add linear regression: fit line to points, return `trend_direction: "up"|"down"|"stable"`
+  - Add `projected_risk_level_in_3mo` (predict where score will be)
+  - Return structure: `[{month, score, projected: false}, ..., {month, score_3mo_projected, projected: true}]`
+  - Scipy or numpy for linear regression (already in requirements)
+  
+- Add alert: if `trend_direction == "up"` AND `projected_risk_level_in_3mo in ("HIGH", "CRITICAL")`:
+  - Include in `alerts` response: `{ severity: "HIGH", type: "RISK_TRENDING_CRITICAL", description: "Risk trending toward CRITICAL; projected CRITICAL by 2026-09" }`
+
+**5. OpenAPI / Integration Readiness**
+- Install/add to requirements: `python-openapi-parser` or use `fastapi.openapi.utils` (built-in)
+- In `api/main.py`:
+  - Call `app.openapi_schema = ...` after all routes registered
+  - Add `@app.get("/api/openapi.json")` route that returns the OpenAPI 3.1.0 schema
+  - Ensure all routes have `tags`, `description`, `responses` documented
+- In `dashboard/templates/base.html`:
+  - Add link in nav: "API Docs" → `<a href="/api/docs">Swagger UI</a>` (use Swagger UI library)
+  - Or just link to `/api/openapi.json` directly for raw spec
+
+### PRIORITY 3: Security + Bulk Ops
+
+**6. Security Posture (rate limiting, CORS, headers)**
+- Install: `pip install slowapi` (FastAPI rate limiter)
+- In `api/main.py` at startup:
+  ```python
+  from slowapi import Limiter
+  from slowapi.util import get_remote_address
+  limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+  app.state.limiter = limiter
+  app.add_middleware(SlowAPIMiddleware)
+  ```
+- Add rate limit decorator to: `POST /api/vendors/bulk-remediate`, `GET /api/vendors` (public endpoints)
+- CORS: Update `api/main.py`:
+  ```python
+  from fastapi.middleware.cors import CORSMiddleware
+  app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost", "https://vendor-risk-platform.onrender.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+  )
+  ```
+- Security headers in `api/main.py` startup or middleware:
+  ```python
+  @app.middleware("http")
+  async def add_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+  ```
+
+**7. Bulk Operations Done Right**
+- Create `api/routes/bulk.py`:
+  - `POST /api/vendors/bulk-remediate`: 
+    ```json
+    { "vendor_ids": ["VND-0001", "VND-0002"], "action": "acknowledge|renew_cert|require_dpa", "reason": "Q2 compliance review" }
+    ```
+    - Update each vendor status, log audit event for each
+    - Return: `{ "updated_count": 2, "errors": [], "summary": "2 vendors updated; expiry alerts cleared" }`
+  
+  - `GET /api/reports/bulk-export?format=xlsx`:
+    - Stream XLSX file (use `openpyxl` — add to requirements)
+    - Include: vendor_id, name, risk_score, risk_level, soc2, iso, gdpr_dpa, contract_end, latest_breach_date
+    - Plus: compliance summary stats (coverage %, counts)
+    
+  - Register router in `api/main.py`
+
+- Create `api/routes/jobs.py` (async job tracking):
+  - `POST /api/jobs/bulk-export?format=xlsx`:
+    - Async task (for now, use `threading.Thread`; production would use Celery)
+    - Returns: `{ "job_id": "job_abc123", "status": "pending" }`
+  
+  - `GET /api/jobs/{job_id}`:
+    - Returns: `{ "job_id": "job_abc123", "status": "complete|pending", "progress": 100, "result_url": "/files/export_20260620.xlsx" }`
+
+### PRIORITY 4: Slack Integration
+
+**8. Slack Backend for Alerts**
+- Update `monitoring/emailer.py`:
+  - Add `SlackBackend` class:
+    ```python
+    class SlackBackend(EmailBackend):
+      def send_monthly_summary(self, ...):
+        """Post rich message to Slack webhook."""
+        payload = {
+          "text": "Monthly Vendor Risk Summary",
+          "blocks": [
+            { "type": "section", "text": { "type": "mrkdwn", "text": f"🔴 CRITICAL: {critical_count}" } },
+            ...
+          ]
+        }
+        requests.post(os.environ["SLACK_WEBHOOK_URL"], json=payload)
+    ```
+  - Update `get_emailer()`:
+    - Priority: Slack (if `SLACK_WEBHOOK_URL`) > Resend > SMTP > Console
+  
+- Env var: `SLACK_WEBHOOK_URL` (from Slack workspace's incoming webhook)
+- Test: `/api/alerts/send-expiry` now posts to Slack if configured
+- Dashboard: On `/reports`, show status badge: "Slack ✓ connected" or "Slack ⚠ not configured"
+
+---
+
+## Implementation notes
+
+**Shared context**: Divyansh will update `common/schema.py` with audit models. Use those in your endpoint responses.
+
+**Database state**: For hackathon, audit log lives in `app.state.audit_logger` (in-memory, append-only list). In production, this goes to a dedicated audit table with indexes on (timestamp, actor, resource_id).
+
+**Testing in priority order**:
+1. Audit trail: manually call bulk-remediate, check `GET /api/audit-log` returns the events
+2. Risk explainer: `GET /api/vendors/VND-0001/risk-explainer` — does each factor have a clear description?
+3. Trends: `GET /api/vendors/VND-0001/history` — does projected_level_in_3mo look sensible?
+4. OpenAPI: hit `/api/openapi.json` → should return valid OpenAPI schema
+5. Security: test rate limiting with `ab -n 150 http://localhost:8000/api/vendors`
+6. Bulk remediate: `POST /api/vendors/bulk-remediate` with 5 vendors → check store updated + audit logged
+7. Slack: set `SLACK_WEBHOOK_URL`, call `/api/alerts/send-expiry` → should post to Slack
+
+**Time estimates** (if 4 hours available):
+- Audit trail: 60 min
+- Risk explainer: 45 min
+- Trends + OpenAPI: 60 min
+- Security + bulk ops: 75 min
+- Slack: 30 min
+Total: ~4.5 hours (prioritize audit + explainer if time is tight — those are SG's core asks)
+

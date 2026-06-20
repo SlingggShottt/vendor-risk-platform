@@ -16,6 +16,22 @@ Per the hackathon rules, the final submission needs:
 
 So the working software is necessary but not sufficient — budget time in the last hours for documentation/video, not just code. See `plan.md`.
 
+### Core deliverables (H0-H48)
+- Risk scoring engine (100% precision+recall on labeled data)
+- Vendor data ingestion (CSV + LLM-extracted contracts via Groq)
+- Portfolio dashboard (vendor list, detail, reports, risk trends)
+- Email alerts (expiry, breaches, compliance gaps)
+- Audit-ready CSV exports
+
+### Enterprise Sprint (SG placement differentiation — H48+)
+- **Audit Trail**: all changes logged (who changed what, when, why)
+- **Risk Explainability**: each CRITICAL score has explicit remediation roadmap
+- **Predictive Alerts**: trend analysis + 3-month risk projection
+- **OpenAPI**: full API documentation (Swagger UI)
+- **Security Posture**: rate limiting, CORS, security headers
+- **Bulk Operations**: mass remediation, XLSX export, async job tracking
+- **Slack Integration**: alerts post to ops team's Slack channel
+
 ## 3. System overview
 
 ```

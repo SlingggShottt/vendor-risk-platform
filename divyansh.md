@@ -55,3 +55,65 @@ Write the data parsing function that the bulk upload API endpoint will call.
   - Return `(vendors: list[Vendor], errors: list[dict])` tuple
 - Jatin wires this into `POST /api/vendors/bulk-upload` — you just need to export the function cleanly.
 - Add `requirements.txt` entry: `pdfplumber>=0.11.0`
+
+## Enterprise Sprint tasks (your lane) — Société Générale focus
+
+### Compliance Export Infrastructure
+Your role: prepare the data layer so Jatin's audit/compliance endpoints have well-structured input.
+
+1. **Update `common/schema.py`** (shared file, requires agreement)
+   - Add `AuditLog` Pydantic model:
+     ```python
+     class AuditLog(BaseModel):
+       id: str
+       timestamp: datetime
+       actor: str  # username or "system"
+       action: str  # "score_updated", "bulk_remediate", "vendor_created", etc.
+       resource_type: str  # "vendor", "alert", etc.
+       resource_id: str  # vendor_id
+       old_state: dict | None  # previous values (for diffs)
+       new_state: dict | None  # new values
+       reason: str | None  # why the change (from bulk-remediate request, etc.)
+     ```
+   - Add `ComplianceSummary` model:
+     ```python
+     class ComplianceSummary(BaseModel):
+       total_vendors: int
+       soc2_coverage_pct: float
+       iso27001_coverage_pct: float
+       gdpr_compliance_pct: float
+       soc2_expiring_60d: int
+       orphaned_access_count: int
+       under_investigation_count: int
+       recently_breached_count: int
+     ```
+
+2. **Create `data/compliance_export.py`** (new module)
+   - Functions to format vendor data for compliance exports:
+     ```python
+     def format_vendor_for_compliance_export(vendor: Vendor, scored: ScoredVendor) -> dict:
+       """Return dict suitable for CSV/JSON export with compliance flags."""
+     
+     def build_compliance_summary(vendors: list[Vendor], today: date) -> ComplianceSummary:
+       """Calculate compliance stats from vendor list."""
+     
+     def export_to_csv(vendors_and_scores: list[tuple[Vendor, ScoredVendor]]) -> str:
+       """Return CSV-formatted string (header + rows)."""
+     ```
+
+3. **Create `data/audit_helper.py`** (new module)
+   - Standardize audit event creation:
+     ```python
+     def create_audit_event(
+       actor: str,
+       action: str,
+       resource_type: str,
+       resource_id: str,
+       old_state: dict | None = None,
+       new_state: dict | None = None,
+       reason: str | None = None,
+     ) -> dict:
+       """Return audit log entry dict (Jatin's logger will store this)."""
+     ```
+
+This keeps audit event structure consistent across all endpoints.
