@@ -299,13 +299,13 @@ def export_pdf():
     for e in red_flags[:50]:
         v, sv = e["vendor"], e["scored"]
         r, g, b = LEVEL_COLOR.get(sv.risk_level.value, (51, 51, 51))
-        top_factor = (sv.risk_factors[0][:45] + "…") if sv.risk_factors and len(sv.risk_factors[0]) > 45 else (sv.risk_factors[0] if sv.risk_factors else "—")
+        top_factor = (sv.risk_factors[0][:45] + "...") if sv.risk_factors and len(sv.risk_factors[0]) > 45 else (sv.risk_factors[0] if sv.risk_factors else "-")
 
         pdf.set_text_color(45, 55, 72)
         pdf.cell(col_w[0], 6, v.vendor_id, border="B")
-        name = (v.name[:26] + "…") if len(v.name) > 26 else v.name
+        name = (v.name[:26] + "...") if len(v.name) > 26 else v.name
         pdf.cell(col_w[1], 6, name, border="B")
-        cat = (v.category[:20] + "…") if len(v.category) > 20 else v.category
+        cat = (v.category[:20] + "...") if len(v.category) > 20 else v.category
         pdf.cell(col_w[2], 6, cat, border="B")
         pdf.set_text_color(r, g, b)
         pdf.set_font("Helvetica", "B", 8)
