@@ -31,11 +31,6 @@ def _get_store() -> dict:
     return app.state.store
 
 
-def _get_today() -> date:
-    from api.main import app
-    return app.state.today
-
-
 @router.post("/api/vendors/bulk-upload")
 async def bulk_upload(file: UploadFile = File(...)):
     if not file.filename or not file.filename.endswith(".csv"):
@@ -46,7 +41,7 @@ async def bulk_upload(file: UploadFile = File(...)):
     except ImportError:
         raise HTTPException(
             status_code=503,
-            detail="bulk_ingest module not available yet — Divyansh's data/bulk_ingest.py is pending",
+            detail="bulk_ingest module not available",
         )
 
     raw_bytes = await file.read()
@@ -55,7 +50,7 @@ async def bulk_upload(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"CSV parse failed: {e}")
 
-    today = _get_today()
+    today = date.today()
     store = _get_store()
     results = []
 
