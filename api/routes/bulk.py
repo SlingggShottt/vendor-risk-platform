@@ -51,7 +51,7 @@ async def bulk_upload(file: UploadFile = File(...)):
 
     raw_bytes = await file.read()
     try:
-        vendors = ingest_csv_bytes(raw_bytes)
+        vendors, ingest_errors = ingest_csv_bytes(raw_bytes)
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"CSV parse failed: {e}")
 
@@ -88,7 +88,12 @@ async def bulk_upload(file: UploadFile = File(...)):
         except Exception as e:
             results.append({"vendor_id": getattr(vendor, "vendor_id", "?"), "error": str(e)})
 
-    return {"uploaded": len(results), "vendors": results}
+    return {
+        "uploaded": len(results),
+        "parse_errors": len(ingest_errors),
+        "vendors": results,
+        "errors": ingest_errors,
+    }
 
 
 # ── Bulk remediate ─────────────────────────────────────────────────────────────
