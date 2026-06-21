@@ -16,7 +16,7 @@ import csv
 import io
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response, StreamingResponse
 
 import sys
@@ -121,6 +121,40 @@ def portfolio_report():
             "Require GDPR Data Processing Agreements from all EU-data vendors.",
         ],
     }
+
+
+@router.post("/email")
+def send_email_report():
+    """Send the monthly portfolio risk summary email via the configured backend."""
+    store = _get_store()
+    entries = list(store.values())
+    if not entries:
+        raise HTTPException(status_code=422, detail="No vendors in portfolio — nothing to report.")
+
+    scored: list[ScoredVendor] = [e["scored"] for e in entries]
+    today = date.today()
+
+    try:
+        from monitoring.emailer import get_emailer
+        get_emailer().send_monthly_summary(scored, today)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Email send failed: {exc}") from exc
+
+    try:
+        from api.main import app
+        app.state.audit_logger.log_event(
+            actor="system",
+            action="email_report_sent",
+            resource_type="report",
+            resource_id="monthly_summary",
+            old_state={},
+            new_state={"vendor_count": len(scored), "date": today.isoformat()},
+            reason="manual send via dashboard",
+        )
+    except Exception:
+        pass
+
+    return {"status": "sent", "vendor_count": len(scored), "date": today.isoformat()}
 
 
 @router.get("/csv")
