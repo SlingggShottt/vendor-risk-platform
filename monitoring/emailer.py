@@ -37,34 +37,179 @@ from monitoring.alerts import Alert
 
 # ── Email content builders ────────────────────────────────────────────────────
 
-def _monthly_summary_text(
-    scored: list[ScoredVendor],
-    today: date,
-) -> tuple[str, str]:
-    """Return (subject, body) for a monthly vendor risk summary email."""
-    counts = {lvl: 0 for lvl in ("CRITICAL", "HIGH", "MEDIUM", "LOW")}
+_LEVEL_COLOR = {
+    "CRITICAL": {"bg": "#dc2626", "light": "#fef2f2", "border": "#fca5a5"},
+    "HIGH":     {"bg": "#ea580c", "light": "#fff7ed", "border": "#fdba74"},
+    "MEDIUM":   {"bg": "#d97706", "light": "#fffbeb", "border": "#fcd34d"},
+    "LOW":      {"bg": "#16a34a", "light": "#f0fdf4", "border": "#86efac"},
+}
+
+_BASE_STYLE = """
+  body{margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1f2937}
+  .wrap{max-width:680px;margin:24px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .hdr{background:#0f172a;padding:24px 32px}
+  .hdr h1{margin:0;color:#fff;font-size:20px;font-weight:700;letter-spacing:.5px}
+  .hdr p{margin:6px 0 0;color:#94a3b8;font-size:13px}
+  .body{padding:28px 32px}
+  .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#6b7280;margin:24px 0 10px}
+  .stat-row{display:flex;gap:12px;margin-bottom:20px}
+  .stat{flex:1;border-radius:6px;padding:14px 10px;text-align:center}
+  .stat-num{font-size:28px;font-weight:700;line-height:1}
+  .stat-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#f8fafc;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;border-bottom:2px solid #e2e8f0}
+  td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#fff}
+  .vid{font-size:12px;color:#6b7280}
+  .footer{padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:12px;color:#9ca3af;text-align:center}
+"""
+
+def _html_wrap(title: str, subtitle: str, body_html: str) -> str:
+    return f"""<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>{_BASE_STYLE}</style></head><body>
+<div class="wrap">
+  <div class="hdr">
+    <h1>&#x1F6E1; Vendor Risk Platform</h1>
+    <p>{title} &nbsp;·&nbsp; {subtitle}</p>
+  </div>
+  <div class="body">{body_html}</div>
+  <div class="footer">Generated automatically &nbsp;·&nbsp; Vendor Risk Platform &nbsp;·&nbsp; Do not reply</div>
+</div></body></html>"""
+
+
+def _badge(level: str) -> str:
+    c = _LEVEL_COLOR.get(level, {})
+    bg = c.get("bg", "#6b7280")
+    return f'<span class="badge" style="background:{bg}">{level}</span>'
+
+
+def _monthly_summary_html(scored: list[ScoredVendor], today: date) -> str:
+    counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
     for sv in scored:
         counts[sv.risk_level.value] = counts.get(sv.risk_level.value, 0) + 1
+
+    stat_html = '<div class="stat-row">'
+    for lvl in ("CRITICAL", "HIGH", "MEDIUM", "LOW"):
+        c = _LEVEL_COLOR[lvl]
+        stat_html += (
+            f'<div class="stat" style="background:{c["light"]};border:1px solid {c["border"]}">'
+            f'<div class="stat-num" style="color:{c["bg"]}">{counts[lvl]}</div>'
+            f'<div class="stat-lbl" style="color:{c["bg"]}">{lvl}</div></div>'
+        )
+    stat_html += f'</div><p style="color:#6b7280;font-size:13px">Total vendors tracked: <strong>{len(scored)}</strong></p>'
 
     critical_vendors = [sv for sv in scored if sv.risk_level == RiskLevel.CRITICAL]
     high_vendors     = [sv for sv in scored if sv.risk_level == RiskLevel.HIGH]
 
-    subject = f"[Vendor Risk] Monthly Summary — {today.strftime('%B %Y')} | {counts['CRITICAL']} CRITICAL, {counts['HIGH']} HIGH"
+    table_html = ""
+    if critical_vendors:
+        table_html += '<div class="section-title" style="color:#dc2626">&#x26A0; Critical Vendors — Immediate Action Required</div>'
+        table_html += """<table><thead><tr>
+          <th>Vendor ID</th><th>Score</th><th>Risk Level</th><th>Top Risk Factor</th><th>Recommended Action</th>
+        </tr></thead><tbody>"""
+        for sv in critical_vendors[:20]:
+            c = _LEVEL_COLOR["CRITICAL"]
+            factor = (sv.risk_factors[0][:90] + "…") if sv.risk_factors and len(sv.risk_factors[0]) > 90 else (sv.risk_factors[0] if sv.risk_factors else "—")
+            rec = (sv.recommendation[:100] + "…") if len(sv.recommendation) > 100 else sv.recommendation
+            table_html += (
+                f'<tr style="background:{c["light"]}">'
+                f'<td><strong>{sv.vendor_id}</strong></td>'
+                f'<td><strong style="color:{c["bg"]}">{sv.risk_score:.0f}</strong></td>'
+                f'<td>{_badge("CRITICAL")}</td>'
+                f'<td class="vid">{factor}</td>'
+                f'<td class="vid">{rec}</td></tr>'
+            )
+        table_html += "</tbody></table>"
 
+    if high_vendors:
+        table_html += '<div class="section-title" style="color:#ea580c;margin-top:28px">High Priority Vendors</div>'
+        table_html += """<table><thead><tr>
+          <th>Vendor ID</th><th>Score</th><th>Risk Level</th><th>Top Risk Factor</th><th>Recommended Action</th>
+        </tr></thead><tbody>"""
+        for sv in high_vendors[:15]:
+            c = _LEVEL_COLOR["HIGH"]
+            factor = (sv.risk_factors[0][:90] + "…") if sv.risk_factors and len(sv.risk_factors[0]) > 90 else (sv.risk_factors[0] if sv.risk_factors else "—")
+            rec = (sv.recommendation[:100] + "…") if len(sv.recommendation) > 100 else sv.recommendation
+            table_html += (
+                f'<tr>'
+                f'<td><strong>{sv.vendor_id}</strong></td>'
+                f'<td><strong style="color:{c["bg"]}">{sv.risk_score:.0f}</strong></td>'
+                f'<td>{_badge("HIGH")}</td>'
+                f'<td class="vid">{factor}</td>'
+                f'<td class="vid">{rec}</td></tr>'
+            )
+        table_html += "</tbody></table>"
+
+    return stat_html + table_html
+
+
+def _alert_table_html(alerts: list, label: str, level: str) -> str:
+    if not alerts:
+        return ""
+    c = _LEVEL_COLOR.get(level, _LEVEL_COLOR["HIGH"])
+    html = (
+        f'<div class="section-title" style="color:{c["bg"]};margin-top:24px">'
+        f'&#x1F6A8; {label} ({len(alerts)})</div>'
+        '<table><thead><tr>'
+        '<th>Vendor</th><th>Severity</th><th>Alert Type</th><th>Message</th>'
+        '</tr></thead><tbody>'
+    )
+    for a in alerts:
+        ac = _LEVEL_COLOR.get(a.severity, _LEVEL_COLOR["MEDIUM"])
+        html += (
+            f'<tr style="background:{ac["light"]}">'
+            f'<td><strong>{a.vendor_id}</strong><br><span class="vid">{a.vendor_name}</span></td>'
+            f'<td>{_badge(a.severity)}</td>'
+            f'<td class="vid">{a.alert_type}</td>'
+            f'<td class="vid">{a.message}</td></tr>'
+        )
+    return html + "</tbody></table>"
+
+
+def _expiry_alert_html(alerts: list[Alert], today: date) -> str:
+    critical = [a for a in alerts if a.severity == "CRITICAL"]
+    high     = [a for a in alerts if a.severity == "HIGH"]
+    others   = [a for a in alerts if a.severity not in ("CRITICAL", "HIGH")]
+    summary = (
+        f'<p style="margin:0 0 16px;font-size:13px;color:#374151">'
+        f'<strong>{len(alerts)}</strong> active alert(s) — '
+        f'<span style="color:#dc2626;font-weight:700">{len(critical)} CRITICAL</span>, '
+        f'<span style="color:#ea580c;font-weight:700">{len(high)} HIGH</span>, '
+        f'{len(others)} other</p>'
+    )
+    return (
+        summary
+        + _alert_table_html(critical, "Critical Alerts", "CRITICAL")
+        + _alert_table_html(high, "High Alerts", "HIGH")
+        + _alert_table_html(others, "Other Alerts", "MEDIUM")
+    )
+
+
+def _eod_digest_html(alerts: list[Alert], today: date) -> str:
+    return _expiry_alert_html(alerts, today)
+
+
+# ── Plain-text fallbacks (used by SMTP/Console backends) ─────────────────────
+
+def _monthly_summary_text(scored: list[ScoredVendor], today: date) -> tuple[str, str]:
+    counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+    for sv in scored:
+        counts[sv.risk_level.value] = counts.get(sv.risk_level.value, 0) + 1
+    critical_vendors = [sv for sv in scored if sv.risk_level == RiskLevel.CRITICAL]
+    high_vendors     = [sv for sv in scored if sv.risk_level == RiskLevel.HIGH]
+    subject = f"[Vendor Risk] Monthly Summary — {today.strftime('%B %Y')} | {counts['CRITICAL']} CRITICAL, {counts['HIGH']} HIGH"
     lines = [
-        f"VENDOR RISK MANAGEMENT — MONTHLY SUMMARY",
+        "VENDOR RISK MANAGEMENT — MONTHLY SUMMARY",
         f"Period: {today.strftime('%B %Y')}   |   Generated: {today.isoformat()}",
-        "=" * 60,
-        "",
+        "=" * 60, "",
         "PORTFOLIO OVERVIEW",
         f"  Total vendors tracked : {len(scored)}",
         f"  CRITICAL              : {counts['CRITICAL']}",
         f"  HIGH                  : {counts['HIGH']}",
         f"  MEDIUM                : {counts['MEDIUM']}",
-        f"  LOW                   : {counts['LOW']}",
-        "",
+        f"  LOW                   : {counts['LOW']}", "",
     ]
-
     if critical_vendors:
         lines += ["CRITICAL VENDORS — IMMEDIATE ACTION REQUIRED", ""]
         for sv in critical_vendors[:15]:
@@ -73,96 +218,34 @@ def _monthly_summary_text(
                 lines.append(f"    → {sv.risk_factors[0][:80]}")
             lines.append(f"    Action: {sv.recommendation[:100]}")
             lines.append("")
-
     if high_vendors:
         lines += ["HIGH PRIORITY VENDORS", ""]
         for sv in high_vendors[:10]:
             lines.append(f"  [{sv.vendor_id}] score={sv.risk_score:.0f}  {sv.anomaly_type.value}")
             lines.append("")
-
-    lines += [
-        "—",
-        "This report was generated automatically by the Vendor Risk Platform.",
-        "Do not reply to this email. Contact the security team for questions.",
-    ]
-
-    return subject, "\n".join(lines)
-
-
-def _eod_digest_text(alerts: list[Alert], today: date) -> tuple[str, str]:
-    """Return (subject, body) for the 5pm EOD digest of alerts raised today."""
-    critical = [a for a in alerts if a.severity == "CRITICAL"]
-    high     = [a for a in alerts if a.severity == "HIGH"]
-    others   = [a for a in alerts if a.severity not in ("CRITICAL", "HIGH")]
-
-    subject = (
-        f"[Vendor Risk] EOD Digest — {len(alerts)} new alert(s) today ({today.isoformat()})"
-    )
-
-    lines = [
-        "VENDOR RISK — END-OF-DAY ALERT DIGEST",
-        f"Date: {today.isoformat()}   |   New alerts raised today: {len(alerts)}",
-        "=" * 60,
-        "",
-    ]
-
-    def _render(alert_list: list[Alert], header: str) -> None:
-        if not alert_list:
-            return
-        lines.append(header)
-        for a in alert_list:
-            lines.append(f"  [{a.vendor_id}] {a.vendor_name}  (added {a.triggered_at.strftime('%H:%M UTC')})")
-            lines.append(f"  Type    : {a.alert_type}")
-            lines.append(f"  Message : {a.message}")
-            lines.append("")
-
-    _render(critical, "CRITICAL ALERTS")
-    _render(high,     "HIGH ALERTS")
-    _render(others,   "OTHER ALERTS")
-
-    lines += [
-        "—",
-        "Vendor Risk Platform — automated EOD digest. Contact security team for action items.",
-    ]
+    lines += ["—", "Vendor Risk Platform — automated report."]
     return subject, "\n".join(lines)
 
 
 def _expiry_alert_text(alerts: list[Alert], today: date) -> tuple[str, str]:
-    """Return (subject, body) for a batch of expiry/breach alerts."""
     critical = [a for a in alerts if a.severity == "CRITICAL"]
     high     = [a for a in alerts if a.severity == "HIGH"]
     others   = [a for a in alerts if a.severity not in ("CRITICAL", "HIGH")]
-
-    subject = (
-        f"[Vendor Risk ALERT] {len(critical)} CRITICAL, {len(high)} HIGH alerts — {today.isoformat()}"
-    )
-
-    lines = [
-        "VENDOR RISK — EXPIRY & BREACH ALERTS",
-        f"Date: {today.isoformat()}   |   Total alerts: {len(alerts)}",
-        "=" * 60,
-        "",
-    ]
-
-    def _render(alert_list: list[Alert], header: str) -> None:
-        if not alert_list:
-            return
-        lines.append(header)
-        for a in alert_list:
-            lines.append(f"  [{a.vendor_id}] {a.vendor_name}")
-            lines.append(f"  Type    : {a.alert_type}")
-            lines.append(f"  Message : {a.message}")
-            lines.append("")
-
-    _render(critical, "CRITICAL ALERTS")
-    _render(high,     "HIGH ALERTS")
-    _render(others,   "OTHER ALERTS")
-
-    lines += [
-        "—",
-        "Vendor Risk Platform — automated alert. Contact security team for action items.",
-    ]
+    subject = f"[Vendor Risk ALERT] {len(critical)} CRITICAL, {len(high)} HIGH alerts — {today.isoformat()}"
+    lines = ["VENDOR RISK — EXPIRY & BREACH ALERTS", f"Date: {today.isoformat()}   |   Total: {len(alerts)}", "=" * 60, ""]
+    for group, header in [(critical, "CRITICAL"), (high, "HIGH"), (others, "OTHER")]:
+        if group:
+            lines.append(f"{header} ALERTS")
+            for a in group:
+                lines += [f"  [{a.vendor_id}] {a.vendor_name}", f"  Type: {a.alert_type}", f"  {a.message}", ""]
+    lines += ["—", "Vendor Risk Platform — automated alert."]
     return subject, "\n".join(lines)
+
+
+def _eod_digest_text(alerts: list[Alert], today: date) -> tuple[str, str]:
+    subject = f"[Vendor Risk] EOD Digest — {len(alerts)} new alert(s) today ({today.isoformat()})"
+    body = _expiry_alert_text(alerts, today)[1]
+    return subject, body
 
 
 # ── Backend protocol ──────────────────────────────────────────────────────────
@@ -423,35 +506,42 @@ class ResendBackend:
         self.to_addr = to_addr
         self.from_addr = from_addr
 
-    def _send(self, subject: str, body: str) -> None:
+    def _send(self, subject: str, text: str, html: str) -> None:
         import resend as resend_sdk
         resend_sdk.api_key = self.api_key
         result = resend_sdk.Emails.send({
             "from": self.from_addr,
             "to": [self.to_addr],
             "subject": subject,
-            "text": body,
+            "html": html,
+            "text": text,
         })
         print(f"[emailer] Resend: sent '{subject}' → id={getattr(result, 'id', result)}", flush=True)
 
     def send_monthly_summary(self, scored: list[ScoredVendor], today: date | None = None) -> None:
         today = today or date.today()
-        subject, body = _monthly_summary_text(scored, today)
-        self._send(subject, body)
+        subject, text = _monthly_summary_text(scored, today)
+        html_body = _monthly_summary_html(scored, today)
+        html = _html_wrap(f"Monthly Summary — {today.strftime('%B %Y')}", f"Generated {today.isoformat()}", html_body)
+        self._send(subject, text, html)
 
     def send_expiry_alerts(self, alerts: list[Alert], today: date | None = None) -> None:
         today = today or date.today()
         if not alerts:
             return
-        subject, body = _expiry_alert_text(alerts, today)
-        self._send(subject, body)
+        subject, text = _expiry_alert_text(alerts, today)
+        html_body = _expiry_alert_html(alerts, today)
+        html = _html_wrap("Expiry &amp; Breach Alerts", f"{today.isoformat()}", html_body)
+        self._send(subject, text, html)
 
     def send_eod_digest(self, alerts: list[Alert], today: date | None = None) -> None:
         today = today or date.today()
         if not alerts:
             return
-        subject, body = _eod_digest_text(alerts, today)
-        self._send(subject, body)
+        subject, text = _eod_digest_text(alerts, today)
+        html_body = _eod_digest_html(alerts, today)
+        html = _html_wrap("End-of-Day Alert Digest", f"{today.isoformat()}", html_body)
+        self._send(subject, text, html)
 
 
 # ── Factory ───────────────────────────────────────────────────────────────────
