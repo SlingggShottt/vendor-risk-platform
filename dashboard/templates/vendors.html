@@ -215,7 +215,7 @@
   }
 
   function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   // ── Live filtering ────────────────────────────────────────────────────────
@@ -245,7 +245,6 @@
   refresh();
 
   // ── Bulk upload modal ─────────────────────────────────────────────────────
-  const RISK_COLORS = { CRITICAL:'badge-critical', HIGH:'badge-high', MEDIUM:'badge-medium', LOW:'badge-low' };
   const LEVEL_BG = { CRITICAL:'#fef2f2', HIGH:'#fff7ed', MEDIUM:'#fffbeb', LOW:'#f0fdf4' };
   const LEVEL_FG = { CRITICAL:'#dc2626', HIGH:'#ea580c', MEDIUM:'#d97706', LOW:'#16a34a' };
 
@@ -313,10 +312,6 @@
     } catch (e) {
       statusEl.textContent = 'Upload failed: ' + e.message;
     }
-  }
-
-  function escHtml(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   document.getElementById('uploadModal').addEventListener('click', function(e) {
