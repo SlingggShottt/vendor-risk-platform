@@ -1,11 +1,13 @@
 """
 monitoring/emailer.py — Email notifications for risk alerts and monthly summaries.
 
-Two backends:
+Backends (priority order):
+  - ResendBackend: sends real email via Resend REST API (needs RESEND_API_KEY
+    and ALERT_EMAIL_TO in .env — free tier at resend.com)
   - SMTPBackend: sends real email via smtplib (needs SMTP_HOST, SMTP_PORT,
     SMTP_USER, SMTP_PASS, ALERT_EMAIL_TO in .env)
   - ConsoleBackend: prints the full email content to stdout (clearly labeled
-    "WOULD HAVE SENT:") — active when SMTP credentials are absent.
+    "WOULD HAVE SENT:") — active when no credentials are configured.
 
 Use get_emailer() to get the right backend automatically — it never blocks.
 
@@ -18,9 +20,11 @@ Usage:
 
 from __future__ import annotations
 
+import json
 import os
 import smtplib
 import sys
+import urllib.request
 from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -403,14 +407,85 @@ class SlackBackend:
         self.send_expiry_alerts(alerts, today)
 
 
+# ── Resend backend ────────────────────────────────────────────────────────────
+
+class ResendBackend:
+    """Sends email via the Resend REST API (https://resend.com).
+
+    Required env vars:
+      RESEND_API_KEY   — API key from resend.com
+      ALERT_EMAIL_TO   — recipient address (must match your Resend account email
+                         if using the shared onboarding@resend.dev sender)
+    Optional:
+      ALERT_EMAIL_FROM — override sender (needs a verified domain on Resend)
+    """
+
+    _API_URL = "https://api.resend.com/emails"
+
+    def __init__(self, api_key: str, to_addr: str, from_addr: str) -> None:
+        self.api_key = api_key
+        self.to_addr = to_addr
+        self.from_addr = from_addr
+
+    def _send(self, subject: str, body: str) -> None:
+        payload = json.dumps({
+            "from": self.from_addr,
+            "to": [self.to_addr],
+            "subject": subject,
+            "text": body,
+        }).encode()
+        req = urllib.request.Request(
+            self._API_URL,
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                result = json.loads(resp.read())
+            print(f"[emailer] Resend: sent '{subject}' → id={result.get('id')}", flush=True)
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode(errors="replace")
+            raise RuntimeError(f"Resend API error {exc.code}: {detail}") from exc
+
+    def send_monthly_summary(self, scored: list[ScoredVendor], today: date | None = None) -> None:
+        today = today or date.today()
+        subject, body = _monthly_summary_text(scored, today)
+        self._send(subject, body)
+
+    def send_expiry_alerts(self, alerts: list[Alert], today: date | None = None) -> None:
+        today = today or date.today()
+        if not alerts:
+            return
+        subject, body = _expiry_alert_text(alerts, today)
+        self._send(subject, body)
+
+    def send_eod_digest(self, alerts: list[Alert], today: date | None = None) -> None:
+        today = today or date.today()
+        if not alerts:
+            return
+        subject, body = _eod_digest_text(alerts, today)
+        self._send(subject, body)
+
+
 # ── Factory ───────────────────────────────────────────────────────────────────
 
-def get_emailer() -> SlackBackend | SMTPBackend | ConsoleBackend:
+def get_emailer() -> ResendBackend | SlackBackend | SMTPBackend | ConsoleBackend:
     """
     Return the best available notification backend.
-    Priority: Slack (if SLACK_WEBHOOK_URL set) > SMTP (if full creds set) > Console.
+    Priority: Resend > Slack > SMTP > Console.
     """
-    # Priority 1: Slack
+    # Priority 1: Resend
+    resend_key = os.getenv("RESEND_API_KEY", "")
+    resend_to  = os.getenv("ALERT_EMAIL_TO", "")
+    if resend_key and resend_to:
+        from_addr = os.getenv("ALERT_EMAIL_FROM", "Vendor Risk Platform <onboarding@resend.dev>")
+        return ResendBackend(api_key=resend_key, to_addr=resend_to, from_addr=from_addr)
+
+    # Priority 2: Slack
     slack_url = os.getenv("SLACK_WEBHOOK_URL", "")
     if slack_url:
         return SlackBackend(slack_url)
