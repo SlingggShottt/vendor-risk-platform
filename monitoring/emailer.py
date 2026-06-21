@@ -20,11 +20,9 @@ Usage:
 
 from __future__ import annotations
 
-import json
 import os
 import smtplib
 import sys
-import urllib.request
 from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -420,36 +418,21 @@ class ResendBackend:
       ALERT_EMAIL_FROM — override sender (needs a verified domain on Resend)
     """
 
-    _API_URL = "https://api.resend.com/emails"
-
     def __init__(self, api_key: str, to_addr: str, from_addr: str) -> None:
         self.api_key = api_key
         self.to_addr = to_addr
         self.from_addr = from_addr
 
     def _send(self, subject: str, body: str) -> None:
-        payload = json.dumps({
+        import resend as resend_sdk
+        resend_sdk.api_key = self.api_key
+        result = resend_sdk.Emails.send({
             "from": self.from_addr,
             "to": [self.to_addr],
             "subject": subject,
             "text": body,
-        }).encode()
-        req = urllib.request.Request(
-            self._API_URL,
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                result = json.loads(resp.read())
-            print(f"[emailer] Resend: sent '{subject}' → id={result.get('id')}", flush=True)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode(errors="replace")
-            raise RuntimeError(f"Resend API error {exc.code}: {detail}") from exc
+        })
+        print(f"[emailer] Resend: sent '{subject}' → id={getattr(result, 'id', result)}", flush=True)
 
     def send_monthly_summary(self, scored: list[ScoredVendor], today: date | None = None) -> None:
         today = today or date.today()
