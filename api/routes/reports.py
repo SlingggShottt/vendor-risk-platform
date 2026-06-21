@@ -157,6 +157,42 @@ def send_email_report():
     return {"status": "sent", "vendor_count": len(scored), "date": today.isoformat()}
 
 
+@router.post("/email-alerts")
+def send_email_alerts():
+    """Send expiry/breach alert emails for all active CRITICAL and HIGH alerts."""
+    store = _get_store()
+    entries = list(store.values())
+    today = date.today()
+
+    all_alerts = [a for e in entries for a in e.get("alerts", [])
+                  if a.severity in ("CRITICAL", "HIGH")]
+
+    if not all_alerts:
+        raise HTTPException(status_code=422, detail="No CRITICAL or HIGH alerts to send.")
+
+    try:
+        from monitoring.emailer import get_emailer
+        get_emailer().send_expiry_alerts(all_alerts, today)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Alert send failed: {exc}") from exc
+
+    try:
+        from api.main import app
+        app.state.audit_logger.log_event(
+            actor="system",
+            action="alert_email_sent",
+            resource_type="report",
+            resource_id="expiry_alerts",
+            old_state={},
+            new_state={"alert_count": len(all_alerts), "date": today.isoformat()},
+            reason="manual send via dashboard",
+        )
+    except Exception:
+        pass
+
+    return {"status": "sent", "alert_count": len(all_alerts), "date": today.isoformat()}
+
+
 @router.get("/csv")
 def export_csv():
     """Export all scored vendors as a flat CSV download."""

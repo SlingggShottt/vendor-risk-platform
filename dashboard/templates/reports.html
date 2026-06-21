@@ -12,6 +12,7 @@
     <a href="/api/reports/bulk-export" class="btn btn-secondary export-btn">⬇ XLSX</a>
     <a href="/api/reports/compliance-export" class="btn btn-secondary export-btn">⬇ Compliance JSON</a>
     <button id="sendEmailBtn" class="btn btn-primary export-btn" onclick="sendEmailReport()">✉ Send Email Report</button>
+    <button id="sendAlertsBtn" class="btn btn-danger export-btn" onclick="sendAlertEmail()">🔔 Send Alert Email</button>
   </div>
   <div id="emailStatus" style="display:none;margin-top:8px;font-size:0.875rem;padding:6px 12px;border-radius:6px;"></div>
   {% if slack_connected %}
@@ -157,6 +158,32 @@ async function loadReport() {
 }
 
 loadReport();
+
+async function sendAlertEmail() {
+  const btn = document.getElementById('sendAlertsBtn');
+  const status = document.getElementById('emailStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sending…';
+  status.style.display = 'none';
+
+  try {
+    const resp = await fetch('/api/reports/email-alerts', { method: 'POST' });
+    const data = await resp.json();
+    if (resp.ok) {
+      status.textContent = `✓ Alert email sent — ${data.alert_count} CRITICAL/HIGH alerts, ${data.date}`;
+      status.style.cssText = 'display:block;margin-top:8px;font-size:0.875rem;padding:6px 12px;border-radius:6px;background:#d1fae5;color:#065f46;';
+    } else {
+      status.textContent = `✗ ${data.detail || 'Send failed'}`;
+      status.style.cssText = 'display:block;margin-top:8px;font-size:0.875rem;padding:6px 12px;border-radius:6px;background:#fee2e2;color:#991b1b;';
+    }
+  } catch (err) {
+    status.textContent = `✗ Network error: ${err.message}`;
+    status.style.cssText = 'display:block;margin-top:8px;font-size:0.875rem;padding:6px 12px;border-radius:6px;background:#fee2e2;color:#991b1b;';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔔 Send Alert Email';
+  }
+}
 
 async function sendEmailReport() {
   const btn = document.getElementById('sendEmailBtn');
