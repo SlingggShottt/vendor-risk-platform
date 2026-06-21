@@ -55,8 +55,8 @@ Copy `.env.example` to `.env` and fill in credentials for email/Slack alerts (al
 |---|---|
 | **Risk Scoring Engine** | Deterministic, rule-based. Hard floors for CRITICAL cases. Weighted rubric for everything else. 100% recall on 440-vendor ground truth. |
 | **Vendor Dashboard** | Sortable/filterable list; per-vendor detail with compliance status, breach history, and alert indicators. |
-| **Portfolio Reports** | One-click JSON, CSV, and PDF reports — risk summary, compliance stats, red-flag vendors, top recommendations. |
-| **Expiry Alerts** | Cert and contract expiry alerts at 30/60/90-day windows. Fires via email, Slack, or console. |
+| **Portfolio Reports** | One-click JSON, CSV, PDF, and XLSX reports — risk summary, compliance stats, red-flag vendors, top recommendations. Dashboard buttons to send email report or alert digest instantly. |
+| **Expiry Alerts** | Cert and contract expiry alerts at 30/60/90-day windows. Fires via Resend API, SMTP, Slack, or console. |
 | **Contract Extraction** | LLM-assisted PDF/text contract extraction via Claude API → auto-populates vendor fields. |
 
 ### Enterprise Sprint
@@ -119,7 +119,7 @@ The labels file is derived using the same PRD §5 rubric as the engine — so th
 │  normalize.py                scoring/recommend.py     reports (CSV  │
 │  vendor_registry.csv         scoring/explainer.py      / PDF / XLSX)│
 │  vendor_labels.csv           monitoring/alerts.py                   │
-│  extraction/ (LLM)           monitoring/emailer.py    Slack/Email   │
+│  extraction/ (LLM)           monitoring/emailer.py    Resend/Slack/ │
 │                              monitoring/scheduler.py  Alerts        │
 │                              monitoring/audit_logger.py             │
 │                              eval/evaluate.py                       │
@@ -156,6 +156,8 @@ GET  /api/reports/csv               All vendors as flat CSV download
 GET  /api/reports/pdf               Portfolio report as formatted PDF
 GET  /api/reports/bulk-export       All vendors as XLSX (2 sheets: vendor list + compliance summary)
 GET  /api/reports/compliance-export Full compliance snapshot + audit log (?format=json|csv)
+POST /api/reports/email             Send monthly portfolio summary via configured email backend
+POST /api/reports/email-alerts      Send CRITICAL/HIGH alert digest via configured email backend
 ```
 
 ### Alerts
@@ -214,7 +216,7 @@ vendor-risk-platform/
 │   └── explainer.py                Rule-by-rule breakdown + per-rule remediation actions
 ├── monitoring/
 │   ├── alerts.py                   Cert/contract expiry + breach recency alert generation
-│   ├── emailer.py                  Notification backends: Slack > SMTP > Console fallback
+│   ├── emailer.py                  Notification backends: Resend > Slack > SMTP > Console fallback
 │   ├── scheduler.py                APScheduler daily job (08:00 UTC) — auto-runs alerts
 │   └── audit_logger.py             Append-only in-memory audit log (AuditLogger singleton)
 ├── api/
@@ -239,8 +241,14 @@ vendor-risk-platform/
 ├── eval/
 │   └── evaluate.py                 Precision/recall evaluation against vendor_labels.csv
 ├── docs/
+│   ├── technical_report.md         Full technical research paper (scoring, eval, API, deployment)
 │   ├── data_methodology.md         Data generation methodology + edge case catalogue
 │   └── scoring_architecture.md     Scoring algorithm rationale + API/UI architecture
+├── sample_inputs/
+│   ├── csv/                        vendor_registry_sample.csv, vendor_labels_sample.csv, bulk_upload_sample.csv
+│   ├── add_vendor/                 6 JSON files covering all risk levels — paste directly into /add-vendor form
+│   ├── api/                        Nested, flat, and alternate-field JSON for POST /api/vendors + bulk-remediate
+│   └── contracts/                  4 .txt contract documents for LLM extraction demo
 └── requirements.txt
 ```
 
@@ -250,13 +258,14 @@ vendor-risk-platform/
 
 ```bash
 # LLM (contract extraction)
-ANTHROPIC_API_KEY=          # Required for extraction/extract_contract.py
+GROQ_API_KEY=               # Free key at console.groq.com — powers /extract page
 
-# Database (optional — defaults to CSV-first)
-DATABASE_URL=               # SQLAlchemy URL, e.g. sqlite:///vendor_risk.db
-USE_SQLITE=true             # Set to "true" to load from SQLite instead of CSV
+# Email alerts — Resend (recommended, free tier at resend.com)
+RESEND_API_KEY=             # Primary email backend — takes priority over SMTP/Slack
+ALERT_EMAIL_TO=             # Recipient address (must match your Resend account email)
+ALERT_EMAIL_FROM=           # Optional: override sender once you have a verified domain
 
-# Email alerts (optional — falls back to console output)
+# Email alerts — SMTP fallback (only used if RESEND_API_KEY is not set)
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
@@ -264,11 +273,12 @@ SMTP_PASS=
 ALERT_EMAIL_FROM=
 ALERT_EMAIL_TO=
 
-# Slack alerts (optional — takes priority over SMTP if set)
+# Slack alerts (optional — used if neither Resend nor SMTP is configured)
 SLACK_WEBHOOK_URL=          # Incoming webhook URL from your Slack workspace
 
-# Resend (alternative email provider)
-RESEND_API_KEY=
+# Database (optional — defaults to CSV-first)
+DATABASE_URL=               # SQLAlchemy URL, e.g. sqlite:///vendor_risk.db
+USE_SQLITE=true             # Set to "true" to load from SQLite instead of CSV
 ```
 
 ---
@@ -283,7 +293,7 @@ RESEND_API_KEY=
 
 **Every `risk_factors` string maps to the rule that fired it.** There are no generic labels like `"Risk: certifications"`. Each string is generated inside the rule function itself, with enough context for an auditor to act on it immediately.
 
-**Notification priority chain.** `get_emailer()` returns `SlackBackend` if `SLACK_WEBHOOK_URL` is set, `SMTPBackend` if SMTP credentials are set, and `ConsoleBackend` otherwise. The server never crashes on missing credentials.
+**Notification priority chain.** `get_emailer()` returns `ResendBackend` if `RESEND_API_KEY` is set, then `SlackBackend`, then `SMTPBackend`, and `ConsoleBackend` as the final fallback. The server never crashes on missing credentials. Resend is the recommended backend — free tier (100 emails/day), no SMTP config required, works instantly from any hosting provider.
 
 ---
 

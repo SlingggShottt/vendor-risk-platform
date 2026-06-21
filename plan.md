@@ -4,56 +4,53 @@ Hour-blocks, not calendar weeks. Times are elapsed hours from kickoff (H0). Adju
 
 ## H0–H1: Together (blocking, do not skip)
 
-- [ ] Both read `PRD.md` fully
-- [ ] Agree + freeze `common/schema.py` (Vendor, ScoredVendor models)
-- [ ] Agree on `api/db.py` table shape (or defer DB, start with CSV per `tech-stack.md`)
-- [ ] Hand-write 5-8 fixture vendors together (covering: clean vendor, breached+high-access, expired cert, expired contract+active access, low financial rating, missing GDPR DPA, a genuinely ambiguous case) — these unblock Jatin immediately without waiting on the generator
-- [ ] Set up git repo, branches `divyansh` / `jatin`, `.gitignore`, push empty skeleton to `main`
-- [ ] Split: confirm both read `divyansh.md` / `jatin.md` respectively from here on
+- [x] Both read `PRD.md` fully
+- [x] Agree + freeze `common/schema.py` (Vendor, ScoredVendor models)
+- [x] Agree on `api/db.py` table shape (or defer DB, start with CSV per `tech-stack.md`)
+- [x] Hand-write 5-8 fixture vendors together
+- [x] Set up git repo, branches `divyansh` / `jatin`, `.gitignore`, push empty skeleton to `main`
+- [x] Split: confirm both read `divyansh.md` / `jatin.md` respectively from here on
 
 ## H1–H16: Parallel build, core
 
-**Divyansh** (see `divyansh.md` for detail):
-- [ ] `data/generate_vendors.py` — bulk synthetic generator
-- [ ] `data/edge_cases.py` — hand-scripted edge cases on top
-- [ ] Output `vendor_registry.csv` + `vendor_labels.csv`
-- [ ] `data/normalize.py` — schema reconciliation logic
+**Divyansh:**
+- [x] `data/generate_vendors.py` — bulk synthetic generator
+- [x] `data/edge_cases.py` — hand-scripted edge cases on top
+- [x] Output `vendor_registry.csv` + `vendor_labels.csv`
+- [x] `data/normalize.py` — schema reconciliation logic
 
-**Jatin** (see `jatin.md` for detail):
-- [ ] `scoring/rules.py` + `scoring/risk_engine.py` against the H0 fixtures
-- [ ] `scoring/recommend.py`
-- [ ] `eval/evaluate.py` skeleton (runs against fixtures first, real CSVs later)
-
-**Checkpoint at H16:** quick sync (15 min, async is fine). Divyansh's CSVs should exist; Jatin's engine should run against fixtures. Swap: Jatin starts running the engine against A's real CSVs.
+**Jatin:**
+- [x] `scoring/rules.py` + `scoring/risk_engine.py` against the H0 fixtures
+- [x] `scoring/recommend.py`
+- [x] `eval/evaluate.py` skeleton
 
 ## H16–H30: Parallel build, surface
 
 **Divyansh:**
-- [ ] Polish/expand edge cases based on what Jatin's eval reveals as weak spots
-- [ ] If ahead of schedule: start `extraction/` stretch goal
-- [ ] Help write the documentation deliverable's "data & architecture" section
+- [x] Polish/expand edge cases
+- [x] `extraction/` stretch goal (Groq LLM)
+- [x] Data & architecture documentation
 
 **Jatin:**
-- [ ] `monitoring/alerts.py` (cert/contract expiry windows)
-- [ ] `monitoring/emailer.py` (monthly summary + expiry alerts, swappable SMTP backend)
-- [ ] `api/main.py` + routes (`vendors`, `reports`)
-- [ ] `dashboard/` — vendor list, alert indicators, bar chart, CSV export
-- [ ] Run full `eval/evaluate.py` against real labels, tune rubric weights if CRITICAL recall is weak (log changes in `memory.md`)
-
-**Checkpoint at H30:** integration. Both pull latest, merge into `main`, run the whole pipeline end-to-end once (generate → normalize → score → dashboard). Fix integration breakage now, not at H45.
+- [x] `monitoring/alerts.py`
+- [x] `monitoring/emailer.py`
+- [x] `api/main.py` + routes (`vendors`, `reports`)
+- [x] `dashboard/` — vendor list, detail, reports, extract, add-vendor
+- [x] 100% CRITICAL/HIGH recall confirmed
 
 ## H30–H40: Integration + stretch goals
 
-- [ ] End-to-end smoke test: fresh clone, `pip install -r requirements.txt`, run seed + server, dashboard loads, reports generate, eval passes
-- [ ] Stretch (only if on schedule): PDF contract extraction (Divyansh), Postgres swap (skip unless trivial)
-- [ ] Bug fixes, edge case polish
+- [x] End-to-end smoke test — 440 vendors, all routes 200, eval 100% precision+recall
+- [x] PDF contract extraction (Divyansh via Groq)
+- [x] Bug fixes, edge case polish
 
-## H40–H48: Deliverables (do not skip — these are graded independently of the code)
+## H40–H48: Deliverables
 
-- [ ] **Documentation**: architecture diagram + scoring algorithm rationale + UI walkthrough — compile from PRD.md + person docs, don't write from scratch
-- [ ] **Presentation**: problem → solution slides, reuse PRD.md §1-2 as the spine
-- [ ] **Solution video**: short screen-recorded demo (dashboard, a CRITICAL vendor drill-down, a generated report, an alert email)
-- [ ] **Git repo**: clean README, both branches merged to main, final force-push, confirm repo link works from a logged-out view
+- [x] **Documentation**: `docs/technical_report.md` (research paper), `docs/scoring_architecture.md`, `docs/data_methodology.md`
+- [x] **Presentation**: `docs/vendor_risk_platform_deck.pptx` (16-slide deck, python-pptx)
+- [x] **Demo scripts**: `docs/demo_script.md` (SAY/DO timed guide) + `docs/demo_script_full.md` (word-for-word)
+- [x] **Sample inputs**: `sample_inputs/` — CSV, add-vendor JSON, API JSON, contract .txt files
+- [x] **Git repo**: clean README, branches merged to main, live on Render
 
 ## Risk register for the plan itself
 

@@ -69,9 +69,16 @@ Granular task list. `plan.md` = when; this file = what, in detail, checked off a
 - [x] CORS: restricted to localhost + onrender.com
 - [x] Security headers: `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`
 
-### Stretch (decided not to build — scope/time tradeoff)
-- [ ] Postgres swap (CSV-first confirmed sufficient)
-- [ ] `POST /api/vendors/bulk-remediate` — update multiple vendors + audit log
-- [ ] `GET /api/reports/bulk-export?format=xlsx` — XLSX streaming
-- [ ] Slack backend for emailer
-- [ ] Predictive score trend (linear regression on history points)
+### Stretch (all shipped)
+- [x] Postgres swap — N/A, CSV-first confirmed sufficient
+- [x] `POST /api/vendors/bulk-remediate` — mass acknowledge / renew-cert / require-DPA, audit-logged
+- [x] `GET /api/reports/bulk-export` — XLSX streaming (2 sheets: vendor list + compliance summary)
+- [x] Resend backend for emailer (primary; replaces SMTP as recommended path; free, no config friction)
+- [x] Slack backend for emailer
+- [x] Predictive score trend — `GET /api/vendors/{id}/history` returns 6-month history + linear regression + projected level in 3 months
+- [x] `POST /api/reports/email` — dashboard button sends monthly portfolio summary via configured backend
+- [x] `POST /api/reports/email-alerts` — dashboard button sends CRITICAL/HIGH alert digest
+- [x] `sample_inputs/` — full demo input library: CSV (10 vendors + labels + bulk), add-vendor JSON (6 levels), API JSON (nested/flat/alt fields + bulk-remediate), contract .txt files (4 scenarios)
+- [x] `docs/technical_report.md` — full research paper for hackathon judges
+- [x] `docs/demo_script.md` + `docs/demo_script_full.md` — timed SAY/DO scripts for presentation
+- [x] `docs/vendor_risk_platform_deck.pptx` — 16-slide corporate deck (dark navy + amber)
